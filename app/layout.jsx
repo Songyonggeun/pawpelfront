@@ -1,9 +1,9 @@
-import Provider from '@/components/provider';
-import { ThemeInitializer } from '@/components/public';
+// import Provider from '@/components/provider';
+// import { ThemeInitializer } from '@/components/public';
 import { metadata as meta } from "@/setting/meta";
 import './globals.css';
 export const metadata = {
-    metadataBase: new URL(meta.url),
+    metadataBase: new URL(meta.url  ),
     title:meta.title,
     description:meta.description,
     keywords:meta.keywords,

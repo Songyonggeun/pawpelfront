@@ -1,8 +1,8 @@
 export const metadata = {
-    title:'웹페이지 타이틀',
-    description:'설명',
+    title:'pawpel',
+    description:'애완동물 건강 커뮤니티 사이트',
     keywords:['검색 키워드'],
-    url:'프론트엔드 URL',
+    url:'http://localhost:3000',
     images:[
         '/favicon-32x32.png'
     ],
