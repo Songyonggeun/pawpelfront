@@ -1,5 +1,6 @@
 // import Provider from '@/components/provider';
 // import { ThemeInitializer } from '@/components/public';
+import HeaderComponent from "@/components/(application)/header";
 import { metadata as meta } from "@/setting/meta";
 import './globals.css';
 export const metadata = {
@@ -37,6 +38,7 @@ export const metadata = {
 export default function RootLayout({children}){
     return <html lang={meta.locale} suppressHydrationWarning>
         <body>
+            <HeaderComponent/>
             {children}
         </body>
     </html>
