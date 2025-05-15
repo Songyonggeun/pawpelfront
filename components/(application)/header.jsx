@@ -1,9 +1,8 @@
-// components/Header.jsx
 'use client';
 
 import { useRouter } from 'next/navigation';
 import { Layout, Button, Row, Col } from 'antd';  // Row, Col을 사용
-import { AiOutlineLogin, AiOutlineLogout, AiOutlineHome, AiOutlineUser, AiOutlineFileText } from 'react-icons/ai';
+import { AiOutlineLogin, AiOutlineLogout, AiOutlineUser } from 'react-icons/ai';
 import { Fragment, useState, useEffect } from 'react';
 
 export default function HeaderComponent() {
@@ -59,9 +58,21 @@ export default function HeaderComponent() {
               </Button>
             </Fragment>
           ) : (
-            <Button type="link" size="large" icon={<AiOutlineLogin />} onClick={() => navigate('/login')}>
-              로그인
-            </Button>
+            <Fragment>
+              {/* 로그인 버튼 */}
+              <Button type="link" size="large" icon={<AiOutlineLogin />} onClick={() => navigate('/login')}>
+                로그인
+              </Button>
+
+              {/* 회원가입 버튼 */}
+              <Button
+                type="link"
+                size="large"
+                onClick={() => navigate('/signup')}
+              >
+                회원가입
+              </Button>
+            </Fragment>
           )}
         </Col>
       </Row>
