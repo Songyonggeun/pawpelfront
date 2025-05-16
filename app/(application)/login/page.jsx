@@ -12,7 +12,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen bg-gray-100 pt-40 ">
+    <div className="flex justify-center items-start min-h-screen bg-gray-100 pt-10 sm:pt-40">
       <form
         onSubmit={handleLogin}
         className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm"
@@ -39,7 +39,7 @@ export default function LoginPage() {
 
         {/* 회원가입 / 아이디 찾기 / 비밀번호 찾기 */}
         <div className="flex justify-center gap-x-5 text-sm text-blue-600 mb-6">
-          <a href="/signup/step1" className="hover:underline">회원가입</a>
+          <a href="/signup/Step1" className="hover:underline">회원가입</a>
           <a href="#" className="hover:underline">아이디 찾기</a>
           <a href="#" className="hover:underline">비밀번호 찾기</a>
         </div>
