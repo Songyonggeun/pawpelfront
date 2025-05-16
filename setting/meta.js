@@ -1,5 +1,5 @@
 export const metadata = {
-    title:'pawpel',
+    title:'pawple',
     description:'애완동물 건강 커뮤니티 사이트',
     keywords:['검색 키워드'],
     url:'http://localhost:3000',

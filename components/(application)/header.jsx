@@ -32,8 +32,9 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between ">
         {/* 로고 */}
         <div className="flex items-center space-x-2">
+          {/* <span><img src="/Pawple_logo.png" alt="Pawple 로고" className="w-15 h-auto" /></span> */}
           <span className="text-blue-500 text-2xl font-bold">✓</span>
-          <span className="text-2xl font-bold text-blue-500">pawpel</span>
+          <span className="text-2xl font-bold text-blue-500">pawple</span>
         </div>
 
         {/* 데스크탑 네비게이션 */}
