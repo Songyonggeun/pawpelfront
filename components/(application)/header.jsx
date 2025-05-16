@@ -1,81 +1,146 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { Layout, Button, Row, Col } from 'antd';  // Row, Col을 사용
-import { AiOutlineLogin, AiOutlineLogout, AiOutlineUser } from 'react-icons/ai';
-import { Fragment, useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import CommunityMenu from '@/components/(application)/communityMenu';
+import HealthCareMenu from '@/components/(application)/healthCare';
 
-export default function HeaderComponent() {
-  const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);  // 로그인 상태 관리
+export default function Header() {
+  const [showCommunityMenu, setShowCommunityMenu] = useState(false);
+  const [showHealthCareMenu, setShowHealthCareMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    // 예시: 로그인 여부를 확인하는 로직 (localStorage 등 활용)
-    const user = localStorage.getItem('user');
-    if (user) {
-      setIsLoggedIn(true);  // 로그인 상태이면 true로 설정
+  const toggleCommunityMenu = () => {
+    setShowCommunityMenu(prev => !prev);
+    setShowHealthCareMenu(false);
+  };
+
+  const toggleHealthCareMenu = () => {
+    setShowHealthCareMenu(prev => !prev);
+    setShowCommunityMenu(false);
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(prev => !prev);
+    if (mobileMenuOpen) {
+      setShowCommunityMenu(false);
+      setShowHealthCareMenu(false);
     }
-  }, []);
-
-  const navigate = (path) => {
-    router.push(path);
   };
 
   return (
-    <Layout.Header className="sticky top-0 flex justify-between items-center border-b-2 border-b-gray-300 z-50 bg-white">
-      <Row justify="space-between" align="middle" style={{ width: '100%' }}>
-        {/* 왼쪽 메뉴 */}
-        <Col>
-          <Button type="link" size="large" onClick={() => navigate('/community')}>
+    <header className="w-full border-b bg-white">
+      <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between ">
+        {/* 로고 */}
+        <div className="flex items-center space-x-2">
+          <span className="text-blue-500 text-2xl font-bold">✓</span>
+          <span className="text-2xl font-bold text-blue-500">pawpel</span>
+        </div>
+
+        {/* 데스크탑 네비게이션 */}
+        <nav className="hidden md:flex space-x-6 text-gray-700 text-sm items-start mr-auto ml-8">
+          <button
+            onClick={toggleCommunityMenu}
+            className="relative hover:text-blue-500"
+          >
             커뮤니티
-          </Button>
-          <Button type="link" size="large" onClick={() => navigate('/healthcheck')}>
-            건강검진
-          </Button>
-          <Button type="link" size="large" onClick={() => navigate('/pet-insurance')}>
-            펫 보험
-          </Button>
-        </Col>
+          </button>
+          <button
+            onClick={toggleHealthCareMenu}
+            className="relative hover:text-blue-500"
+          >
+            건강관리
+          </button>
+          <a href="#" className="hover:text-blue-500">펫보험</a>
+        </nav>
 
-        {/* 오른쪽 메뉴 */}
-        <Col>
-          {isLoggedIn ? (
-            <Fragment>
-              <Button type="link" size="large" icon={<AiOutlineUser />} onClick={() => navigate('/mypage')}>
-                마이 페이지
-              </Button>
-              <Button
-                type="link"
-                size="large"
-                icon={<AiOutlineLogout />}
-                onClick={() => {
-                  localStorage.removeItem('user'); // 로그인 상태 초기화
-                  setIsLoggedIn(false); // 로그아웃 처리
-                  navigate('/login'); // 로그인 페이지로 이동
-                }}
-              >
-                로그아웃
-              </Button>
-            </Fragment>
-          ) : (
-            <Fragment>
-              {/* 로그인 버튼 */}
-              <Button type="link" size="large" icon={<AiOutlineLogin />} onClick={() => navigate('/login')}>
-                로그인
-              </Button>
+        {/* 검색 + 아이콘 (데스크탑) */}
+        <div className="hidden md:flex items-center space-x-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="검색어를 입력해주세요."
+              className="border border-gray-300 rounded-full px-4 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <button className="absolute right-3 top-1.5 text-gray-500">
+              🔍
+            </button>
+          </div>
 
-              {/* 회원가입 버튼 */}
-              <Button
-                type="link"
-                size="large"
-                onClick={() => navigate('/signup')}
-              >
-                회원가입
-              </Button>
-            </Fragment>
-          )}
-        </Col>
-      </Row>
-    </Layout.Header>
+          <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="알림">알림</button>
+          <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="마이페이지">마이페이지</button>
+
+          <div className="p-1 rounded hover:bg-gray-100 text-sm">
+            <a href="/login" className="text-gray-600">로그인</a>
+          </div>
+        </div>
+
+        {/* 모바일 햄버거 메뉴 버튼 */}
+        <button
+          className="md:hidden p-2 rounded-md hover:bg-gray-100"
+          onClick={toggleMobileMenu}
+          aria-label="모바일 메뉴 토글"
+        >
+          <svg
+            className="w-6 h-6 text-gray-700"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            viewBox="0 0 24 24"
+          >
+            {mobileMenuOpen ? (
+              <path d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path d="M3 12h18M3 6h18M3 18h18" />
+            )}
+          </svg>
+        </button>
+      </div>
+
+      {/* 커뮤니티 서브 메뉴 (데스크탑) */}
+      {showCommunityMenu && (
+        <div className="max-w-7xl mx-auto px-4 border-t border-gray-200 md:block hidden">
+          <CommunityMenu visible={showCommunityMenu} />
+        </div>
+      )}
+
+      {/* 건강관리 서브 메뉴 (데스크탑) */}
+      {showHealthCareMenu && (
+        <div className="max-w-7xl mx-auto px-4 border-t border-gray-200 md:block hidden">
+          <HealthCareMenu />
+        </div>
+      )}
+
+      {/* 모바일 메뉴 */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-gray-200 px-4 py-3 space-y-4">
+          <button
+            onClick={toggleCommunityMenu}
+            className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500"
+          >
+            커뮤니티
+          </button>
+          {showCommunityMenu && <CommunityMenu visible={showCommunityMenu} />}
+
+          <button
+            onClick={toggleHealthCareMenu}
+            className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500"
+          >
+            건강관리
+          </button>
+          {showHealthCareMenu && <HealthCareMenu />}
+
+          <a href="#" className="block text-gray-700 hover:text-blue-500">펫보험</a>
+
+          {/* 아이콘 버튼 모바일 - 세로 정렬 */}
+          <div className="flex flex-col space-y-2 text-sm">
+            <button className="text-left p-1 rounded hover:bg-gray-100" aria-label="알림">알림</button>
+            <button className="text-left p-1 rounded hover:bg-gray-100" aria-label="마이페이지">마이페이지</button>
+            <a href="/login" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그인</a>
+          </div>
+        </div>
+      )}
+    </header>
   );
 }
