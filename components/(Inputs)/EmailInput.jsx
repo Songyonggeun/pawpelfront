@@ -1,50 +1,78 @@
 const EmailInput = ({
   email,
   setEmail,
+  emailUsername,
+  setEmailUsername,
   emailDomain,
   setEmailDomain,
   customEmailDomain,
   setCustomEmailDomain,
 }) => {
-  // 이메일 도메인 변경 처리
+  // 이메일 전체 주소 갱신 함수
+  const updateEmail = (username, domain) => {
+    if (username && domain) {
+      setEmail(`${username}@${domain}`);
+    } else {
+      setEmail("");
+    }
+  };
+
+  // 사용자 아이디 입력 처리
+  const handleUsernameChange = (e) => {
+    const newUsername = e.target.value;
+    setEmailUsername(newUsername);
+
+    const domain = emailDomain === "custom" ? customEmailDomain : emailDomain;
+    updateEmail(newUsername, domain);
+  };
+
+  // 도메인 선택 처리
   const handleEmailDomainChange = (e) => {
     const newDomain = e.target.value;
     setEmailDomain(newDomain);
 
-    // 'custom'이 아니면 customEmailDomain 리셋
     if (newDomain !== "custom") {
-      setCustomEmailDomain("");
+      setCustomEmailDomain(""); // 커스텀 초기화
+      updateEmail(emailUsername, newDomain);
+    } else {
+      updateEmail(emailUsername, customEmailDomain);
     }
+  };
+
+  // 커스텀 도메인 입력 처리
+  const handleCustomDomainChange = (e) => {
+    const newCustomDomain = e.target.value;
+    setCustomEmailDomain(newCustomDomain);
+    updateEmail(emailUsername, newCustomDomain);
   };
 
   return (
     <div>
       <label className="block mb-1 text-gray-700 font-medium">이메일</label>
       <div className="flex items-center gap-1">
-        {/* 이메일 아이디 입력 필드 */}
+        {/* 사용자 아이디 입력 필드 */}
         <input
           type="text"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={emailUsername}
+          onChange={handleUsernameChange}
           required
           className="w-2/5 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           placeholder="아이디를 입력하세요"
         />
         <span>@</span>
 
-        {/* 'custom' 선택 시 도메인 입력 필드 보여주기 */}
+        {/* 커스텀 도메인 입력 필드 (선택 시에만 표시) */}
         {emailDomain === "custom" && (
           <input
             type="text"
             value={customEmailDomain}
-            onChange={(e) => setCustomEmailDomain(e.target.value)}
+            onChange={handleCustomDomainChange}
             className="w-1/3 px-2 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
             placeholder="도메인 입력"
           />
         )}
 
-
-        {/* select박스는 항상 보이도록 */}
+        {/* 도메인 선택 드롭다운 */}
         <select
           value={emailDomain}
           onChange={handleEmailDomainChange}

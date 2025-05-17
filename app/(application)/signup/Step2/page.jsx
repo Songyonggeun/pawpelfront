@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+
 import UsernameInput from "@/components/(Inputs)/UserNameInput";
 import EmailInput from "@/components/(Inputs)/EmailInput";
 import NameInput from "@/components/(Inputs)/NameInput";
@@ -19,19 +20,24 @@ const Step2 = () => {
 
   const [username, setUsername] = useState("");
   const [isUsernameChecked, setIsUsernameChecked] = useState(false);
-  const [email, setEmail] = useState("");
+
+  // 이메일 관련 상태
+  const [email, setEmail] = useState(""); // 최종 이메일
+  const [emailUsername, setEmailUsername] = useState("");
   const [emailDomain, setEmailDomain] = useState("naver.com");
   const [customEmailDomain, setCustomEmailDomain] = useState("");
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [birthDate, setBirthDate] = useState(""); // string으로 초기화
-  const [gender, setGender] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [gender, setGender] = useState(""); // 성별 상태 추가
   const [address, setAddress] = useState("");
 
+  // ✅ 약관 동의 확인
   useEffect(() => {
     const isAgreed = localStorage.getItem("isAgreed");
     if (isAgreed === "true") {
@@ -42,6 +48,7 @@ const Step2 = () => {
     setLoading(false);
   }, [router]);
 
+  // ✅ 비밀번호 일치 확인
   useEffect(() => {
     if (confirmPassword && password !== confirmPassword) {
       setPasswordError("비밀번호가 일치하지 않습니다.");
@@ -50,24 +57,28 @@ const Step2 = () => {
     }
   }, [password, confirmPassword]);
 
+  // ✅ 이메일 상태 조합
+  useEffect(() => {
+    const domain = emailDomain === "custom" ? customEmailDomain : emailDomain;
+    const fullEmail = `${emailUsername}@${domain}`;
+
+    setEmail(fullEmail); // 최종 이메일 상태 저장
+  }, [emailUsername, emailDomain, customEmailDomain]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const trimmedEmail = email.trim();
-    const isCustom = emailDomain === "custom";
-    const finalDomain = isCustom ? customEmailDomain.trim() : emailDomain;
-
 
     if (
       !username ||
       !trimmedEmail ||
-      !finalDomain ||
       !password ||
       !confirmPassword ||
       !name.trim() ||
       !phone.trim() ||
       !birthDate.trim() ||
-      !gender.trim() ||
+      !gender.trim() ||  // 성별도 확인
       !address.trim()
     ) {
       alert("모든 필드를 작성해주세요.");
@@ -88,13 +99,13 @@ const Step2 = () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username: username,
+        username,
         name,
-        email: `${trimmedEmail}@${finalDomain}`,
+        email: trimmedEmail, // ✅ 이미 조합된 email 값
         password,
         phone,
         birthDate,
-        gender,
+        gender, // 성별 포함
         address,
       }),
     });
@@ -133,6 +144,8 @@ const Step2 = () => {
           <EmailInput
             email={email}
             setEmail={setEmail}
+            emailUsername={emailUsername}
+            setEmailUsername={setEmailUsername}
             emailDomain={emailDomain}
             setEmailDomain={setEmailDomain}
             customEmailDomain={customEmailDomain}
@@ -141,7 +154,7 @@ const Step2 = () => {
 
           <NameInput name={name} setName={setName} />
           <PhoneInput phone={phone} setPhone={setPhone} />
-          <GenderInput gender={gender} setGender={setGender} />
+          <GenderInput gender={gender} setGender={setGender} /> 
           <BirthDateInput birthDate={birthDate} setBirthDate={setBirthDate} />
           <AddressInput address={address} setAddress={setAddress} />
 
