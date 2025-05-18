@@ -42,7 +42,7 @@ const PhoneInput = ({ phone, setPhone }) => {
           value={firstPart}
           onChange={(e) => handleInputChange(e, "first")}
           maxLength={3}
-          className="w-1/7 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
+          className="w-1/4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
           placeholder="010"
         />
 
@@ -55,7 +55,7 @@ const PhoneInput = ({ phone, setPhone }) => {
           value={secondPart}
           onChange={(e) => handleInputChange(e, "second")}
           maxLength={4}
-          className="w-1/6 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
+          className="w-1/3 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
           placeholder="1234"
         />
 
@@ -68,7 +68,7 @@ const PhoneInput = ({ phone, setPhone }) => {
           value={thirdPart}
           onChange={(e) => handleInputChange(e, "third")}
           maxLength={4}
-          className="w-1/6 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
+          className="w-1/3 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
           placeholder="5678"
         />
       </div>

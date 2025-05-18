@@ -122,7 +122,7 @@ const Step2 = () => {
   if (loading || !isAllowed) return null;
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 px-4 py-16">
+    <div className="flex justify-center items-start sm:items-start min-h-screen bg-gray-100 px-4 py-8 sm:py-30">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-2xl">
         <h1 className="text-2xl font-semibold mb-6 text-center">회원가입</h1>
         <form onSubmit={handleSubmit} className="space-y-4">

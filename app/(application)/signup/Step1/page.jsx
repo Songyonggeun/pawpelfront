@@ -45,7 +45,7 @@ const Step1 = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex flex-col justify-start items-center min-h-screen bg-gray-100 py-30">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
         <h1 className="text-2xl font-semibold mb-6 text-center">약관 동의</h1>
 

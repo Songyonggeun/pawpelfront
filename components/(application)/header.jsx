@@ -1,18 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation'; // useRouter 추가
 import CommunityMenu from '@/components/(application)/communityMenu';
 import HealthCareMenu from '@/components/(application)/healthCare';
+import Link from 'next/link'; // Link 추가
 
 export default function Header() {
   const [showCommunityMenu, setShowCommunityMenu] = useState(false);
   const [showHealthCareMenu, setShowHealthCareMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter(); // useRouter 훅 사용
 
   // 사용자 데이터 시뮬레이션 (실제 인증 로직으로 대체 필요)
   const user = {
-    isLoggedIn: false, // 로그인 여부 (false로 변경하면 로그인 안 됨)
-        // 역할 (예: 'admin', 'user', 'guest')
+    isLoggedIn: true, // 로그인 여부 (false로 변경하면 로그인 안 됨)
+    role: 'admin' // 역할 (예: 'admin', 'user', 'guest')
   };
 
   const toggleCommunityMenu = () => {
@@ -35,7 +38,7 @@ export default function Header() {
 
   return (
     <header className="w-full border-b bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between ">
+      <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between">
         {/* 로고 */}
         <div className="flex items-center space-x-2">
           <span className="text-blue-500 text-2xl font-bold">✓</span>
@@ -77,12 +80,12 @@ export default function Header() {
           {/* 로그인 상태에 따른 버튼 표시 */}
           {!user.isLoggedIn ? (
             <div className="p-1 rounded hover:bg-gray-100 text-sm">
-              <a href="/login" className="text-gray-600">로그인</a>
+              <Link href="/login" className="text-gray-600">로그인</Link>
             </div>
           ) : user.role === 'admin' ? (
             <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="관리자">관리자</button>
           ) : (
-            <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="마이페이지">마이페이지</button>
+            <Link href="/myPage" className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="마이페이지">마이페이지</Link>
           )}
         </div>
 
@@ -151,11 +154,11 @@ export default function Header() {
 
             {/* 모바일 상태에 따른 버튼 표시 */}
             {!user.isLoggedIn ? (
-              <a href="/login" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그인</a>
+              <Link href="/login" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그인</Link>
             ) : user.role === 'admin' ? (
               <button className="text-left p-1 rounded hover:bg-gray-100">관리자</button>
             ) : (
-              <button className="text-left p-1 rounded hover:bg-gray-100">마이페이지</button>
+              <Link href="/myPage" className="text-left p-1 rounded hover:bg-gray-100">마이페이지</Link>
             )}
           </div>
         </div>
