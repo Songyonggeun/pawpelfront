@@ -1,13 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation'; // useRouter 추가
 import CommunityMenu from '@/components/(application)/communityMenu';
 import HealthCareMenu from '@/components/(application)/healthCare';
+import Link from 'next/link'; // Link 추가
 
 export default function Header() {
   const [showCommunityMenu, setShowCommunityMenu] = useState(false);
   const [showHealthCareMenu, setShowHealthCareMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter(); // useRouter 훅 사용
+
+  // 사용자 데이터 시뮬레이션 (실제 인증 로직으로 대체 필요)
+  const user = {
+    isLoggedIn: true, // 로그인 여부 (false로 변경하면 로그인 안 됨)
+    role: 'user' // 역할 (예: 'admin', 'user', 'guest')
+  };
 
   const toggleCommunityMenu = () => {
     setShowCommunityMenu(prev => !prev);
@@ -29,7 +38,7 @@ export default function Header() {
 
   return (
     <header className="w-full border-b bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between ">
+      <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between">
         {/* 로고 */}
         <div className="flex items-center space-x-2">
           {/* <span><img src="/Pawple_로고_font_Baloo2-_배경x.svg" alt="Pawple 로고" className="w-40 h-auto" /></span> */}
@@ -68,11 +77,17 @@ export default function Header() {
           </div>
 
           <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="알림">알림</button>
-          <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="마이페이지">마이페이지</button>
 
-          <div className="p-1 rounded hover:bg-gray-100 text-sm">
-            <a href="/login" className="text-gray-600">로그인</a>
-          </div>
+          {/* 로그인 상태에 따른 버튼 표시 */}
+          {!user.isLoggedIn ? (
+            <div className="p-1 rounded hover:bg-gray-100 text-sm">
+              <Link href="/login" className="text-gray-600">로그인</Link>
+            </div>
+          ) : user.role === 'admin' ? (
+            <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="관리자">관리자</button>
+          ) : (
+            <Link href="/myPage" className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="마이페이지">마이페이지</Link>
+          )}
         </div>
 
         {/* 모바일 햄버거 메뉴 버튼 */}
@@ -134,11 +149,18 @@ export default function Header() {
 
           <a href="#" className="block text-gray-700 hover:text-blue-500">펫보험</a>
 
-          {/* 아이콘 버튼 모바일 - 세로 정렬 */}
+          {/* 모바일 아이콘 버튼 세로 정렬 */}
           <div className="flex flex-col space-y-2 text-sm">
             <button className="text-left p-1 rounded hover:bg-gray-100" aria-label="알림">알림</button>
-            <button className="text-left p-1 rounded hover:bg-gray-100" aria-label="마이페이지">마이페이지</button>
-            <a href="/login" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그인</a>
+
+            {/* 모바일 상태에 따른 버튼 표시 */}
+            {!user.isLoggedIn ? (
+              <Link href="/login" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그인</Link>
+            ) : user.role === 'admin' ? (
+              <button className="text-left p-1 rounded hover:bg-gray-100">관리자</button>
+            ) : (
+              <Link href="/myPage" className="text-left p-1 rounded hover:bg-gray-100">마이페이지</Link>
+            )}
           </div>
         </div>
       )}
