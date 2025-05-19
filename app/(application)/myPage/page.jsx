@@ -19,27 +19,14 @@ const MyPage = () => {
 
   return (
     <div className="flex max-w-7xl mx-auto py-10 px-6 gap-10">
-      {/* Sidebar 메뉴 */}
-      <aside className="w-60">
-        <div className="mb-6">
-          <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-2" />
-          <div className="text-center font-semibold">{userInfo.username}</div>
-        </div>
-        <nav>
-          <ul className="space-y-3">
-            {menuItems.map((item, idx) => (
-              <li key={idx}>
-                <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition">
-                  {item.title}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
-
       {/* Main Content */}
       <main className="flex-1">
+        {/* 프로필 카드 */}
+        <div className="w-full flex flex-col items-center mb-6">
+          <div className="w-20 h-20 bg-gray-200 rounded-full mb-2" />
+          <div className="text-center font-semibold">{userInfo.username}</div>
+        </div>
+
         {/* 요약 카드 */}
         <div className="bg-gray-100 p-6 rounded-xl grid grid-cols-2 text-center gap-4 shadow-sm mb-10">
           <div>
@@ -76,6 +63,21 @@ const MyPage = () => {
           </div>
         </section>
       </main>
+
+      {/* Sidebar 메뉴 */}
+      <aside className="w-60 flex flex-col">
+        <nav>
+          <ul className="space-y-3">
+            {menuItems.map((item, idx) => (
+              <li key={idx}>
+                <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition">
+                  {item.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
     </div>
   );
 };
