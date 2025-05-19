@@ -8,115 +8,115 @@ export default function PostPage() {
   const [editTitle, setEditTitle] = useState(""); // 수정 중인 제목 입력값
 
   // 페이지 로드 시 게시물 목록 불러오기
-  useEffect(() => {
+useEffect(() => {
     fetch("http://localhost:3000/api/posts")
-      .then((res) => res.json())
-      .then((data) => setPosts(data));
-  }, []);
+    .then((res) => res.json())
+    .then((data) => setPosts(data));
+}, []);
 
   // 게시물 삭제 요청
-  const handleDelete = (id) => {
+const handleDelete = (id) => {
     fetch(`http://localhost:3000/api/posts/${id}`, {
-      method: "DELETE",
+    method: "DELETE",
     }).then(() => {
       setPosts((prev) => prev.filter((post) => post.id !== id)); // 목록에서 제거
     });
-  };
+};
 
   // 수정 시작
-  const startEdit = (post) => {
+const startEdit = (post) => {
     setEditingPostId(post.id);
     setEditTitle(post.title);
-  };
+};
 
   // 수정 취소
-  const cancelEdit = () => {
+const cancelEdit = () => {
     setEditingPostId(null);
     setEditTitle("");
-  };
+};
 
   // 제목 수정 저장
-  const handleUpdate = () => {
+const handleUpdate = () => {
     if (editingPostId === null) return;
 
     fetch(`http://localhost:3000/api/posts/${editingPostId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: editTitle }),
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: editTitle }),
     })
-      .then((res) => res.json())
-      .then((updatedPost) => {
+    .then((res) => res.json())
+    .then((updatedPost) => {
         setPosts((prev) =>
-          prev.map((post) => (post.id === editingPostId ? updatedPost : post))
+        prev.map((post) => (post.id === editingPostId ? updatedPost : post))
         );
         cancelEdit(); // 수정 종료
-      });
-  };
+    });
+};
 
   // 공지로 이동 요청
-  const moveToNotice = (id) => {
+const moveToNotice = (id) => {
     fetch(`http://localhost:3000/api/posts/${id}/move`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category: "공지사항" }),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ category: "공지사항" }),
     }).then(() => {
-      alert("공지사항으로 이동했습니다.");
+    alert("공지사항으로 이동했습니다.");
     });
-  };
+};
 
-  return (
+return (
     <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">게시글 관리</h1>
+    <h1 className="text-2xl font-bold mb-4">게시글 관리</h1>
 
-      <ul className="space-y-2">
+    <ul className="space-y-2">
         {posts.map((post) => (
-          <li
+        <li
             key={post.id}
             className="flex justify-between items-center bg-gray-100 p-2 rounded"
-          >
+        >
             {editingPostId === post.id ? (
-              <div className="flex gap-2 w-full">
+            <div className="flex gap-2 w-full">
                 <input
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="border p-1 rounded flex-1"
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="border p-1 rounded flex-1"
                 />
                 <button onClick={handleUpdate} className="text-green-600">
-                  저장
+                저장
                 </button>
                 <button onClick={cancelEdit} className="text-gray-600">
-                  취소
+                취소
                 </button>
-              </div>
+            </div>
             ) : (
-              <>
+            <>
                 <span>{post.title}</span>
                 <div className="flex gap-2">
-                  <button
+                <button
                     onClick={() => startEdit(post)}
                     className="text-blue-600"
-                  >
+                >
                     수정
-                  </button>
-                  <button
+                </button>
+                <button
                     onClick={() => moveToNotice(post.id)}
                     className="text-yellow-600"
-                  >
+                >
                     공지로 이동
-                  </button>
-                  <button
+                </button>
+                <button
                     onClick={() => handleDelete(post.id)}
                     className="text-red-600"
-                  >
+                >
                     삭제
-                  </button>
+                </button>
                 </div>
-              </>
+            </>
             )}
-          </li>
+        </li>
         ))}
-      </ul>
+    </ul>
     </div>
-  );
+);
 }
