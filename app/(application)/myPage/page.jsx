@@ -41,14 +41,14 @@ const MyPage = () => {
       {/* Main Content */}
       <main className="flex-1">
         {/* 요약 카드 */}
-        <div className="bg-gray-100 p-6 rounded-xl grid grid-cols-4 text-center gap-4 shadow-sm mb-10">
+        <div className="bg-gray-100 p-6 rounded-xl grid grid-cols-2 text-center gap-4 shadow-sm mb-10">
           <div>
             <div className="text-sm text-gray-500">건강체크</div>
             <div className="text-lg font-bold">{userInfo.healthCheckCount}회</div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">상담 횟수</div>
-            <div className="text-lg font-bold">{userInfo.consultTickets}번</div>
+            <div className="text-sm text-gray-500">다음 예방접종까지 남은 날짜</div>
+            <div className="text-lg font-bold">D-{userInfo.consultTickets}</div>
           </div>
         </div>
 

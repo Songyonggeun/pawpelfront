@@ -2,8 +2,7 @@ import { useState } from "react";
 
 const GenderInput = ({ gender, setGender }) => {
   const handleSpanClick = (value) => {
-    // 선택된 값이 현재 값과 같으면 선택 해제, 아니면 새로운 값으로 설정
-    setGender(gender === value ? "" : value);
+    setGender(gender === value ? "" : value); // toggle 방식
   };
 
   return (
@@ -17,7 +16,7 @@ const GenderInput = ({ gender, setGender }) => {
             className={`w-6 h-6 rounded-full border-2 cursor-pointer flex items-center justify-center transition-all 
               ${gender === "male" ? "bg-blue-500" : "bg-white"} 
               ${gender === "male" ? "border-blue-500" : "border-gray-300"}`}
-            style={{ outline: "none" }} // 포커스 스타일 제거
+            style={{ outline: "none" }}
           >
             {gender === "male" && (
               <span className="w-3 h-3 rounded-full bg-white"></span>
@@ -27,7 +26,7 @@ const GenderInput = ({ gender, setGender }) => {
         </div>
 
         {/* 여성 선택 */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <span
             onClick={() => handleSpanClick("female")}
             className={`w-6 h-6 rounded-full border-2 cursor-pointer flex items-center justify-center transition-all 
@@ -42,6 +41,9 @@ const GenderInput = ({ gender, setGender }) => {
           <label className="cursor-pointer">여성</label>
         </div>
       </div>
+
+      {/* ✅ 실제 form 제출용 hidden input */}
+      <input type="hidden" name="gender" value={gender} />
     </div>
   );
 };

@@ -5,6 +5,7 @@ const PasswordInput = ({ password, setPassword, confirmPassword, setConfirmPassw
       <label className="block mb-1 text-gray-700 font-medium">비밀번호</label>
       <input
         type="password"
+        name="password1"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -16,6 +17,7 @@ const PasswordInput = ({ password, setPassword, confirmPassword, setConfirmPassw
       <label className="block mt-4 mb-1 text-gray-700 font-medium">비밀번호 확인</label>
       <input
         type="password"
+        name = "password2"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required

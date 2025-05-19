@@ -17,6 +17,7 @@ const UsernameInput = ({ username, setUsername, isChecked, setIsChecked }) => {
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
         <input
           type="text"
+          name = "id"
           value={username}
           onChange={(e) => {
             setUsername(e.target.value);

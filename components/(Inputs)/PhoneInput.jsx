@@ -2,26 +2,23 @@ import { useState, useEffect } from "react";
 
 const PhoneInput = ({ phone, setPhone }) => {
   // 전화번호를 3개의 부분으로 나누어 상태로 관리
-  const [firstPart, setFirstPart] = useState("");
-  const [secondPart, setSecondPart] = useState("");
-  const [thirdPart, setThirdPart] = useState("");
+  const [secondPart, setSecondPart] = useState("");  // 두 번째 부분
+  const [thirdPart, setThirdPart] = useState("");   // 세 번째 부분
 
   // 전화번호의 각 부분을 합쳐서 하나의 값으로 만들기
   useEffect(() => {
     // 세 부분을 합쳐서 전체 전화번호를 만들고, 상태에 저장
-    if (firstPart && secondPart && thirdPart) {
-      setPhone(`${firstPart}-${secondPart}-${thirdPart}`);
+    if (secondPart && thirdPart) {
+      setPhone(`010-${secondPart}-${thirdPart}`);  // 첫 번째 부분은 고정된 010
     }
-  }, [firstPart, secondPart, thirdPart, setPhone]);
+  }, [secondPart, thirdPart, setPhone]);
 
   const handleInputChange = (e, part) => {
     const value = e.target.value;
 
     // 숫자만 입력받도록 제한
     if (/^\d*$/.test(value)) {
-      if (part === "first") {
-        setFirstPart(value);
-      } else if (part === "second") {
+      if (part === "second") {
         setSecondPart(value);
       } else if (part === "third") {
         setThirdPart(value);
@@ -35,15 +32,13 @@ const PhoneInput = ({ phone, setPhone }) => {
   return (
     <div>
       <label className="block mb-1 text-gray-700 font-medium">전화번호</label>
-      <div className="flex gap-4"> {/* gap-2에서 gap-1로 수정하여 간격을 줄임 */}
-        {/* 첫 번째 입력 필드 */}
+      <div className="flex gap-4"> 
+        {/* 첫 번째 입력 필드는 고정된 값 010 */}
         <input
           type="text"
-          value={firstPart}
-          onChange={(e) => handleInputChange(e, "first")}
-          maxLength={3}
+          value="010"
           className="w-1/4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
-          placeholder="010"
+          disabled
         />
 
         {/* 하이픈 자동 추가 */}
@@ -53,6 +48,7 @@ const PhoneInput = ({ phone, setPhone }) => {
         <input
           type="text"
           value={secondPart}
+          name="phoneNumber2"
           onChange={(e) => handleInputChange(e, "second")}
           maxLength={4}
           className="w-1/3 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
@@ -65,6 +61,7 @@ const PhoneInput = ({ phone, setPhone }) => {
         {/* 세 번째 입력 필드 */}
         <input
           type="text"
+          name="phoneNumber3"
           value={thirdPart}
           onChange={(e) => handleInputChange(e, "third")}
           maxLength={4}

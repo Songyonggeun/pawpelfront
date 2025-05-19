@@ -1,6 +1,6 @@
+import { useEffect } from "react";
+
 const EmailInput = ({
-  email,
-  setEmail,
   emailUsername,
   setEmailUsername,
   emailDomain,
@@ -8,42 +8,29 @@ const EmailInput = ({
   customEmailDomain,
   setCustomEmailDomain,
 }) => {
-  // 이메일 전체 주소 갱신 함수
-  const updateEmail = (username, domain) => {
-    if (username && domain) {
-      setEmail(`${username}@${domain}`);
-    } else {
-      setEmail("");
-    }
-  };
+  // 초기 로드시 naver.com 고정 설정
+  useEffect(() => {
+    setEmailDomain("naver.com");
+    setCustomEmailDomain("naver.com");
+  }, [setEmailDomain, setCustomEmailDomain]);
 
   // 사용자 아이디 입력 처리
   const handleUsernameChange = (e) => {
     const newUsername = e.target.value;
     setEmailUsername(newUsername);
-
-    const domain = emailDomain === "custom" ? customEmailDomain : emailDomain;
-    updateEmail(newUsername, domain);
   };
 
-  // 도메인 선택 처리
+  // 도메인 선택 처리 → 입력창에도 반영
   const handleEmailDomainChange = (e) => {
-    const newDomain = e.target.value;
-    setEmailDomain(newDomain);
-
-    if (newDomain !== "custom") {
-      setCustomEmailDomain(""); // 커스텀 초기화
-      updateEmail(emailUsername, newDomain);
-    } else {
-      updateEmail(emailUsername, customEmailDomain);
-    }
+    const selectedDomain = e.target.value;
+    setEmailDomain(selectedDomain);
+    setCustomEmailDomain(selectedDomain); // 입력 필드에 반영
   };
 
-  // 커스텀 도메인 입력 처리
+  // 도메인 입력 필드 직접 수정 시
   const handleCustomDomainChange = (e) => {
-    const newCustomDomain = e.target.value;
-    setCustomEmailDomain(newCustomDomain);
-    updateEmail(emailUsername, newCustomDomain);
+    const newDomain = e.target.value;
+    setCustomEmailDomain(newDomain);
   };
 
   return (
@@ -52,6 +39,7 @@ const EmailInput = ({
       <div className="flex items-center gap-1">
         {/* 사용자 아이디 입력 필드 */}
         <input
+          name="email1" // 사용자 아이디 부분
           type="text"
           value={emailUsername}
           onChange={handleUsernameChange}
@@ -61,16 +49,15 @@ const EmailInput = ({
         />
         <span>@</span>
 
-        {/* 커스텀 도메인 입력 필드 (선택 시에만 표시) */}
-        {emailDomain === "custom" && (
-          <input
-            type="text"
-            value={customEmailDomain}
-            onChange={handleCustomDomainChange}
-            className="w-1/3 px-2 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholder="도메인 입력"
-          />
-        )}
+        {/* 도메인 입력 필드 */}
+        <input
+          name="email2" // ✅ 도메인 부분 name 설정
+          type="text"
+          value={customEmailDomain}
+          onChange={handleCustomDomainChange}
+          className="w-1/3 px-2 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="도메인 입력"
+        />
 
         {/* 도메인 선택 드롭다운 */}
         <select
@@ -81,7 +68,7 @@ const EmailInput = ({
           <option value="naver.com">naver.com</option>
           <option value="daum.com">daum.com</option>
           <option value="google.com">google.com</option>
-          <option value="custom">직접 입력</option>
+          <option value="">직접 입력</option>
         </select>
       </div>
     </div>
