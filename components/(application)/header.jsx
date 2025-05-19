@@ -32,7 +32,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between ">
         {/* 로고 */}
         <div className="flex items-center space-x-2">
-          {/* <span><img src="/Pawplelogo.png" alt="Pawple 로고" className="w-20 h-auto" /></span> */}
+          {/* <span><img src="/Pawple_로고_font_Baloo2-_배경x.svg" alt="Pawple 로고" className="w-40 h-auto" /></span> */}
           <span className="text-blue-500 text-2xl font-bold">✓</span>
           <span className="text-2xl font-bold text-blue-500">pawple</span>
         </div>  
