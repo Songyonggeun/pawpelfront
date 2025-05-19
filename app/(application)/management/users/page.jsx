@@ -8,7 +8,7 @@ export default function UserPage() {
     const [editName, setEditName] = useState('');
 
     useEffect(() => {
-    fetch('http://192.168.3.118:9999/api/users')
+    fetch('http://192.168.3.118:localhost:9999/api/users')
     .then(res => res.json())
     .then(data => setUsers(data));
 }, []);
