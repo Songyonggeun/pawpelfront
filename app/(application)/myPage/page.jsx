@@ -1,13 +1,15 @@
 import React from 'react';
 
+import MenuComponents from '@/components/(application)/menu';
+import PetInputButton from '@/components/(petInputs)/petInput';
+
 const MyPage = () => {
   const userInfo = {
     username: '귀여운홍삼12',
     healthCheckCount: 1,
     insurance: false,
-    pets: [
-      { id: 111, name: '고양이' }
-    ]
+    consultTickets: 5, // 예시
+    pets: [{ id: 111, name: '고양이' }],
   };
 
   const menuItems = [
@@ -18,9 +20,18 @@ const MyPage = () => {
   ];
 
   return (
-    <div className="flex max-w-7xl mx-auto py-10 px-6 gap-10">
-      {/* Main Content */}
-      <main className="flex-1">
+    <div className="flex flex-col md:flex-row max-w-7xl mx-auto py-10 px-6 gap-10">
+      {/* Sidebar 메뉴 (먼저 렌더링) */}
+      <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0">
+        <nav>
+          <ul className="space-y-3">
+            <MenuComponents data={menuItems}/>
+          </ul>
+        </nav>
+      </aside>
+
+      {/* Main Content (두 번째 렌더링) */}
+      <main className="flex-1 order-1 md:order-2">
         {/* 프로필 카드 */}
         <div className="w-full flex flex-col items-center mb-6">
           <div className="w-20 h-20 bg-gray-200 rounded-full mb-2" />
@@ -38,14 +49,13 @@ const MyPage = () => {
             <div className="text-lg font-bold">D-{userInfo.consultTickets}</div>
           </div>
         </div>
-
         {/* 반려동물 카드 */}
         <section>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">나의 반려동물</h2>
-            <button className="text-blue-500 text-sm hover:underline">+ 반려동물 등록</button>
+            <PetInputButton/>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             {userInfo.pets.map((pet) => (
               <div
                 key={pet.id}
@@ -56,28 +66,9 @@ const MyPage = () => {
                 <div className="text-xs text-gray-500 mt-1">ID: {pet.id}</div>
               </div>
             ))}
-            {/* 프로필 추가 */}
-            <div className="w-32 h-40 border border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
-              <span className="text-2xl text-gray-400">+</span>
-            </div>
           </div>
         </section>
       </main>
-
-      {/* Sidebar 메뉴 */}
-      <aside className="w-60 flex flex-col">
-        <nav>
-          <ul className="space-y-3">
-            {menuItems.map((item, idx) => (
-              <li key={idx}>
-                <button className="w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition">
-                  {item.title}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
     </div>
   );
 };

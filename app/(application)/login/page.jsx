@@ -1,26 +1,26 @@
 'use client';
 
 import { useState } from "react";
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    console.log("로그인 시도:", userId, password);
-  };
+  const [errorMessage, setErrorMessage] = useState(""); // 에러 메시지 상태 추가
+  const router = useRouter(); // 로그인 후 리다이렉션을 위한 useRouter
 
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-100 pt-10 sm:pt-20">
       <form
-        onSubmit={handleLogin}
+        action={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/permit/auth/signin`}
         className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm"
       >
         <h2 className="text-2xl font-semibold mb-6 text-center">로그인</h2>
 
+        {/* 아이디 입력 */}
         <input
+          name="userId"
           type="text"
           placeholder="아이디"
           value={userId}
@@ -29,7 +29,9 @@ export default function LoginPage() {
           className="w-full px-2 py-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 
+        {/* 비밀번호 입력 */}
         <input
+          name="password"
           type="password"
           placeholder="비밀번호"
           value={password}
@@ -38,12 +40,19 @@ export default function LoginPage() {
           className="w-full px-4 py-2 mb-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 
+        {/* 에러 메시지 출력 */}
+        {errorMessage && (
+          <div className="text-red-500 text-sm mb-4">{errorMessage}</div>
+        )}
+
+        {/* 추가 링크 */}
         <div className="flex justify-center gap-x-5 text-sm text-blue-600 mb-6">
           <Link href="/signup/Step1" className="hover:underline">회원가입</Link>
           <Link href="/find-id" className="hover:underline">아이디 찾기</Link>
           <Link href="/find-password" className="hover:underline">비밀번호 찾기</Link>
         </div>
 
+        {/* 로그인 버튼 */}
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"

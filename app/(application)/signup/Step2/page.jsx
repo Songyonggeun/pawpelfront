@@ -7,7 +7,6 @@ import UsernameInput from "@/components/(Inputs)/UserNameInput";
 import EmailInput from "@/components/(Inputs)/EmailInput";
 import NameInput from "@/components/(Inputs)/NameInput";
 import PhoneInput from "@/components/(Inputs)/PhoneInput";
-import GenderInput from "@/components/(Inputs)/GenderInput";
 import BirthDateInput from "@/components/(Inputs)/BirthdateInput";
 import PasswordInput from "@/components/(Inputs)/PasswordInput";
 
@@ -32,7 +31,6 @@ const Step2 = () => {
   const [name, setName] = useState("");  // 이름
   const [phone, setPhone] = useState("");  // 전화번호
   const [birthDate, setBirthDate] = useState("");  // 생년월일
-  const [gender, setGender] = useState("");  // 성별
 
   useEffect(() => {
     const isAgreed = localStorage.getItem("isAgreed");
@@ -79,9 +77,6 @@ const Step2 = () => {
     console.log("Birth Date changed:", birthDate);
   }, [birthDate]);
 
-  useEffect(() => {
-    console.log("Gender changed:", gender);
-  }, [gender]);
 
   useEffect(() => {
     console.log("Password changed:", password);
@@ -93,7 +88,7 @@ const Step2 = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(username, emailUsername, customEmailDomain, password, confirmPassword, name, phone, birthDate, gender)
+    console.log(username, emailUsername, customEmailDomain, password, confirmPassword, name, phone, birthDate)
     // 유효성 검사
     if (
       !username ||
@@ -103,8 +98,7 @@ const Step2 = () => {
       !confirmPassword ||
       !name.trim() ||
       !phone.trim() ||
-      !birthDate.trim() ||
-      !gender.trim()
+      !birthDate.trim() 
     ) {
       alert("모든 필드를 작성해주세요.");
       return;
@@ -127,7 +121,6 @@ const Step2 = () => {
     console.log("Name:", name);
     console.log("Phone:", phone);
     console.log("Birth Date:", birthDate);
-    console.log("Gender:", gender);
 
     try {
       const response = await fetch(
@@ -145,7 +138,6 @@ const Step2 = () => {
             phoneNumber2: phone.split("-")[1],  // phoneNumber2
             phoneNumber3: phone.split("-")[2],  // phoneNumber3
             birthDate,
-            gender
           }),
         }
       );
@@ -199,7 +191,6 @@ const Step2 = () => {
 
           <NameInput name={name} setName={setName} />
           <PhoneInput phone={phone} setPhone={setPhone} />
-          <GenderInput gender={gender} setGender={setGender} />
           <BirthDateInput birthDate={birthDate} setBirthDate={setBirthDate} />
 
           <button
