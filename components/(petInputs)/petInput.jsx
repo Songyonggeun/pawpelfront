@@ -54,7 +54,7 @@ const PetInputButton = () => {
                                             onChange={e=>setIsMale(false)}
                                         />
                                         <label htmlFor="female">
-                                            <FemaleIcon  color={isMale ? '#000' : 'pink'}/>
+                                            <FemaleIcon  color={isMale ? '#000' : '#FF1493'}/>
                                         </label>
                                     </div>
                                 </div>

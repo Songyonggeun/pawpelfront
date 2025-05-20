@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-const FemaleIcon = ({ size = 24, color = 'pink' }) => {
+const FemaleIcon = ({ size = 24, color = '#8B0000' }) => {
   return (
     <svg
       xmlns="https://www.svgrepo.com/show/103896/gender.svg"
