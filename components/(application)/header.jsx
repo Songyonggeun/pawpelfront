@@ -14,7 +14,7 @@ export default function Header() {
 
   // 사용자 데이터 시뮬레이션 (실제 인증 로직으로 대체 필요)
   const user = {
-    isLoggedIn: true, // 로그인 여부 (false로 변경하면 로그인 안 됨)
+    isLoggedIn: false, // 로그인 여부 (false로 변경하면 로그인 안 됨)
     role: 'user' // 역할 (예: 'admin', 'user', 'guest')
   };
 

@@ -129,15 +129,12 @@ const Step2 = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            username,
-            name,
-            email1: emailUsername,          // email1
-            email2: customEmailDomain,      // email2
-            password1: password,            // password1
-            password2: confirmPassword,     // password2
-            phoneNumber2: phone.split("-")[1],  // phoneNumber2
-            phoneNumber3: phone.split("-")[2],  // phoneNumber3
-            birthDate,
+            name: name,                         // ✅ 사용자 ID
+            pass: password,                   // ✅ 비밀번호
+            socialName: name,                 // 선택사항
+            email: email,                     // ✅ 완성된 전체 이메일
+            phoneNumber: phone.replace(/-/g, ""), // ✅ 01012345678 형식
+            birthDate: birthDate              // ✅ "yyyy-MM-dd" 형식
           }),
         }
       );
