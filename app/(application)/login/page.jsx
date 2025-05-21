@@ -14,6 +14,7 @@ export default function LoginPage() {
     <div className="flex justify-center items-start min-h-screen bg-gray-100 pt-10 sm:pt-20">
       <form
         action={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/permit/auth/signin`}
+        method="POST"
         className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm"
       >
         <h2 className="text-2xl font-semibold mb-6 text-center">로그인</h2>
