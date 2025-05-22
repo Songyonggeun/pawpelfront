@@ -1,26 +1,43 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // useRouter 추가
+import { useRouter } from 'next/navigation';
 import CommunityMenu from '@/components/(application)/communityMenu';
 import HealthCareMenu from '@/components/(application)/healthCare';
-import Link from 'next/link'; // Link 추가
+import Link from 'next/link';
 
 export default function Header() {
   const [showCommunityMenu, setShowCommunityMenu] = useState(false);
   const [showHealthCareMenu, setShowHealthCareMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태를 추적
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRoles, setUserRoles] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
-    const checkLoginStatus = async () => {
+    const fetchUserInfo = async () => {
       const cookies = document.cookie.split(';');
       const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_='));
-      setIsLoggedIn(!!jwtCookie);
+      const isLogged = !!jwtCookie;
+      setIsLoggedIn(isLogged);
+
+      if (isLogged) {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+            credentials: 'include',
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            setUserRoles(data.roles || []);
+          }
+        } catch (err) {
+          console.error('유저 정보 조회 실패:', err);
+        }
+      }
     };
 
-    checkLoginStatus();
+    fetchUserInfo();
   }, []);
 
   const toggleCommunityMenu = () => {
@@ -41,25 +58,19 @@ export default function Header() {
     }
   };
 
-  // const handleLogout = () => {
-  //   // 쿠키에서 JWT 토큰 삭제
-  //   document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-  //   setIsLoggedIn(false);
-  //   router.push("/login"); // 로그인 페이지로 리디렉션
-  // };
-
   const handleLogout = async () => {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/logout`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
       });
 
-      setIsLoggedIn(false); // 로컬 상태 초기화
-      window.location.href = "/home"; // ✅ 홈으로 이동 (리디렉션)
+      setIsLoggedIn(false);
+      setUserRoles([]);
+      window.location.href = '/home';
     } catch (err) {
-      console.error("로그아웃 실패:", err);
-      alert("로그아웃 중 오류가 발생했습니다.");
+      console.error('로그아웃 실패:', err);
+      alert('로그아웃 중 오류가 발생했습니다.');
     }
   };
 
@@ -69,9 +80,9 @@ export default function Header() {
         <div className="flex items-center space-x-2">
           <Link href="/home" className="flex items-center space-x-2 cursor-pointer">
             <span className="text-blue-500 text-2xl font-bold">✓</span>
-            <span className="text-2xl font-bold text-blue-500">pawple</span>
+            <span className="text-2xl font-bold text-blue-500">Pawple</span>
           </Link>
-        </div>  
+        </div>
 
         <nav className="hidden md:flex space-x-6 text-gray-700 text-sm items-start mr-auto ml-8">
           <button onClick={toggleCommunityMenu} className="relative hover:text-blue-500">
@@ -84,20 +95,30 @@ export default function Header() {
 
         <div className="hidden md:flex items-center space-x-6">
           <div className="relative">
-            <input type="text" placeholder="검색어를 입력해주세요." className="border border-gray-300 rounded-full px-4 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            <input
+              type="text"
+              placeholder="검색어를 입력해주세요."
+              className="border border-gray-300 rounded-full px-4 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
             <button className="absolute right-3 top-1.5 text-gray-500">🔍</button>
           </div>
 
           <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="알림">알림</button>
 
-          {!isLoggedIn ? (
+          {isLoggedIn ? (
+            userRoles.length === 0 ? ( null ) : (
+              <div className="flex items-center space-x-3">
+                {userRoles.includes('ADMIN') ? (
+                  <Link href="/management" className="text-gray-600">관리자페이지</Link>
+                ) : (
+                  <Link href="/myPage" className="text-gray-600">마이페이지</Link>
+                )}
+                <button onClick={handleLogout} className="text-gray-600">로그아웃</button>
+              </div>
+            )
+          ) : (
             <div className="p-1 rounded hover:bg-gray-100 text-sm">
               <Link href="/login" className="text-gray-600">로그인</Link>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-3">
-              <Link href="/myPage" className="text-gray-600">마이페이지</Link>
-              <button onClick={handleLogout} className="text-gray-600">로그아웃</button>
             </div>
           )}
         </div>
@@ -135,7 +156,16 @@ export default function Header() {
             {!isLoggedIn ? (
               <Link href="/login" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그인</Link>
             ) : (
-              <div className="text-left p-1 rounded hover:bg-gray-100">로그아웃</div>
+              userRoles.length === 0 ? ( null ) : (
+                <>
+                  {userRoles.includes('ADMIN') ? (
+                    <Link href="/management" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">관리자페이지</Link>
+                  ) : (
+                    <Link href="/myPage" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">마이페이지</Link>
+                  )}
+                  <button onClick={handleLogout} className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그아웃</button>
+                </>
+              )
             )}
           </div>
         </div>

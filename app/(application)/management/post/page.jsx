@@ -9,7 +9,9 @@ export default function PostPage() {
 
   // 페이지 로드 시 게시물 목록 불러오기
 useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/post`)
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/post`,{
+        credentials: 'include',
+    })
     .then((res) => res.json())
     .then((data) => setPosts(data));
 }, []);
@@ -18,6 +20,7 @@ useEffect(() => {
 const handleDelete = (id) => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/post/${id}`, {
     method: "DELETE",
+    credentials: 'include',
     }).then(() => {
       setPosts((prev) => prev.filter((post) => post.id !== id)); // 목록에서 제거
     });

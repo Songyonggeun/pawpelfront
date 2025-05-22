@@ -15,8 +15,8 @@ import PetInsuranceBanner from "@/components/(Inputs)/advertisement";
 
 const menuItems = [
     { label: "맞춤 체크", color: "#1e3a8a" },
+    { label: "검진 가이드", color: "#15803d" },
     { label: "수의사 상담", color: "#b91c1c" },
-    { label: "출석체크", color: "#15803d" },
 ];
 
 export default function LifetCommunityUI() {

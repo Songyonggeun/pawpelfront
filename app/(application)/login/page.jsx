@@ -24,6 +24,9 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("error") === "true") {
       alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
     }
   }, []);
   
