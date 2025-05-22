@@ -1,16 +1,29 @@
-import React from 'react';
+'use client';
 
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import MenuComponents from '@/components/(application)/menu';
 import PetInputButton from '@/components/(petInputs)/petInput';
 
-const MyPage = () => {
-  const userInfo = {
-    username: '귀여운홍삼12',
-    healthCheckCount: 1,
-    insurance: false,
-    consultTickets: 5, // 예시
-    pets: [{ id: 111, name: '고양이' }],
-  };
+export default function MyPage() {
+  const [userInfo, setUserInfo] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+      credentials: 'include' // 쿠키 포함 (Spring Security 세션 인증 또는 JWT 쿠키일 경우 필요)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Unauthorized');
+        return res.json();
+      })
+      .then(data => setUserInfo(data))
+      .catch(() => router.push('/login'));
+  }, []);
+
+  if (!userInfo) {
+    return <div className="text-center py-10">로딩 중...</div>;
+  }
 
   const menuItems = [
     { title: '회원 정보 수정' },
@@ -21,42 +34,41 @@ const MyPage = () => {
 
   return (
     <div className="flex flex-col md:flex-row max-w-7xl mx-auto py-10 px-6 gap-10">
-      {/* Sidebar 메뉴 (먼저 렌더링) */}
+      {/* Sidebar 메뉴 */}
       <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0">
         <nav>
           <ul className="space-y-3">
-            <MenuComponents data={menuItems}/>
+            <MenuComponents data={menuItems} />
           </ul>
         </nav>
       </aside>
 
-      {/* Main Content (두 번째 렌더링) */}
+      {/* Main Content */}
       <main className="flex-1 order-1 md:order-2">
-        {/* 프로필 카드 */}
         <div className="w-full flex flex-col items-center mb-6">
           <div className="w-20 h-20 bg-gray-200 rounded-full mb-2" />
-          <div className="text-center font-semibold">{userInfo.username}</div>
+          <div className="text-center font-semibold">{userInfo.socialName}</div>
         </div>
 
-        {/* 요약 카드 */}
         <div className="bg-gray-100 p-6 rounded-xl grid grid-cols-2 text-center gap-4 shadow-sm mb-10">
           <div>
-            <div className="text-sm text-gray-500">건강체크</div>
-            <div className="text-lg font-bold">{userInfo.healthCheckCount}회</div>
+            <div className="text-sm text-gray-500">이메일</div>
+            <div className="text-lg font-bold">{userInfo.email}</div>
           </div>
           <div>
-            <div className="text-sm text-gray-500">다음 예방접종까지 남은 날짜</div>
-            <div className="text-lg font-bold">D-{userInfo.consultTickets}</div>
+            <div className="text-sm text-gray-500">전화번호</div>
+            <div className="text-lg font-bold">{userInfo.phoneNumber}</div>
           </div>
         </div>
+
         {/* 반려동물 카드 */}
         <section>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">나의 반려동물</h2>
-            <PetInputButton/>
+            <PetInputButton />
           </div>
           <div className="flex gap-4 flex-wrap">
-            {userInfo.pets.map((pet) => (
+            {userInfo.pets?.map((pet) => (
               <div
                 key={pet.id}
                 className="w-32 h-40 border border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white shadow-sm"
@@ -71,6 +83,4 @@ const MyPage = () => {
       </main>
     </div>
   );
-};
-
-export default MyPage;
+}
