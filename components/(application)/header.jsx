@@ -13,7 +13,7 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태를 추적
   const router = useRouter();
 
-  useEffect(() => {
+  useEffect(async () => {
     // 페이지 로드 시 쿠키에서 로그인 상태 확인
     const cookies = document.cookie.split(';');
     const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_='));
@@ -65,7 +65,6 @@ export default function Header() {
           <button onClick={toggleHealthCareMenu} className="relative hover:text-blue-500">
             건강관리
           </button>
-          <a href="#" className="hover:text-blue-500">펫보험</a>
         </nav>
 
         <div className="hidden md:flex items-center space-x-6">

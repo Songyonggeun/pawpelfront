@@ -1,9 +1,11 @@
+import Link from 'next/link'; // Link 추가
+
 export default function CommunityMenu() {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between flex-wrap gap-4 text-sm text-gray-600 p-4 max-w-7xl mx-auto">
       <ul className="flex flex-col md:flex-row gap-4">
-        <li><a href="/community/home" className="hover:underline block">홈</a></li>
-        <li><a href="/community/all" className="hover:underline block">전체글</a></li>
+        <li><Link href="/community/home" className="hover:underline block">홈</Link></li>
+        <li><Link href="/community/total" className="hover:underline block">전체글</Link></li>
         <li><a href="/community/topic" className="hover:underline block">건강토픽</a></li>
         <li><a href="/community/best" className="hover:underline block">BEST</a></li>
         <li><a href="/community/qa" className="hover:underline block">질문과답</a></li>
