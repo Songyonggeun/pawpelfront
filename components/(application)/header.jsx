@@ -13,16 +13,14 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // 로그인 상태를 추적
   const router = useRouter();
 
-  useEffect(async () => {
-    // 페이지 로드 시 쿠키에서 로그인 상태 확인
-    const cookies = document.cookie.split(';');
-    const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_='));
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const cookies = document.cookie.split(';');
+      const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_='));
+      setIsLoggedIn(!!jwtCookie);
+    };
 
-    if (jwtCookie) {
-      setIsLoggedIn(true); // JWT 쿠키가 있으면 로그인 상태
-    } else {
-      setIsLoggedIn(false); // JWT 쿠키가 없으면 로그인되지 않은 상태
-    }
+    checkLoginStatus();
   }, []);
 
   const toggleCommunityMenu = () => {
@@ -54,11 +52,11 @@ export default function Header() {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/logout`, {
         method: "POST",
-        credentials: "include", // ✅ 쿠키를 서버에 전달
+        credentials: "include",
       });
 
       setIsLoggedIn(false); // 로컬 상태 초기화
-      window.location.href = "/login"; // 새로고침 포함한 리디렉션
+      window.location.href = "/home"; // ✅ 홈으로 이동 (리디렉션)
     } catch (err) {
       console.error("로그아웃 실패:", err);
       alert("로그아웃 중 오류가 발생했습니다.");

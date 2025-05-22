@@ -7,19 +7,30 @@ import PetInputButton from '@/components/(petInputs)/petInput';
 
 export default function MyPage() {
   const [userInfo, setUserInfo] = useState(null);
+  const [pets, setPets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
-      credentials: 'include' // 쿠키 포함 (Spring Security 세션 인증 또는 JWT 쿠키일 경우 필요)
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Unauthorized');
-        return res.json();
-      })
-      .then(data => setUserInfo(data))
-      .catch(() => router.push('/login'));
-  }, []);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('Unauthorized');
+      const data = await res.json();
+      setUserInfo(data);
+      setPets(data.pets || []);
+    } catch (err) {
+      router.replace('/login');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []
+  );
 
   if (!userInfo) {
     return <div className="text-center py-10">로딩 중...</div>;
@@ -68,14 +79,14 @@ export default function MyPage() {
             <PetInputButton />
           </div>
           <div className="flex gap-4 flex-wrap">
-            {userInfo.pets?.map((pet) => (
+            {pets.map((pet) => (
               <div
                 key={pet.id}
                 className="w-32 h-40 border border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white shadow-sm"
               >
                 <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
-                <div className="text-sm font-medium">{pet.name}</div>
-                <div className="text-xs text-gray-500 mt-1">ID: {pet.id}</div>
+                <div className="text-sm font-medium">{pet.petName}</div>
+                {/* <div className="text-xs text-gray-500 mt-1">ID: {pet.id}</div> */}
               </div>
             ))}
           </div>

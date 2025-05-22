@@ -13,14 +13,21 @@ export default function LoginPage() {
   // 로그인 상태 체크 (로그인된 경우 페이지 접근 차단)
   useEffect(() => {
     const cookies = document.cookie.split(';');
-    const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('jwt='));
+    const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_=')); // ✅ 사용 중인 쿠키 이름으로 수정
 
     if (jwtCookie) {
-      // 이미 로그인 상태라면, 메인 페이지로 리다이렉션
-      router.push('/'); // 이미 로그인된 사용자는 로그인 페이지에 접근할 필요 없으므로 메인 페이지로 리디렉션
+      router.push('/home'); // ✅ 로그인한 상태라면 home으로 이동
     }
   }, [router]);
 
+  // 로그인 실패 시 알림
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "true") {
+      alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+    }
+  }, []);
+  
   // const handleSubmit = async (e) => {
   //   e.preventDefault(); // 기본 form 제출을 막음
 
