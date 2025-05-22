@@ -67,8 +67,10 @@ export default function Header() {
     <header className="w-full border-b bg-white">
       <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <span className="text-blue-500 text-2xl font-bold">✓</span>
-          <span className="text-2xl font-bold text-blue-500">pawple</span>
+          <Link href="/home" className="flex items-center space-x-2 cursor-pointer">
+            <span className="text-blue-500 text-2xl font-bold">✓</span>
+            <span className="text-2xl font-bold text-blue-500">pawple</span>
+          </Link>
         </div>  
 
         <nav className="hidden md:flex space-x-6 text-gray-700 text-sm items-start mr-auto ml-8">
