@@ -129,7 +129,7 @@ const Step2 = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: name,                         // ✅ 사용자 ID
+            name: username,                         // ✅ 사용자 ID
             pass: password,                   // ✅ 비밀번호
             socialName: name,                 // 선택사항
             email: email,                     // ✅ 완성된 전체 이메일

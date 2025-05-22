@@ -10,37 +10,11 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState(""); // 에러 메시지 상태 추가
   const router = useRouter(); // 로그인 후 리다이렉션을 위한 useRouter
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // 폼의 기본 제출 동작을 방지
-
-    const loginData = { userId, password };
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/permit/auth/signin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginData),
-      });
-
-      if (response.ok) {
-        // 로그인 성공 시 대시보드 페이지로 리다이렉트
-        router.push("/dashboard");
-      } else {
-        const result = await response.json();
-        setErrorMessage(result.message || "로그인 실패. 다시 시도해 주세요.");
-      }
-    } catch (error) {
-      console.error("로그인 요청 중 오류 발생:", error);
-      setErrorMessage("서버와의 연결에 문제가 발생했습니다.");
-    }
-  };
-
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-100 pt-10 sm:pt-20">
       <form
-        onSubmit={handleSubmit} // 비동기 제출로 변경
+        action={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/permit/auth/signin`}
+        method="POST"
         className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm"
       >
         <h2 className="text-2xl font-semibold mb-6 text-center">로그인</h2>
