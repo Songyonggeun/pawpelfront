@@ -10,11 +10,47 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState(""); // 에러 메시지 상태 추가
   const router = useRouter(); // 로그인 후 리다이렉션을 위한 useRouter
 
+  const handleSubmit = async (e) => {
+  e.preventDefault(); // 기본 form 제출을 막음
+
+  const loginData = {
+    userId: userId,  // userId는 입력받은 아이디
+    password: password,  // password는 입력받은 비밀번호
+  };
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/permit/auth/signin`, {
+      method: "POST",  // HTTP POST 방식
+      headers: {
+        "Content-Type": "application/json",  // JSON 형식으로 데이터 전송
+      },
+      body: JSON.stringify(loginData),  // 데이터를 JSON 문자열로 변환
+    });
+
+    if (response.ok) {
+      // 서버에서 JSON 응답이 정상적으로 왔다면
+      const data = await response.json();
+
+      if (data.error) {
+        // 에러 메시지 처리
+        setErrorMessage(data.error);
+      } else if (data.redirect) {
+        // 리다이렉션 URL 처리
+        window.location.href = data.redirect;  // 리다이렉션 처리
+      }
+    } else {
+      setErrorMessage("서버 오류");
+    }
+  } catch (error) {
+    console.error("Network error:", error);
+    setErrorMessage("서버와의 연결에 실패했습니다.");
+  }
+};
+
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-100 pt-10 sm:pt-20">
       <form
-        action={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/permit/auth/signin`}
-        method="POST"
+        onSubmit={handleSubmit} // 기본 form 제출 대신 handleSubmit 호출
         className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm"
       >
         <h2 className="text-2xl font-semibold mb-6 text-center">로그인</h2>
