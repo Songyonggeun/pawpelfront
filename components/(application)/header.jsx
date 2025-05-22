@@ -43,11 +43,26 @@ export default function Header() {
     }
   };
 
-  const handleLogout = () => {
-    // 쿠키에서 JWT 토큰 삭제
-    document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-    setIsLoggedIn(false);
-    router.push("/login"); // 로그인 페이지로 리디렉션
+  // const handleLogout = () => {
+  //   // 쿠키에서 JWT 토큰 삭제
+  //   document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+  //   setIsLoggedIn(false);
+  //   router.push("/login"); // 로그인 페이지로 리디렉션
+  // };
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/logout`, {
+        method: "POST",
+        credentials: "include", // ✅ 쿠키를 서버에 전달
+      });
+
+      setIsLoggedIn(false); // 로컬 상태 초기화
+      window.location.href = "/login"; // 새로고침 포함한 리디렉션
+    } catch (err) {
+      console.error("로그아웃 실패:", err);
+      alert("로그아웃 중 오류가 발생했습니다.");
+    }
   };
 
   return (

@@ -136,16 +136,32 @@ const Step2 = () => {
             phoneNumber: phone.replace(/-/g, ""), // ✅ 01012345678 형식
             birthDate: birthDate              // ✅ "yyyy-MM-dd" 형식
           }),
+          credentials: "include"
         }
       );
 
       if (response.ok) {
         alert("회원가입이 완료되었습니다.");
         localStorage.removeItem("isAgreed");
-        router.push("/signup/Welcome");
+        window.location.href = "/signup/Welcome";
       } else {
         const result = await response.json();
-        alert(result.message || "회원가입에 실패했습니다.");
+        switch (result.message) {
+          case "username_exists":
+            alert("이미 사용 중인 아이디입니다.");
+            break;
+          case "email_exists":
+            alert("이미 사용 중인 이메일입니다.");
+            break;
+          case "phone_exists":
+            alert("이미 사용 중인 전화번호입니다.");
+            break;
+          case "empty_input":
+            alert("입력되지 않은 항목이 있습니다.");
+            break;
+          default:
+            alert(result.message || "회원가입에 실패했습니다.");
+        }
       }
     } catch (error) {
       console.error("회원가입 요청 실패:", error);
