@@ -114,8 +114,6 @@ export default function Header() {
           <button onClick={toggleHealthCareMenu} className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500">건강관리</button>
           {showHealthCareMenu && <HealthCareMenu />}
 
-          <a href="#" className="block text-gray-700 hover:text-blue-500">펫보험</a>
-
           <div className="flex flex-col space-y-2 text-sm">
             <button className="text-left p-1 rounded hover:bg-gray-100">알림</button>
 

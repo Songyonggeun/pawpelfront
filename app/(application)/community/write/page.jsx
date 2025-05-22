@@ -4,33 +4,36 @@ import React, { useEffect, useRef, useState } from "react";
 const WritePost = () => {
   const [title, setTitle] = useState("");
   const editorRef = useRef(null);
+  const quillRef = useRef(null); // Quill 인스턴스 저장
 
   useEffect(() => {
-    // 필요한 CDN 스크립트 & CSS 로드
     const loadCDNs = async () => {
-      if (typeof window !== "undefined" && window.$ === undefined) {
-        await loadScript("https://code.jquery.com/jquery-3.6.0.min.js");
-        await loadStyle("https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css");
-        await loadScript("https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js");
-        await loadStyle("https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css");
-        await loadScript("https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js");
+      if (typeof window !== "undefined" && !window.Quill) {
+        await loadStyle("https://cdn.quilljs.com/1.3.6/quill.snow.css");
+        await loadScript("https://cdn.quilljs.com/1.3.6/quill.min.js");
       }
 
-      // Summernote 초기화
-      if (window.$) {
-        window.$(editorRef.current).summernote({
-          height: 350,
+      // 중복 초기화 방지
+      if (window.Quill && editorRef.current && !quillRef.current) {
+        quillRef.current = new window.Quill(editorRef.current, {
+          theme: "snow",
           placeholder: "내용을 입력해주세요.",
-          toolbar: [
-            ["style", ["bold", "italic", "underline", "clear"]],
-            ["font", ["strikethrough", "superscript", "subscript"]],
-            ["fontsize", ["fontsize"]],
-            ["color", ["color"]],
-            ["para", ["ul", "ol", "paragraph"]],
-            ["insert", ["link", "picture", "video"]],
-            ["view", ["fullscreen", "codeview"]],
-          ],
+          modules: {
+            toolbar: [
+              [{ header: [1, 2, false] }],
+              ["bold", "italic", "underline"],
+              [{ list: "ordered" }, { list: "bullet" }],
+              ["link", "image"],
+              ["clean"],
+            ],
+          },
         });
+
+        // 내용 입력 칸 높이 늘리기
+        const editor = editorRef.current.querySelector(".ql-editor");
+        if (editor) {
+          editor.style.minHeight = "300px"; // 필요 시 더 늘릴 수 있음
+        }
       }
     };
 
@@ -38,7 +41,7 @@ const WritePost = () => {
   }, []);
 
   const handleSaveContent = () => {
-    const content = window.$(editorRef.current).summernote("code");
+    const content = quillRef.current?.root.innerHTML || "";
     console.log("제목:", title);
     console.log("내용:", content);
   };
@@ -56,7 +59,7 @@ const WritePost = () => {
       </div>
 
       <div className="mb-6">
-        <div ref={editorRef} />
+        <div ref={editorRef} className="bg-white" />
       </div>
 
       <div className="flex justify-end gap-3">
