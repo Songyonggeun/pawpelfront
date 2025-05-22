@@ -65,7 +65,6 @@ export default function Header() {
           <button onClick={toggleHealthCareMenu} className="relative hover:text-blue-500">
             건강관리
           </button>
-          <a href="#" className="hover:text-blue-500">펫보험</a>
         </nav>
 
         <div className="hidden md:flex items-center space-x-6">
