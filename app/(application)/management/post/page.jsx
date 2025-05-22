@@ -9,14 +9,14 @@ export default function PostPage() {
 
   // 페이지 로드 시 게시물 목록 불러오기
 useEffect(() => {
-    fetch("http://localhost:3000/api/posts")
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/post`)
     .then((res) => res.json())
     .then((data) => setPosts(data));
 }, []);
 
   // 게시물 삭제 요청
 const handleDelete = (id) => {
-    fetch(`http://localhost:3000/api/posts/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/post/${id}`, {
     method: "DELETE",
     }).then(() => {
       setPosts((prev) => prev.filter((post) => post.id !== id)); // 목록에서 제거
@@ -39,8 +39,8 @@ const cancelEdit = () => {
 const handleUpdate = () => {
     if (editingPostId === null) return;
 
-    fetch(`http://localhost:3000/api/posts/${editingPostId}`, {
-    method: "PUT",
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/post/${editingPostId}`, {
+    method: "",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title: editTitle }),
     })
@@ -55,7 +55,7 @@ const handleUpdate = () => {
 
   // 공지로 이동 요청
 const moveToNotice = (id) => {
-    fetch(`http://localhost:3000/api/posts/${id}/move`, {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/post/${id}/move`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ category: "공지사항" }),

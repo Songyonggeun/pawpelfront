@@ -8,10 +8,10 @@
             <nav>
             <ul className="flex lg:flex-col gap-4 justify-center lg:justify-start">
                 <li>    
-                <Link href="/management/users" className="text-gray-700 hover:underline font-medium">회원 관리</Link>         
+                <Link href="/management/user" className="text-gray-700 hover:underline font-medium">회원 관리</Link>         
                 </li>
                 <li>
-                <Link href="/management/posts" className="text-gray-700 hover:underline font-medium">게시글 관리</Link>
+                <Link href="/management/post" className="text-gray-700 hover:underline font-medium">게시글 관리</Link>
                 </li>
             </ul>
             </nav>
