@@ -16,7 +16,7 @@ export default function Header() {
   useEffect(() => {
     // 페이지 로드 시 쿠키에서 로그인 상태 확인
     const cookies = document.cookie.split(';');
-    const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('jwt='));
+    const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_='));
 
     if (jwtCookie) {
       setIsLoggedIn(true); // JWT 쿠키가 있으면 로그인 상태

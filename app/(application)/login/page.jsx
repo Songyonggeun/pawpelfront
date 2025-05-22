@@ -21,52 +21,54 @@ export default function LoginPage() {
     }
   }, [router]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // 기본 form 제출을 막음
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault(); // 기본 form 제출을 막음
 
-    const loginData = {
-      userId: userId,  // userId는 입력받은 아이디
-      password: password,  // password는 입력받은 비밀번호
-    };
+  //   const loginData = {
+  //     userId: userId,  // userId는 입력받은 아이디
+  //     password: password,  // password는 입력받은 비밀번호
+  //   };
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/permit/auth/signin`, {
-        method: "POST",  // HTTP POST 방식
-        headers: {
-          "Content-Type": "application/json",  // JSON 형식으로 데이터 전송
-        },
-        body: JSON.stringify(loginData),  // 데이터를 JSON 문자열로 변환
-      });
+  //   try {
+  //     const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/permit/auth/signin`, {
+  //       method: "POST",  // HTTP POST 방식
+  //       headers: {
+  //         "Content-Type": "application/json",  // JSON 형식으로 데이터 전송
+  //       },
+  //       body: JSON.stringify(loginData),  // 데이터를 JSON 문자열로 변환
+  //     });
 
-      if (response.ok) {
-        // 서버에서 JSON 응답이 정상적으로 왔다면
-        const data = await response.json();
+  //     if (response.ok) {
+  //       // 서버에서 JSON 응답이 정상적으로 왔다면
+  //       const data = await response.json();
 
-        if (data.error) {
-          // 에러 메시지 처리
-          setErrorMessage(data.error);
-        } else if (data.redirect) {
-          // 로그인 성공 시 쿠키에 JWT 토큰 저장
-          const token = data.token; // 서버에서 받은 JWT 토큰
-          const expires = new Date(new Date().getTime() + 60 * 60 * 1000); // 쿠키 만료 시간 1시간 후
-          document.cookie = `jwt=${token}; path=/; expires=${expires.toUTCString()}; secure; SameSite=Strict`;
+  //       if (data.error) {
+  //         // 에러 메시지 처리
+  //         setErrorMessage(data.error);
+  //       } else if (data.redirect) {
+  //         // 로그인 성공 시 쿠키에 JWT 토큰 저장
+  //         const token = data.token; // 서버에서 받은 JWT 토큰
+  //         const expires = new Date(new Date().getTime() + 60 * 60 * 1000); // 쿠키 만료 시간 1시간 후
+  //         document.cookie = `jwt=${token}; path=/; expires=${expires.toUTCString()}; secure; SameSite=Strict`;
 
-          // 리다이렉션 URL 처리
-          window.location.href = data.redirect;  // 리다이렉션 처리
-        }
-      } else {
-        setErrorMessage("서버 오류");
-      }
-    } catch (error) {
-      console.error("Network error:", error);
-      setErrorMessage("서버와의 연결에 실패했습니다.");
-    }
-  };
+  //         // 리다이렉션 URL 처리
+  //         window.location.href = data.redirect;  // 리다이렉션 처리
+  //       }
+  //     } else {
+  //       setErrorMessage("서버 오류");
+  //     }
+  //   } catch (error) {
+  //     console.error("Network error:", error);
+  //     setErrorMessage("서버와의 연결에 실패했습니다.");
+  //   }
+  // };
 
   return (
     <div className="flex justify-center items-start min-h-screen bg-gray-100 pt-10 sm:pt-20">
       <form
-        onSubmit={handleSubmit} // 기본 form 제출 대신 handleSubmit 호출
+        // onSubmit={handleSubmit} // 기본 form 제출 대신 handleSubmit 호출
+        action={process.env.NEXT_PUBLIC_SPRING_SERVER_URL + '/permit/signin'}
+        method='post'
         className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm"
       >
         <h2 className="text-2xl font-semibold mb-6 text-center">로그인</h2>
