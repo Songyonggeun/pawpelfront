@@ -125,24 +125,33 @@ export default function LoginPage() {
         </button>
 
         {/* 소셜 로그인 구분선 */}
-        {/* <div className="my-6 border-t relative">
+        <div className="my-6 border-t relative">
           <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white px-2 text-sm text-gray-400">
             또는 소셜 로그인
           </span>
-        </div> */}
+        </div>
 
         {/* 소셜 로그인 버튼들 */}
-        {/* <div className="flex flex-col gap-3">
-          <button className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition">
+        <div className="flex flex-col gap-3">
+          <a
+            href={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/oauth2/authorization/google`}
+            className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition text-center"
+          >
             Google 로그인
-          </button>
-          <button className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition">
+          </a>
+          <a
+            href={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/oauth2/authorization/naver`}
+            className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition text-center"
+          >
             Naver 로그인
-          </button>
-          <button className="w-full bg-yellow-400 text-black py-2 rounded-lg hover:bg-yellow-500 transition">
+          </a>
+          <a
+            href={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/oauth2/authorization/kakao`}
+            className="w-full bg-yellow-400 text-black py-2 rounded-lg hover:bg-yellow-500 transition text-center"
+          >
             Kakao 로그인
-          </button>
-        </div> */}
+          </a>
+        </div>
       </form>
     </div>
   );
