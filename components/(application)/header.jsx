@@ -70,7 +70,7 @@ export default function Header() {
 
       setIsLoggedIn(false);
       setUserRoles([]);
-      window.location.href = '/home';
+      window.location.href = '/';
     } catch (err) {
       console.error('로그아웃 실패:', err);
       alert('로그아웃 중 오류가 발생했습니다.');
@@ -80,7 +80,7 @@ export default function Header() {
   return (
     <header className="w-full border-b bg-white">
       <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between">
-        <div className="flex items-center space-x-2 cursor-pointer" onClick={goTo('/home')}>
+        <div className="flex items-center space-x-2 cursor-pointer" onClick={goTo('/')}>
           <span className="text-blue-500 text-2xl font-bold">✓</span>
           <span className="text-2xl font-bold text-blue-500">Pawple</span>
         </div>
