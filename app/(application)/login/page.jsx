@@ -15,7 +15,7 @@ export default function LoginPage() {
     const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_=')); // ✅ 사용 중인 쿠키 이름으로 수정
 
     if (jwtCookie) {
-      router.push('/'); // ✅ 로그인한 상태라면 메인으로 이동
+      router.push('/home'); // ✅ 로그인한 상태라면 home으로 이동
     }
   }, [router]);
 
@@ -101,7 +101,7 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full px-2 py-2 mb-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full px-4 py-2 mb-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 
         {/* 에러 메시지 출력 */}

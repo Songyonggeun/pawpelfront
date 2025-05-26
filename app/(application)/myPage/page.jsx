@@ -38,13 +38,13 @@ export default function MyPage() {
   const menuItems = [
     { title: '회원 정보 수정', href: '/myPage/checkpw' },
     { title: '건강 체크 기록', href: '/myPage/checkpw' },
-    { title: '작성 글', href: '/myPage/posts' },
+    { title: '작성 글', href: '/myPage/checkpw' },
   ];
 
   return (
     <div className="flex flex-col md:flex-row max-w-7xl mx-auto py-10 px-6 gap-10">
-      <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0 bg-gray-50 min-h-[80vh]">
-        <nav className="mt-[10px] px-[10px]">
+      <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0">
+        <nav>
           <ul className="space-y-3">
             <MenuComponents data={menuItems} />
           </ul>
