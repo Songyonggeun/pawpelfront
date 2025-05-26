@@ -1,22 +1,18 @@
-'use client'; // 이 파일이 클라이언트 컴포넌트임을 명시 (Next.js App Router에서 필요)
 
-import { useEffect, useState } from 'react'; // React의 상태 및 생명주기 훅 사용
+'use client';
+
+import { useEffect, useState } from 'react';
 
 export default function UserPage() {
-  // 사용자 목록 상태
-const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [editingUserId, setEditingUserId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [expandedUserId, setExpandedUserId] = useState(null);
+  const [petData, setPetData] = useState({});
 
-  // 수정 중인 사용자 ID
-const [editingUserId, setEditingUserId] = useState(null);
-
-  // 수정 중인 사용자 이름
-const [editName, setEditName] = useState('');
-
-  // 확장된 사용자 ID (펫 정보 표시 여부 판단용)
-const [expandedUserId, setExpandedUserId] = useState(null);
-
-  // 사용자별 펫 정보 저장 객체
-const [petData, setPetData] = useState({});
+  //  검색 상태
+  const [searchType, setSearchType] = useState(''); // social, email, name
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   // 페이지 로드 시 사용자 목록 가져오기
 // useEffect(() => {
@@ -50,45 +46,38 @@ const [petData, setPetData] = useState({});
       });
   };
 
-  // 이름 수정 시작
   const startEdit = (user) => {
     setEditingUserId(user.id);
     setEditName(user.name);
   };
 
-  // 수정 취소
   const cancelEdit = () => {
     setEditingUserId(null);
     setEditName('');
   };
 
-  // 수정 저장
   const handleUpdate = () => {
     if (editingUserId === null) return;
 
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${editingUserId}`, {
       method: 'PATCH', //  PATCH로 수정
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editName }), // 수정할 이름 전송
+      body: JSON.stringify({ name: editName }),
     })
       .then(res => res.json())
       .then(updatedUser => {
-        // 수정된 사용자 정보로 목록 갱신
         setUsers(prev =>
           prev.map(user => user.id === editingUserId ? updatedUser : user)
         );
-        cancelEdit(); // 수정 모드 종료
+        cancelEdit();
       });
   };
 
-  // 펫 정보 보기/닫기 토글
   const togglePetInfo = (userId) => {
     if (expandedUserId === userId) {
-      setExpandedUserId(null); // 이미 열려있으면 닫기
+      setExpandedUserId(null);
     } else {
-      setExpandedUserId(userId); // 새로운 사용자 선택
-
-      // 해당 사용자 펫 정보가 없으면 API 요청
+      setExpandedUserId(userId);
       if (!petData[userId]) {
         fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}/pets`, {
           credentials: 'include' // ✅ 쿠키 포함!
@@ -116,20 +105,43 @@ const [petData, setPetData] = useState({});
 
   return (
     <div className="p-4 max-w-xl mx-auto">
-      {/* 페이지 제목 */}
       <h1 className="text-2xl font-bold mb-4">회원 관리</h1>
 
-      {/* 사용자 목록 렌더링 */}
+      <div className="flex items-center gap-2 mb-4">
+        <select
+          className="border p-2 rounded"
+          value={searchType}
+          onChange={e => setSearchType(e.target.value)}
+        >
+          <option value="">검색 조건</option>
+          <option value="social">이름</option>
+          <option value="email">이메일</option>
+          <option value="name">아이디</option>
+        </select>
+        <input
+          type="text"
+          className="border p-2 rounded flex-1"
+          placeholder="검색어 입력"
+          value={searchKeyword}
+          onChange={e => setSearchKeyword(e.target.value)}
+        />
+        <button
+          onClick={handleSearch}
+          className="bg-blue-500 text-white px-3 py-2 rounded"
+        >
+          검색
+        </button>
+      </div>
+
       <ul className="space-y-4">
         {users.map(user => (
           <li key={user.id} className="bg-gray-100 p-3 rounded shadow">
-            {/* 수정 모드일 때 입력창 표시 */}
             {editingUserId === user.id ? (
               <div className="flex gap-2 w-full">
                 <input
                   type="text"
                   value={editName}
-                  onChange={(e) => setEditName(e.target.value)} // 이름 입력값 갱신
+                  onChange={(e) => setEditName(e.target.value)}
                   className="border p-1 rounded flex-1"
                 />
                 <button onClick={handleUpdate} className="text-green-600">저장</button>
@@ -137,7 +149,6 @@ const [petData, setPetData] = useState({});
               </div>
             ) : (
               <>
-                {/* 사용자 기본 정보 및 액션 버튼 */}
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col">
                     <span><strong>이름:</strong> {user.socialName}</span>
@@ -154,14 +165,11 @@ const [petData, setPetData] = useState({});
                   </div>
                 </div>
 
-                {/* 확장된 사용자에 대해 펫 정보 표시 */}
                 {expandedUserId === user.id && (
                   <div className="mt-2 pl-4 border-l-4 border-indigo-300 bg-white rounded p-2">
-                    {/* 로딩 또는 데이터 유무에 따른 조건 렌더링 */}
                     {petData[user.id] ? (
                       petData[user.id].length > 0 ? (
                         <ul className="list-disc ml-4 text-sm text-gray-800">
-                          {/* 펫 목록 표시 */}
                           {petData[user.id].map((pet, index) => (
                             <li key={index}>
                               <strong>{pet.petName}</strong> ({pet.petType}, {pet.petAge}살)
