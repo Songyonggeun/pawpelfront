@@ -12,7 +12,7 @@ export default function TotalPage() {
     const fetchPosts = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/posts?page=${page}&size=10&sort=${sortBy}`
+          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts?page=${page}&size=10&sort=${sortBy}`
         );
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
