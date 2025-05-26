@@ -46,7 +46,7 @@ return (
         </Link>
 
         <Link
-            href="management/posts"
+            href="management/post"
             className="flex-1 bg-green-100 hover:bg-green-200 transition p-6 rounded-xl shadow text-center min-w-[300px]"
         >
             <h3 className="text-xl font-semibold text-green-900">게시글 관리</h3>
