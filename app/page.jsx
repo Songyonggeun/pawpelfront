@@ -1,3 +1,12 @@
+// import { Fragment } from 'react';
+// import { redirect } from 'next/navigation';
+// export default function DefaultPage(){
+//     redirect('/home')
+//     return <Fragment>
+//     </Fragment>
+// }
+
+
 import React from "react";
 import PetInsuranceBanner from "@/components/(Inputs)/advertisement";
 
@@ -40,24 +49,24 @@ export default function LifetCommunityUI() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {[
-                            "[건강정보] 슈퍼위크에 이거 챙기셨나요?!",
-                            "치킨불 만들기 🍗 (초초초간단해요!)",
-                            "결국 품절제품을 기다리지 못 하고...",
-                            "라이펫 쇼핑목록 공유부탁드려요 🥲",
-                            "인형",
-                            "젤리 모으기",
-                            "오 배송에 빨라요",
-                            "다들 진드기 관리 어케 하시나요...",
-                            "플러그오프 준비중"
-                        ].map((title, idx) => (
-                            <div key={idx} className="bg-gray-800 rounded-lg p-4 text-white">
-                                <div className="flex justify-between">
-                                    <span className="font-semibold">{idx + 1}. {title}</span>
-                                    <span className="text-sm text-gray-400">1일 전 ♡ 10 💬 5</span>
-                                </div>
-                            </div>
-                        ))}
+                    {[
+                        "[건강정보] 슈퍼위크에 이거 챙기셨나요?!",
+                        "치킨불 만들기 🍗 (초초초간단해요!)",
+                        "결국 품절제품을 기다리지 못 하고...",
+                        "라이펫 쇼핑목록 공유부탁드려요 🥲",
+                        "인형",
+                        "젤리 모으기",
+                        "오 배송에 빨라요",
+                        "다들 진드기 관리 어케 하시나요...",
+                        "플러그오프 준비중"
+                    ].map((title, idx) => (
+                        <div key={idx} className="bg-gray-100 rounded-lg p-4 text-gray-900">
+                        <div className="flex justify-between">
+                            <span className="font-semibold">{idx + 1}. {title}</span>
+                            <span className="text-sm text-gray-500">1일 전 ♡ 10 💬 5</span>
+                        </div>
+                        </div>
+                    ))}
                     </div>
                 </div>
             </section>
