@@ -10,7 +10,7 @@ export default function MyPostsPage() {
   useEffect(() => {
     const fetchMyPosts = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/posts/my-posts`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/my-posts`, {
           credentials: 'include',
         });
         if (!res.ok) throw new Error('Unauthorized');
