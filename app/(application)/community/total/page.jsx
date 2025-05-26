@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function TotalPage() {
   const [posts, setPosts] = useState([]);
@@ -52,7 +53,11 @@ export default function TotalPage() {
               {posts.map((post) => (
                 <div key={post.id} className="py-6">
                   <div className={`text-sm text-gray-500 mb-1`}>{post.category}</div>
-                  <div className="font-semibold text-lg mb-1">{post.title}</div>
+                  <Link href={`/community/detail/${post.id}`}>
+                    <div className="font-semibold text-lg mb-1 hover:underline cursor-pointer">
+                      {post.title}
+                    </div>
+                  </Link>
                   <div
                     className="text-gray-700 mb-3 text-sm line-clamp-2"
                     dangerouslySetInnerHTML={{ __html: post.content }}
