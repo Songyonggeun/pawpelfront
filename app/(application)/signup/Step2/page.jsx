@@ -7,7 +7,6 @@ import UsernameInput from "@/components/(Inputs)/UserNameInput";
 import EmailInput from "@/components/(Inputs)/EmailInput";
 import NameInput from "@/components/(Inputs)/NameInput";
 import PhoneInput from "@/components/(Inputs)/PhoneInput";
-import GenderInput from "@/components/(Inputs)/GenderInput";
 import BirthDateInput from "@/components/(Inputs)/BirthdateInput";
 import PasswordInput from "@/components/(Inputs)/PasswordInput";
 
@@ -32,7 +31,6 @@ const Step2 = () => {
   const [name, setName] = useState("");  // 이름
   const [phone, setPhone] = useState("");  // 전화번호
   const [birthDate, setBirthDate] = useState("");  // 생년월일
-  const [gender, setGender] = useState("");  // 성별
 
   useEffect(() => {
     const isAgreed = localStorage.getItem("isAgreed");
@@ -79,9 +77,6 @@ const Step2 = () => {
     console.log("Birth Date changed:", birthDate);
   }, [birthDate]);
 
-  useEffect(() => {
-    console.log("Gender changed:", gender);
-  }, [gender]);
 
   useEffect(() => {
     console.log("Password changed:", password);
@@ -93,7 +88,7 @@ const Step2 = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(username, emailUsername, customEmailDomain, password, confirmPassword, name, phone, birthDate, gender)
+    console.log(username, emailUsername, customEmailDomain, password, confirmPassword, name, phone, birthDate)
     // 유효성 검사
     if (
       !username ||
@@ -103,8 +98,7 @@ const Step2 = () => {
       !confirmPassword ||
       !name.trim() ||
       !phone.trim() ||
-      !birthDate.trim() ||
-      !gender.trim()
+      !birthDate.trim() 
     ) {
       alert("모든 필드를 작성해주세요.");
       return;
@@ -127,7 +121,6 @@ const Step2 = () => {
     console.log("Name:", name);
     console.log("Phone:", phone);
     console.log("Birth Date:", birthDate);
-    console.log("Gender:", gender);
 
     try {
       const response = await fetch(
@@ -136,27 +129,39 @@ const Step2 = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            username,
-            name,
-            email1: emailUsername,          // email1
-            email2: customEmailDomain,      // email2
-            password1: password,            // password1
-            password2: confirmPassword,     // password2
-            phoneNumber2: phone.split("-")[1],  // phoneNumber2
-            phoneNumber3: phone.split("-")[2],  // phoneNumber3
-            birthDate,
-            gender
+            name: username,                         // ✅ 사용자 ID
+            pass: password,                   // ✅ 비밀번호
+            socialName: name,                 // 선택사항
+            email: email,                     // ✅ 완성된 전체 이메일
+            phoneNumber: phone.replace(/-/g, ""), // ✅ 01012345678 형식
+            birthDate: birthDate              // ✅ "yyyy-MM-dd" 형식
           }),
+          credentials: "include"
         }
       );
 
       if (response.ok) {
         alert("회원가입이 완료되었습니다.");
         localStorage.removeItem("isAgreed");
-        router.push("/signup/Welcome");
+        window.location.href = "/signup/Welcome";
       } else {
         const result = await response.json();
-        alert(result.message || "회원가입에 실패했습니다.");
+        switch (result.message) {
+          case "username_exists":
+            alert("이미 사용 중인 아이디입니다.");
+            break;
+          case "email_exists":
+            alert("이미 사용 중인 이메일입니다.");
+            break;
+          case "phone_exists":
+            alert("이미 사용 중인 전화번호입니다.");
+            break;
+          case "empty_input":
+            alert("입력되지 않은 항목이 있습니다.");
+            break;
+          default:
+            alert(result.message || "회원가입에 실패했습니다.");
+        }
       }
     } catch (error) {
       console.error("회원가입 요청 실패:", error);
@@ -199,7 +204,6 @@ const Step2 = () => {
 
           <NameInput name={name} setName={setName} />
           <PhoneInput phone={phone} setPhone={setPhone} />
-          <GenderInput gender={gender} setGender={setGender} />
           <BirthDateInput birthDate={birthDate} setBirthDate={setBirthDate} />
 
           <button
