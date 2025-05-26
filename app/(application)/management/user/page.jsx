@@ -19,23 +19,36 @@ const [expandedUserId, setExpandedUserId] = useState(null);
 const [petData, setPetData] = useState({});
 
   // 페이지 로드 시 사용자 목록 가져오기
-useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`)
-    .then(res => res.json())
-      .then(data => setUsers(data)); // 가져온 사용자 목록 저장
-}, []);
+// useEffect(() => {
+//     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`)
+//     .then(res => res.json())
+//       .then(data => setUsers(data)); // 가져온 사용자 목록 저장
+// }, []);
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`, {
+      credentials: 'include' // 인증 쿠키 포함
+    })
+      .then(res => res.json())
+      .then(data => {
+        setUsers(Array.isArray(data) ? data : []); // 혹시 모를 예외 대비
+      })
+      .catch(() => {
+        alert("회원 정보를 불러오지 못했습니다.");
+      });
+  }, []);
+
 
   // 사용자 삭제 함수
-const handleDelete = (id) => {
-    // 삭제 확인창 표시
-    const confirmed = window.confirm('회원을 삭제하시겠습니까?');
-    if (!confirmed) return;
+  const handleDelete = (id) => {
+      // 삭제 확인창 표시
+      const confirmed = window.confirm('회원을 삭제하시겠습니까?');
+      if (!confirmed) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${id}`, { method: 'DELETE' })
-      .then(() => {
-        setUsers(prev => prev.filter(user => user.id !== id));
-    });
-};
+      fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${id}`, { method: 'DELETE' })
+        .then(() => {
+          setUsers(prev => prev.filter(user => user.id !== id));
+      });
+  };
 
   // 이름 수정 시작
   const startEdit = (user) => {
@@ -77,10 +90,12 @@ const handleDelete = (id) => {
 
       // 해당 사용자 펫 정보가 없으면 API 요청
       if (!petData[userId]) {
-        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}/pets`)
+        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}/pets`, {
+          credentials: 'include' // ✅ 쿠키 포함!
+        })
           .then(res => res.json())
           .then(data => {
-            setPetData(prev => ({ ...prev, [userId]: data })); // 펫 데이터 저장
+            setPetData(prev => ({ ...prev, [userId]: data }));
           });
       }
     }
@@ -125,9 +140,9 @@ const handleDelete = (id) => {
                 {/* 사용자 기본 정보 및 액션 버튼 */}
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col">
-                    <span><strong>이름:</strong> {user.name}</span>
+                    <span><strong>이름:</strong> {user.socialName}</span>
                     <span className="text-sm text-gray-700">
-                      <strong>아이디:</strong> {user.userId}
+                      <strong>아이디:</strong> {user.name}
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -149,7 +164,7 @@ const handleDelete = (id) => {
                           {/* 펫 목록 표시 */}
                           {petData[user.id].map((pet, index) => (
                             <li key={index}>
-                              <strong>{pet.name}</strong> ({pet.type}, {pet.age}살)
+                              <strong>{pet.petName}</strong> ({pet.petType}, {pet.petAge}살)
                             </li>
                           ))}
                         </ul>

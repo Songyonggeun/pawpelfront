@@ -5,13 +5,12 @@ export default function MenuComponents({ data = [{ title: '제목', href: '#' }]
   return (
     <Fragment>
       {data.map((v, i) => {
-        console.log('[DEBUG] Menu href:', v.href); // ✅ 여기에 넣기
 
         return (
           <li key={i}>
             <Link
               href={v.href || '#'}
-              className="block w-full text-left px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+              className="block w-full text-left px-4 py-2 rounded-lg hover:bg-gray-200 transition"
             >
               {v.title}
             </Link>

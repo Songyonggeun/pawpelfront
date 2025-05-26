@@ -37,7 +37,7 @@ const Step2 = () => {
     if (isAgreed === "true") {
       setIsAllowed(true);
     } else {
-      router.replace("/home");
+      router.replace("/");
     }
     setLoading(false);
   }, [router]);

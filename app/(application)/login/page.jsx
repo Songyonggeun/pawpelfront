@@ -15,7 +15,7 @@ export default function LoginPage() {
     const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_=')); // ✅ 사용 중인 쿠키 이름으로 수정
 
     if (jwtCookie) {
-      router.push('/home'); // ✅ 로그인한 상태라면 home으로 이동
+      router.push('/'); // ✅ 로그인한 상태라면 메인으로 이동
     }
   }, [router]);
 

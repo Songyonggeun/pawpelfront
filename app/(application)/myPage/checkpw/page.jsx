@@ -36,23 +36,25 @@ export default function CheckPasswordPage() {
     { title: '회원 정보 수정', href: '/myPage/checkpw' },
     // { title: '반려동물 관리', href: '/myPage/checkpw' },
     { title: '건강 체크 기록', href: '/myPage/checkpw' },
-    { title: '작성 글', href: '/myPage/checkpw' },
+    { title: '작성 글', href: '/myPage/posts' },
   ];
 
   return (
-    <div className="grid md:grid-cols-[240px_1fr] max-w-7xl mx-auto py-10 px-4 md:px-6 gap-10">
-      <aside className="w-full">
-        <nav>
+    <div className="flex max-w-7xl mx-auto py-10 px-4 md:px-6 gap-10">
+      {/* 왼쪽 사이드 메뉴 */}
+      <aside className="w-full md:w-60 flex-shrink-0 bg-gray-50 min-h-[80vh]">
+        <nav className="mt-[10px] px-[10px]">
           <ul className="space-y-3">
             <MenuComponents data={menuItems} />
           </ul>
         </nav>
       </aside>
 
-      <main className="flex justify-center">
-        <div className="w-full max-w-md bg-white p-6 rounded shadow">
-          <h2 className="text-xl font-bold mb-4 text-center">비밀번호 확인</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+      {/* 오른쪽 본문 */}
+      <main className="flex-grow flex justify-center items-start min-h-screen pt-10 ml-[-200px]">
+        <div className="w-full max-w-md bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
+          <h2 className="text-2xl font-bold mb-4 text-center">비밀번호 확인</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="password"
               placeholder="비밀번호 입력"
@@ -67,6 +69,9 @@ export default function CheckPasswordPage() {
           </form>
         </div>
       </main>
+
     </div>
+
+
   );
 }
