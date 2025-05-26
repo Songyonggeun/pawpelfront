@@ -4,29 +4,32 @@ import React, { useEffect, useState } from 'react';
 
 export default function TotalPage() {
   const [posts, setPosts] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [sortBy, setSortBy] = useState('latest');
 
-  // 게시글 가져오기
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/posts?page=0&size=10&sort=${sortBy}`
+          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/posts?page=${page}&size=10&sort=${sortBy}`
         );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setPosts(data.content || []);
+        setTotalPages(data.totalPages || 0);
       } catch (error) {
         console.error('게시글 불러오기 실패:', error);
       }
     };
 
     fetchPosts();
-  }, [sortBy]);
+  }, [page, sortBy]);
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+    setPage(0);
+  };
 
   return (
     <div className="bg-white text-black min-h-screen">
@@ -39,7 +42,7 @@ export default function TotalPage() {
             <select
               className="bg-white text-black border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={handleSortChange}
             >
               <option value="latest">최신순</option>
               <option value="popular">인기순</option>
@@ -58,7 +61,7 @@ export default function TotalPage() {
                 <div className="flex items-center text-xs text-gray-500">
                   <span>{post.authorName}</span>
                   <span className="mx-2">·</span>
-                  <span>{new Date(post.createdAt).toLocaleString()}</span>
+                  <span>{formatDateRelative(post.createdAt)}</span>
                   <span className="mx-2">·</span>
                   <span>조회수 {post.viewCount}</span>
                   <span className="ml-auto flex items-center gap-4">
@@ -73,6 +76,21 @@ export default function TotalPage() {
                   </span>
                 </div>
               </div>
+            ))}
+          </div>
+
+          {/* 페이지네이션 */}
+          <div className="mt-6 flex justify-center gap-2">
+            {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
+              <button
+                key={pageNumber}
+                className={`px-3 py-1 rounded ${
+                  pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                }`}
+                onClick={() => setPage(pageNumber)}
+              >
+                {pageNumber + 1}
+              </button>
             ))}
           </div>
         </main>
@@ -95,6 +113,18 @@ export default function TotalPage() {
       </div>
     </div>
   );
+}
+
+function formatDateRelative(dateString) {
+  const createdDate = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now - createdDate;
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInDays === 0) return '오늘';
+  if (diffInDays < 7) return `${diffInDays}일 전`;
+  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}주 전`;
+  return `${Math.floor(diffInDays / 30)}달 전`;
 }
 
 function HeartIcon() {
