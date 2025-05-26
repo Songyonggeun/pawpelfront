@@ -108,11 +108,11 @@ const WritePost = () => {
           className="w-full border border-gray-300 rounded px-4 py-2 mt-2"
         >
           <option value="">카테고리를 선택해주세요</option>
-          <option value="health-topic">건강토픽</option>
-          <option value="q-and-a">질문과 답</option>
-          <option value="health-daily">건강일상</option>
-          <option value="know-how">노하우</option>
-          <option value="psychology-care">심리케어</option>
+          <option value="건강토픽">건강토픽</option>
+          <option value="Q&A">Q&A</option>
+          <option value="일상">일상</option>
+          {/* <option value="know-how">노하우</option> */}
+          {/* <option value="psychology-care">심리케어</option> */}
         </select>
       </div>
 

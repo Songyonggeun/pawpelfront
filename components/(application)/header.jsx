@@ -154,20 +154,28 @@ export default function Header() {
             <button className="text-left p-1 rounded hover:bg-gray-100">알림</button>
 
             {!isLoggedIn ? (
-              <Link href="/login" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그인</Link>
+              <Link href="/login">
+                <span className="block text-left p-1 rounded hover:bg-gray-100">로그인</span>
+              </Link>
             ) : (
-              userRoles.length === 0 ? ( null ) : (
-                <>
-                  {userRoles.includes('ADMIN') ? (
-                    <Link href="/management" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">관리자페이지</Link>
-                  ) : (
-                    <Link href="/myPage" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">마이페이지</Link>
-                  )}
-                  <button onClick={handleLogout} className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그아웃</button>
-                </>
-              )
+              <div className="flex flex-col space-y-2">
+                {userRoles.includes('ADMIN') && (
+                  <Link href="/management">
+                    <span className="block text-left p-1 rounded hover:bg-gray-100">관리자페이지</span>
+                  </Link>
+                )}
+                {!userRoles.includes('ADMIN') && (
+                  <Link href="/myPage">
+                    <span className="block text-left p-1 rounded hover:bg-gray-100">마이페이지</span>
+                  </Link>
+                )}
+                <button onClick={handleLogout} className="text-left p-1 rounded hover:bg-gray-100">
+                  로그아웃
+                </button>
+              </div>
             )}
           </div>
+
         </div>
       )}
     </header>

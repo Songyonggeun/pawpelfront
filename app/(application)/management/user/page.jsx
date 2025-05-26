@@ -20,7 +20,7 @@ const [petData, setPetData] = useState({});
 
   // 페이지 로드 시 사용자 목록 가져오기
 useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/user`)
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`)
     .then(res => res.json())
       .then(data => setUsers(data)); // 가져온 사용자 목록 저장
 }, []);
@@ -31,10 +31,8 @@ const handleDelete = (id) => {
     const confirmed = window.confirm('회원을 삭제하시겠습니까?');
     if (!confirmed) return;
 
-    // 삭제 요청
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/user/${id}`, { method: 'DELETE' })
-    .then(() => {
-        // 삭제 후 사용자 목록에서 제거
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${id}`, { method: 'DELETE' })
+      .then(() => {
         setUsers(prev => prev.filter(user => user.id !== id));
     });
 };
@@ -55,8 +53,8 @@ const handleDelete = (id) => {
   const handleUpdate = () => {
     if (editingUserId === null) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/user/${editingUserId}`, {
-      method: 'GET', // 실제 수정이라면 PATCH 또는 PUT 필요
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${editingUserId}`, {
+      method: 'PATCH', //  PATCH로 수정
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: editName }), // 수정할 이름 전송
     })
@@ -79,13 +77,26 @@ const handleDelete = (id) => {
 
       // 해당 사용자 펫 정보가 없으면 API 요청
       if (!petData[userId]) {
-        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/user/${userId}/pets`)
+        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}/pets`)
           .then(res => res.json())
           .then(data => {
             setPetData(prev => ({ ...prev, [userId]: data })); // 펫 데이터 저장
           });
       }
     }
+  };
+
+  //  검색 기능
+  const handleSearch = () => {
+    if (!searchType || !searchKeyword.trim()) {
+      alert('검색 조건과 키워드를 입력해주세요.');
+      return;
+    }
+
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/search?${searchType}=${searchKeyword}`)
+      .then(res => res.json())
+      .then(data => setUsers(data))
+      .catch(() => alert('검색에 실패했습니다.'));
   };
 
   return (
