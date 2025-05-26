@@ -38,9 +38,9 @@ useEffect(() => {
 
   const menuItems = [
     { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '반려동물 관리', href: '/myPage/checkpw' },
+    // { title: '반려동물 관리', href: '/myPage/checkpw' },
     { title: '건강 체크 기록', href: '/myPage/checkpw' },
-    { title: '상담 내역', href: '/myPage/checkpw' },
+    { title: '작성 글', href: '/myPage/checkpw' },
   ];
 
   return (

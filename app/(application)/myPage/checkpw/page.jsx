@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import MenuComponents from '@/components/(application)/menu';
 
 export default function CheckPasswordPage() {
-
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
@@ -32,22 +32,41 @@ export default function CheckPasswordPage() {
     }
   };
 
+  const menuItems = [
+    { title: '회원 정보 수정', href: '/myPage/checkpw' },
+    // { title: '반려동물 관리', href: '/myPage/checkpw' },
+    { title: '건강 체크 기록', href: '/myPage/checkpw' },
+    { title: '작성 글', href: '/myPage/checkpw' },
+  ];
+
   return (
-    <div className="max-w-md mx-auto mt-20 p-6 bg-white shadow rounded">
-      <h2 className="text-xl font-bold mb-4 text-center">비밀번호 확인</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="password"
-          placeholder="비밀번호 입력"
-          className="w-full px-4 py-2 border rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-          확인
-        </button>
-      </form>
+    <div className="grid md:grid-cols-[240px_1fr] max-w-7xl mx-auto py-10 px-4 md:px-6 gap-10">
+      <aside className="w-full">
+        <nav>
+          <ul className="space-y-3">
+            <MenuComponents data={menuItems} />
+          </ul>
+        </nav>
+      </aside>
+
+      <main className="flex justify-center">
+        <div className="w-full max-w-md bg-white p-6 rounded shadow">
+          <h2 className="text-xl font-bold mb-4 text-center">비밀번호 확인</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="password"
+              placeholder="비밀번호 입력"
+              className="w-full px-4 py-2 border rounded"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+              확인
+            </button>
+          </form>
+        </div>
+      </main>
     </div>
   );
 }
