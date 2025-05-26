@@ -101,7 +101,7 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full px-4 py-2 mb-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
 
         {/* 에러 메시지 출력 */}
@@ -110,10 +110,9 @@ export default function LoginPage() {
         )}
 
         {/* 추가 링크 */}
-        <div className="flex justify-center gap-x-5 text-sm text-blue-600 mb-6">
+        <div className="flex justify-center gap-x-5 text-sm text-blue-600 mb-4">
           <Link href="/signup/Step1" className="hover:underline">회원가입</Link>
-          <Link href="/find-id" className="hover:underline">아이디 찾기</Link>
-          <Link href="/find-password" className="hover:underline">비밀번호 찾기</Link>
+          <Link href="/find/findid" className="hover:underline">아이디 찾기</Link>
         </div>
 
         {/* 로그인 버튼 */}

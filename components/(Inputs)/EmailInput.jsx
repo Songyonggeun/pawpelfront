@@ -8,67 +8,72 @@ const EmailInput = ({
   customEmailDomain,
   setCustomEmailDomain,
 }) => {
-  // 초기 로드시 naver.com 고정 설정
+  // ✅ 초기값 설정: 첫 렌더링 시 naver.com 고정
   useEffect(() => {
-    setEmailDomain("naver.com");
-    setCustomEmailDomain("naver.com");
-  }, [setEmailDomain, setCustomEmailDomain]);
+    if (!emailDomain) {
+      setEmailDomain("naver.com");
+      setCustomEmailDomain("naver.com");
+    }
+  }, [emailDomain, setEmailDomain, setCustomEmailDomain]);
 
-  // 사용자 아이디 입력 처리
   const handleUsernameChange = (e) => {
-    const newUsername = e.target.value;
-    setEmailUsername(newUsername);
+    setEmailUsername(e.target.value);
   };
 
-  // 도메인 선택 처리 → 입력창에도 반영
   const handleEmailDomainChange = (e) => {
     const selectedDomain = e.target.value;
     setEmailDomain(selectedDomain);
-    setCustomEmailDomain(selectedDomain); // 입력 필드에 반영
+
+    if (selectedDomain !== "custom") {
+      setCustomEmailDomain(selectedDomain); // 선택된 도메인으로 고정
+    } else {
+      setCustomEmailDomain(""); // 직접입력 초기화
+    }
   };
 
-  // 도메인 입력 필드 직접 수정 시
   const handleCustomDomainChange = (e) => {
-    const newDomain = e.target.value;
-    setCustomEmailDomain(newDomain);
+    setCustomEmailDomain(e.target.value);
   };
 
   return (
     <div>
       <label className="block mb-1 text-gray-700 font-medium">이메일</label>
       <div className="flex items-center gap-1">
-        {/* 사용자 아이디 입력 필드 */}
+        {/* 아이디 입력 */}
         <input
-          name="email1" // 사용자 아이디 부분
+          name="email1"
           type="text"
           value={emailUsername}
           onChange={handleUsernameChange}
           required
           className="w-2/5 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          placeholder="아이디를 입력하세요"
+          placeholder="아이디 입력"
         />
         <span>@</span>
 
-        {/* 도메인 입력 필드 */}
-        <input
-          name="email2" // ✅ 도메인 부분 name 설정
-          type="text"
-          value={customEmailDomain}
-          onChange={handleCustomDomainChange}
-          className="w-1/3 px-2 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          placeholder="도메인 입력"
-        />
+        {/* 도메인 입력 (직접입력일 때만 활성화) */}
+<input
+  name="email2"
+  type="text"
+  value={customEmailDomain}
+  onChange={handleCustomDomainChange}
+  disabled={emailDomain !== "custom"}
+  placeholder={emailDomain === "custom" ? "도메인 입력" : emailDomain}
+  className={`w-1/3 px-2 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+    emailDomain === "custom" ? "focus:ring-blue-400 bg-white" : "bg-gray-100 text-gray-500"
+  }`}
+/>
 
-        {/* 도메인 선택 드롭다운 */}
+        {/* 도메인 선택 */}
         <select
           value={emailDomain}
           onChange={handleEmailDomainChange}
           className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 w-1/3"
         >
           <option value="naver.com">naver.com</option>
-          <option value="daum.com">daum.com</option>
-          <option value="google.com">google.com</option>
-          <option value="">직접 입력</option>
+          <option value="daum.net">daum.net</option>
+          <option value="gmail.com">gmail.com</option>
+          <option value="custom">직접 입력</option>
         </select>
       </div>
     </div>
