@@ -110,7 +110,7 @@ export default function Header() {
             userRoles.length === 0 ? null : (
               <div className="flex items-center space-x-3">
                 {userRoles.includes('ADMIN') ? (
-                  <button onClick={goTo('/management')} className="text-left p-1 rounded hover:bg-gray-100 text-sm">
+                  <button onClick={goTo('/admin')} className="text-left p-1 rounded hover:bg-gray-100 text-sm">
                     관리자페이지
                   </button>
                 ) : (
@@ -171,7 +171,7 @@ export default function Header() {
             ) : (
               <div className="flex flex-col space-y-2">
                 {userRoles.includes('ADMIN') ? (
-                  <button onClick={goTo('/management')} className="text-left p-1 rounded hover:bg-gray-100">
+                  <button onClick={goTo('/admin')} className="text-left p-1 rounded hover:bg-gray-100">
                     관리자페이지
                   </button>
                 ) : (

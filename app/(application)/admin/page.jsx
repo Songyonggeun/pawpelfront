@@ -38,7 +38,7 @@ return (
     <div className="overflow-x-auto">
         <div className="flex gap-4 min-w-[640px]">
         <Link
-            href="management/user"
+            href="admin/user"
             className="flex-1 bg-blue-100 hover:bg-blue-200 transition p-6 rounded-xl shadow text-center min-w-[300px]"
         >
             <h3 className="text-xl font-semibold text-blue-900">회원 관리</h3>
@@ -46,7 +46,7 @@ return (
         </Link>
 
         <Link
-            href="management/post"
+            href="admin/post"
             className="flex-1 bg-green-100 hover:bg-green-200 transition p-6 rounded-xl shadow text-center min-w-[300px]"
         >
             <h3 className="text-xl font-semibold text-green-900">게시글 관리</h3>
