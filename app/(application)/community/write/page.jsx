@@ -58,7 +58,7 @@ const WritePost = () => {
 
     // fetch를 사용하여 JSON 형식으로 서버에 POST 요청 보내기
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_SPRING_SERVER_URL + '/api/posts', {
+      const response = await fetch(process.env.NEXT_PUBLIC_SPRING_SERVER_URL + '/posts', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

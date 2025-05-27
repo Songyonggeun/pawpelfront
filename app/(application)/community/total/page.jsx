@@ -5,15 +5,22 @@ import Link from 'next/link';
 
 export default function TotalPage() {
   const [posts, setPosts] = useState([]);
+  const [popularPosts, setPopularPosts] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [sortBy, setSortBy] = useState('latest');
 
+  const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
+
   useEffect(() => {
+    // 전체 글 목록 불러오기
     const fetchPosts = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/posts?page=${page}&size=10&sort=${sortBy}`
+          `${baseUrl}/posts?page=${page}&size=10`,
+            {
+        credentials: 'include',  // 쿠키 및 인증 정보 포함
+      }
         );
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
@@ -25,9 +32,26 @@ export default function TotalPage() {
     };
 
     fetchPosts();
-  }, [page, sortBy]);
+  }, [page]);
+
+  useEffect(() => {
+    // 인기글 불러오기 (조회수 기준)
+    const fetchPopularPosts = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/posts/popular/views?page=0&size=10`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        setPopularPosts(data.content || []);
+      } catch (error) {
+        console.error('인기글 불러오기 실패:', error);
+      }
+    };
+
+    fetchPopularPosts();
+  }, []);
 
   const handleSortChange = (e) => {
+    // 현재 백엔드에 sort 파라미터 구현이 안된 상태면 일단 무시
     setSortBy(e.target.value);
     setPage(0);
   };
@@ -44,6 +68,7 @@ export default function TotalPage() {
                 className="bg-white text-black border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={sortBy}
                 onChange={handleSortChange}
+                disabled // 정렬 기능은 아직 백엔드 미지원이므로 비활성화
               >
                 <option value="latest">최신순</option>
                 <option value="popular">인기순</option>
@@ -52,7 +77,7 @@ export default function TotalPage() {
             <div className="divide-y divide-gray-200 mt-0">
               {posts.map((post) => (
                 <div key={post.id} className="py-6">
-                  <div className={`text-sm text-gray-500 mb-1`}>{post.category}</div>
+                  <div className="text-sm text-gray-500 mb-1">{post.category}</div>
                   <Link href={`/community/detail/${post.id}`}>
                     <div className="font-semibold text-lg mb-1 hover:underline cursor-pointer">
                       {post.title}
@@ -97,8 +122,9 @@ export default function TotalPage() {
               {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
                 <button
                   key={pageNumber}
-                  className={`px-3 py-1 rounded ${pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                    }`}
+                  className={`px-3 py-1 rounded ${
+                    pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                  }`}
                   onClick={() => setPage(pageNumber)}
                 >
                   {pageNumber + 1}
@@ -120,15 +146,14 @@ export default function TotalPage() {
           <aside className="w-full mt-8 border-t border-gray-200 md:w-80 md:ml-8 md:border-l md:border-t-0 md:pl-8">
             <h3 className="text-lg font-bold mb-4">인기글</h3>
             <ol className="space-y-2 text-sm">
-              {posts
-                .slice(0, 10)
-                .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-                .map((post, index) => (
-                  <li key={post.id} className="flex items-center gap-2">
-                    <span className="text-pink-500 font-bold">{index + 1}</span>
-                    <span className="truncate">{post.title}</span>
-                  </li>
-                ))}
+              {popularPosts.map((post, index) => (
+                <li key={post.id} className="flex items-center gap-2">
+                  <span className="text-pink-500 font-bold">{index + 1}</span>
+                  <Link href={`/community/detail/${post.id}`}>
+                    <span className="truncate cursor-pointer hover:underline">{post.title}</span>
+                  </Link>
+                </li>
+              ))}
             </ol>
           </aside>
         </div>
