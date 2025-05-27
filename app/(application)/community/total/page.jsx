@@ -165,14 +165,25 @@ export default function TotalPage() {
 function formatDateRelative(dateString) {
   const createdDate = new Date(dateString);
   const now = new Date();
-  const diffInMs = now - createdDate;
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  // 년, 월, 일만 비교 (시간 무시)
+  const createdYear = createdDate.getFullYear();
+  const createdMonth = createdDate.getMonth();
+  const createdDay = createdDate.getDate();
+
+  const nowYear = now.getFullYear();
+  const nowMonth = now.getMonth();
+  const nowDay = now.getDate();
+
+  const diffInDays = 
+    (new Date(nowYear, nowMonth, nowDay) - new Date(createdYear, createdMonth, createdDay)) / (1000 * 60 * 60 * 24);
 
   if (diffInDays === 0) return '오늘';
   if (diffInDays < 7) return `${diffInDays}일 전`;
   if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}주 전`;
   return `${Math.floor(diffInDays / 30)}달 전`;
 }
+
 
 function HeartIcon() {
   return (
