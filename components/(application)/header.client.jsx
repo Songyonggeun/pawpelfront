@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CommunityMenu from '@/components/(application)/communityMenu';
 import HealthCareMenu from '@/components/(application)/healthCare';
 import Link from 'next/link';
@@ -9,6 +9,57 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   const [showCommunityMenu, setShowCommunityMenu] = useState(false);
   const [showHealthCareMenu, setShowHealthCareMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // 새 상태: 헤더 보임 여부
+  const [headerVisible, setHeaderVisible] = useState(true);
+  
+  // 이전 스크롤 위치 저장용 ref
+  const lastScrollY = useRef(0);
+
+  // 마우스 위치 상태
+  const [mouseAtTop, setMouseAtTop] = useState(false);
+
+  // 스크롤 이벤트 처리
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 50) {
+        // 상단에 가까우면 항상 보이게
+        setHeaderVisible(true);
+      } else if (currentScrollY > lastScrollY.current) {
+        // 스크롤 내림 => 헤더 숨기기
+        setHeaderVisible(false);
+      } else {
+        // 스크롤 올림 => 헤더 보이기
+        setHeaderVisible(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 마우스 움직임 처리 (상단 50px 안에 마우스가 있으면 헤더 표시)
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (e.clientY < 50) {
+        setMouseAtTop(true);
+        setHeaderVisible(true);
+      } else {
+        setMouseAtTop(false);
+        // 마우스가 위쪽에 없고 스크롤 위치가 중간 이상이면 숨김 유지
+        if (window.scrollY > lastScrollY.current) {
+          setHeaderVisible(false);
+        }
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const toggleCommunityMenu = () => {
     setShowCommunityMenu(prev => !prev);
@@ -34,7 +85,6 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
         method: 'POST',
         credentials: 'include',
       });
-      // 로그아웃 후 새로고침해서 서버에서 다시 로그인 상태 확인
       window.location.href = '/home';
     } catch (err) {
       console.error('로그아웃 실패:', err);
@@ -43,8 +93,13 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   };
 
   return (
-    <header className="w-full bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between">
+    // 헤더가 보이지 않을 땐 translateY로 위로 숨기기 (transition 추가)
+    <header
+      className={`w-full z-50 sticky top-0 bg-white shadow-sm transition-transform duration-300 ${
+        headerVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Link href="/home" className="flex items-center space-x-2 cursor-pointer">
             <span className="text-blue-500 text-2xl font-bold">✓</span>
@@ -107,7 +162,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
       )}
 
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 px-4 py-3 space-y-4">
+        <div className="md:hidden border-t border-gray-200 px-4 py-3 space-y-4 bg-white">
           <button onClick={toggleCommunityMenu} className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500">커뮤니티</button>
           {showCommunityMenu && <CommunityMenu visible={showCommunityMenu} />}
 
