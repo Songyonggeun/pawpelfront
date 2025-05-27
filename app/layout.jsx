@@ -1,7 +1,10 @@
 // import Provider from '@/components/provider';
 // import { ThemeInitializer } from '@/components/public';
+import React from "react";
 import HeaderComponent from "@/components/(application)/header";
 import { metadata as meta } from "@/setting/meta";
+import { cookies } from 'next/headers';
+
 import './globals.css';
 export const metadata = {
     metadataBase: new URL(meta.url  ),
@@ -35,11 +38,17 @@ export const metadata = {
     }
 }
 
-export default function RootLayout({children}){
-    return <html lang={meta.locale} suppressHydrationWarning>
-        <body>
-            <HeaderComponent/>
-            {children}
-        </body>
+export default async function RootLayout({ children }) {
+  const cookieStore = cookies();
+  const jwt = cookieStore.get('_ka_au_fo_th_');
+  const isLoggedIn = !!jwt;
+
+  return (
+    <html lang="ko" suppressHydrationWarning>
+      <body>
+        <HeaderComponent isLoggedIn={isLoggedIn} />
+        {children}
+      </body>
     </html>
+  );
 }

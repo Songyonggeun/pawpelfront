@@ -1,23 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import CommunityMenu from '@/components/(application)/communityMenu';
 import HealthCareMenu from '@/components/(application)/healthCare';
-import Link from 'next/link';
 
-export default function Header() {
+export default function HeaderComponent({ isLoggedIn }) {
   const [showCommunityMenu, setShowCommunityMenu] = useState(false);
   const [showHealthCareMenu, setShowHealthCareMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    const cookies = document.cookie.split(';');
-    const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_='));
-    setIsLoggedIn(!!jwtCookie);
-  }, []);
 
   const toggleCommunityMenu = () => {
     setShowCommunityMenu(prev => !prev);
@@ -38,8 +31,7 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-    setIsLoggedIn(false);
+    document.cookie = "_ka_au_fo_th_=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
     router.push("/login");
   };
 
@@ -52,12 +44,8 @@ export default function Header() {
         </div>
 
         <nav className="hidden md:flex space-x-6 text-gray-700 text-sm items-start mr-auto ml-8">
-          <button onClick={toggleCommunityMenu} className="relative hover:text-blue-500">
-            커뮤니티
-          </button>
-          <button onClick={toggleHealthCareMenu} className="relative hover:text-blue-500">
-            건강관리
-          </button>
+          <button onClick={toggleCommunityMenu} className="relative hover:text-blue-500">커뮤니티</button>
+          <button onClick={toggleHealthCareMenu} className="relative hover:text-blue-500">건강관리</button>
         </nav>
 
         <div className="hidden md:flex items-center space-x-6">
@@ -89,7 +77,6 @@ export default function Header() {
         </button>
       </div>
 
-      {/* 커뮤니티 메뉴 */}
       {showCommunityMenu && (
         <div className="border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-4 md:block hidden">
@@ -98,7 +85,6 @@ export default function Header() {
         </div>
       )}
 
-      {/* 건강관리 메뉴 */}
       {showHealthCareMenu && (
         <div className="border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-4 md:block hidden">
@@ -139,7 +125,6 @@ export default function Header() {
           </div>
         </div>
       )}
-
     </header>
   );
 }
