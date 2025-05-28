@@ -11,7 +11,7 @@
                 <Link href="/management/user" className="text-gray-700 hover:underline font-medium">회원 관리</Link>         
                 </li>
                 <li>
-                <Link href="/management/post" className="text-gray-700 hover:underline font-medium">게시글 관리</Link>
+                <Link href="/management/posts" className="text-gray-700 hover:underline font-medium">게시글 관리</Link>
                 </li>
             </ul>
             </nav>

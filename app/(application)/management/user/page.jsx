@@ -16,7 +16,7 @@ export default function UserPage() {
 
   // 전체 사용자 목록 가져오기 (초기 렌더 시)
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/user`)
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`, {credentials:'include'})
       .then(res => res.json())
       .then(data => setUsers(data));
   }, []);
@@ -25,7 +25,7 @@ export default function UserPage() {
     const confirmed = window.confirm('회원을 삭제하시겠습니까?');
     if (!confirmed) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/user/${id}`, { method: 'DELETE' })
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${id}`, { method: 'DELETE' })
       .then(() => {
         setUsers(prev => prev.filter(user => user.id !== id));
       });
@@ -44,7 +44,7 @@ export default function UserPage() {
   const handleUpdate = () => {
     if (editingUserId === null) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/user/${editingUserId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${editingUserId}`, {
       method: 'PATCH', //  PATCH로 수정
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: editName }),
@@ -64,7 +64,7 @@ export default function UserPage() {
     } else {
       setExpandedUserId(userId);
       if (!petData[userId]) {
-        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/user/${userId}/pets`)
+        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}/pet`)
           .then(res => res.json())
           .then(data => {
             setPetData(prev => ({ ...prev, [userId]: data }));
@@ -80,7 +80,7 @@ export default function UserPage() {
       return;
     }
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/user/search?${searchType}=${searchKeyword}`)
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/search?${searchType}=${searchKeyword}`)
       .then(res => res.json())
       .then(data => setUsers(data))
       .catch(() => alert('검색에 실패했습니다.'));

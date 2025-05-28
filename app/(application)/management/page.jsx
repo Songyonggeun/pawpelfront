@@ -7,7 +7,7 @@ const [userCount, setUserCount] = useState(0);
 const [postCount, setPostCount] = useState(0);
 
 useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/stats`)
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/stats`)
     .then(res => res.json())
     .then(data => {
         setUserCount(data.userCount);
@@ -46,7 +46,7 @@ return (
         </Link>
 
         <Link
-            href="management/post"
+            href="management/posts"
             className="flex-1 bg-green-100 hover:bg-green-200 transition p-6 rounded-xl shadow text-center min-w-[300px]"
         >
             <h3 className="text-xl font-semibold text-green-900">게시글 관리</h3>
