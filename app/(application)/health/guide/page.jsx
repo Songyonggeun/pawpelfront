@@ -7,7 +7,7 @@ import MatureAdultTable from './MatureAdultTable';
 import SeniorTable from './SeniorTable';
 
 const tabs = [
-  { id: 'puppy', label: 'Puppy (1세 미만)' },
+  { id: 'puppy', label: 'Baby (1세 미만)' },
   { id: 'young', label: 'Young Adult (1~7세)' },
   { id: 'mature', label: 'Mature Adult (8~12세)' },
   { id: 'senior', label: 'Senior (12세 이상)' },

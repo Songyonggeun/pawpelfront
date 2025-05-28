@@ -27,7 +27,7 @@ export default function MyPostsPage() {
 
   const menuItems = [
     { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '건강 체크 기록', href: '/myPage/checkpw' },
+    { title: '건강 체크 기록', href: '/myPage/health' },
     { title: '작성 글', href: '/myPage/posts' },
   ];
 
