@@ -13,6 +13,10 @@ export default function UserPage() {
   const [searchType, setSearchType] = useState(''); // social, email, name
   const [searchKeyword, setSearchKeyword] = useState('');
 
+  // 회원 상세정보 보기용 상태 추가
+  const [expandedInfoUserId, setExpandedInfoUserId] = useState(null);
+  const [userDetailData, setUserDetailData] = useState({});
+
   // 페이지 로드 시 사용자 목록 가져오기
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`, {
@@ -125,7 +129,26 @@ export default function UserPage() {
       })
       .catch(() => alert('검색에 실패했습니다.'));
   };
-
+// 새로 추가: 회원 상세정보 토글 및 API 호출
+const toggleUserInfo = (userId) => {
+  if (expandedInfoUserId === userId) {
+    setExpandedInfoUserId(null);
+  } else {
+    setExpandedInfoUserId(userId);
+    if (!userDetailData[userId]) {
+      fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}/detail`, {
+        credentials: 'include'
+      })
+        .then(res => res.json())
+        .then(data => {
+          setUserDetailData(prev => ({ ...prev, [userId]: data }));
+        })
+        .catch(() => {
+          alert('회원 상세 정보를 불러오는 중 오류가 발생했습니다.');
+        });
+    }
+  }
+};
   return (
     <div className="p-4 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">회원 관리</h1>
@@ -185,9 +208,13 @@ export default function UserPage() {
                     <button onClick={() => togglePetInfo(user.id)} className="text-indigo-600">
                       {expandedUserId === user.id ? '펫 정보 닫기' : '펫 정보 보기'}
                     </button>
+                    <button onClick={() => toggleUserInfo(user.id)} className="text-green-600">
+                      {expandedInfoUserId === user.id ? '회원 정보 닫기' : '회원 정보 보기'}
+                    </button>
+                    
                   </div>
                 </div>
-
+                
                 {expandedUserId === user.id && (
                   <div className="mt-2 pl-4 border-l-4 border-indigo-300 bg-white rounded p-2">
                     {petData[user.id] ? (
@@ -206,7 +233,41 @@ export default function UserPage() {
                       <p className="text-sm text-gray-400">펫 정보를 불러오는 중...</p>
                     )}
                   </div>
+                  
                 )}
+                {expandedInfoUserId === user.id && (
+                  <div className="mt-2 pl-4 border-l-4 border-green-300 bg-white rounded p-2">
+                    {userDetailData[user.id] ? (
+                      <div className="text-sm text-gray-800 space-y-1">
+                        <p><strong>ID:</strong> {userDetailData[user.id].id}</p>
+                        <p><strong>아이디:</strong> {userDetailData[user.id].name}</p>
+                        <p><strong>이름 (소셜):</strong> {userDetailData[user.id].socialName || '정보 없음'}</p>
+                        <p><strong>이메일:</strong> {userDetailData[user.id].email || '정보 없음'}</p>
+                        <p><strong>전화번호:</strong> {userDetailData[user.id].phoneNumber || '정보 없음'}</p>
+                        <p><strong>생년월일:</strong> {userDetailData[user.id].birthDate || '정보 없음'}</p>
+                        <p><strong>가입일:</strong> {userDetailData[user.id].created ? new Date(userDetailData[user.id].created).toLocaleString() : '정보 없음'}</p>
+                        <p><strong>권한:</strong> {userDetailData[user.id].roles?.join(', ') || '정보 없음'}</p>
+                        {userDetailData[user.id].attr && Object.keys(userDetailData[user.id].attr).length > 0 ? (
+                          <div>
+                            <strong>속성 (attr):</strong>
+                            <ul className="list-disc ml-5 mt-1 text-gray-600">
+                              {Object.entries(userDetailData[user.id].attr).map(([key, value]) => (
+                                <li key={key}>
+                                  {key}: {String(value)}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <p><strong>속성:</strong> 없음</p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400">회원 정보를 불러오는 중...</p>
+                    )}
+                  </div>
+                )}
+
               </>
             )}
           </li>
