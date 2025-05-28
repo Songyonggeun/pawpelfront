@@ -6,6 +6,7 @@ export default function HealthHome() {
     const [pet, setPet] = useState(null);
     const [dDay, setDDay] = useState(null);
     const [consults, setConsults] = useState([]);
+    const [communityPosts, setCommunityPosts] = useState([]);
     const [isAuthChecked, setIsAuthChecked] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -30,9 +31,13 @@ export default function HealthHome() {
                 setDDay(dDayValue);
             });
 
-        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/consult/recent`)
+        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/popular/views`)
             .then((res) => res.json())
             .then((data) => setConsults(data.slice(0, 3)));
+
+        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/popular/views`)
+            .then((res) => res.json())
+            .then((data) => setCommunityPosts(data.slice(0, 3)));
     }, []);
 
     const calculateDDay = (age, lastCheckupDate) => {
@@ -92,21 +97,70 @@ export default function HealthHome() {
                 </a>
             </div>
 
-            {/* 최근 상담 목록 */}
-            <div className="bg-white rounded-xl shadow-md p-4">
-                <h2 className="text-lg font-semibold mb-2">최근 수의사 상담</h2>
-                {consults.length === 0 ? (
-                    <div className="text-sm text-gray-500">최근 상담이 없습니다.</div>
-                ) : (
-                    <ul className="text-sm space-y-2">
-                        {consults.map((item, idx) => (
-                            <li key={idx} className="text-gray-700">
-                                🩺 {item.title}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
+            {/* 수의사 소개 + 커뮤니티 미리보기 */}
+            {isLoggedIn && (
+                <div className="bg-white rounded-xl shadow-md p-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start">
+                        {/* 수의사 소개 카드 */}
+                        <div className="w-full md:w-1/3 bg-gray-50 rounded-lg p-6 text-center md:text-left">
+                            <h2 className="text-xl font-semibold mb-2 leading-snug">
+                                우리 아이 건강에 대해<br />궁금한 점이 있으신가요?
+                            </h2>
+                            <a href="health/consult" ><p className="text-sm text-gray-600 mb-4">
+                                전문 수의사에게 1:1 상담을 받아보세요.
+                            </p>
+                            </a>
+                            <img
+                                src="/images/vet-consult.png"
+                                alt="수의사 이미지"
+                                className="w-32 h-auto mx-auto md:mx-0"
+                            />
+                        </div>
+
+                        {/* 커뮤니티 미리보기 */}
+                        <div className="w-full md:w-2/3 md:pl-6 mt-6 md:mt-0">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-semibold">커뮤니티 최신 글</h3>
+                                <a href="/community/total" className="text-sm text-gray-600 hover:underline flex items-center">
+                                    더보기 <span className="ml-1">→</span>
+                                </a>
+                            </div>
+                            <div className="space-y-4">
+                                {communityPosts.map((post, idx) => (
+                                    <div key={idx} className="border rounded-lg p-3 hover:bg-gray-50">
+                                        <a href={`/comunity/${post.id}`} className="font-medium text-gray-800 truncate hover:underline block">
+                                            {post.title}
+                                        </a>
+                                        <div className="text-sm text-gray-500 truncate">{post.content}</div>
+                                        <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                            <span>{post.nickname}</span>
+                                            <span>{post.daysAgo}일 전 · 조회수 {post.views}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 최근 수의사 상담 - 로그인 시에만 표시 */}
+            {isLoggedIn && (
+                <div className="bg-white rounded-xl shadow-md p-4">
+                    <h2 className="text-lg font-semibold mb-2">최근 수의사 상담</h2>
+                    {consults.length === 0 ? (
+                        <div className="text-sm text-gray-500">최근 상담이 없습니다.</div>
+                    ) : (
+                        <ul className="text-sm space-y-2">
+                            {consults.map((item, idx) => (
+                                <li key={idx} className="text-gray-700">
+                                    🩺 {item.title}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
