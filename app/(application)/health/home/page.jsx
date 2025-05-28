@@ -84,7 +84,7 @@ export default function HealthHome() {
                             <button onClick={handleNext} className="absolute right-2 text-xl font-bold text-gray-500 hover:text-black">{'>'}</button>
                         </>
                     )}
-                    <div className="flex items-center space-x-4 mx-auto">
+                    <div className="flex items-center space-x-4 mx-left">
                         <div className="w-16 h-16 bg-gray-200 rounded-full" />
                         <div>
                             <div className="font-bold text-lg">{pets[currentIndex].petName}</div>
