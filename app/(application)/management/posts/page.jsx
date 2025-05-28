@@ -9,7 +9,7 @@ export default function PostPage() {
 
   // 페이지 로드 시 게시물 목록 불러오기
 useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post`,{
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/posts`,{
         credentials: 'include',
     })
     .then((res) => res.json())

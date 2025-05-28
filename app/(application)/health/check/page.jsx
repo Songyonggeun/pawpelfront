@@ -1,132 +1,171 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const healthItems = [
-  '피부에 발진이나 염증이 있다',
-  '기침이나 재채기를 자주 한다',
-  '눈에 분비물이 있다',
-  '배변 습관이 평소와 다르다',
-  '식욕이 없다',
-  '특별히 없어요'
+'피부에 발진이나 염증이 있다',
+'기침이나 재채기를 자주 한다',
+'눈에 분비물이 있다',
+'배변 습관이 평소와 다르다',
+'식욕이 없다',
+'특별히 없어요'
 ];
 
 export default function HealthCheckPage() {
-  const [pets, setPets] = useState([]);
-  const [selectedPetId, setSelectedPetId] = useState('');
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [result, setResult] = useState(null);
+const router = useRouter();
+const [pets, setPets] = useState([]);
+const [selectedPetId, setSelectedPetId] = useState(null);
+const [selectedItems, setSelectedItems] = useState([]);
+const [result, setResult] = useState(null);
+const [showModal, setShowModal] = useState(false);
+const [isLoggedIn, setIsLoggedIn] = useState(true);
 
-  useEffect(() => {
-    // 백엔드에서 반려동물 리스트 가져오기
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/petinfo`)
-      .then(res => res.json())
-      .then(data => setPets(data));
-  }, []);
-
-  const toggleItem = (item) => {
-    if (selectedItems.includes(item)) {
-      setSelectedItems(selectedItems.filter(i => i !== item));
-    } else {
-      if (item === '특별히 없어요') {
-        setSelectedItems(['특별히 없어요']);
-      } else {
-        setSelectedItems([...selectedItems.filter(i => i !== '특별히 없어요'), item]);
-      }
-    }
-  };
-
-  const handleSubmit = () => {
-    const hasNone = selectedItems.includes('특별히 없어요');
-    const score = hasNone ? 100 : Math.max(0, 100 - selectedItems.length * 2);
-    const level = score >= 80 ? '양호' : score >= 50 ? '경고' : '위험';
-    const areas = selectedItems.filter(item => item !== '특별히 없어요');
-
-    setResult({
-      score,
-      level,
-      areas,
-      petName: pets.find(p => p.id === parseInt(selectedPetId))?.name || ''
+useEffect(() => {
+    // 로그인 확인
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+    credentials: 'include',
+    })
+    .then(res => {
+        if (res.status === 200) return res.json();
+        throw new Error('Not logged in');
+    })
+    .then(data => {
+        setIsLoggedIn(true);
+        fetchPets();
+    })
+    .catch(() => {
+        setIsLoggedIn(false);
     });
-  };
+}, []);
 
-  const closeModal = () => setResult(null);
+const fetchPets = () => {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/petinfo`, {
+    credentials: 'include',
+    })
+    .then(res => res.json())
+    .then(data => setPets(data));
+};
 
-  return (
-    <div className="p-4 max-w-xl mx-auto relative">
-      <h1 className="text-2xl font-bold mb-4">반려동물 건강 체크</h1>
+const toggleItem = (item) => {
+    if (selectedItems.includes(item)) {
+    setSelectedItems(selectedItems.filter(i => i !== item));
+    } else {
+    if (item === '특별히 없어요') {
+        setSelectedItems(['특별히 없어요']);
+    } else {
+        setSelectedItems([...selectedItems.filter(i => i !== '특별히 없어요'), item]);
+    }
+    }
+};
 
-      <div className="mb-4">
+const handleSubmit = () => {
+    const body = {
+    petId: selectedPetId,
+    selectedOptions: {
+        general: selectedItems,
+    },
+    };
+
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/health/submit`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(body),
+    })
+    .then(res => res.json())
+    .then(data => {
+        setResult(data);
+        setShowModal(true);
+    });
+};
+
+const viewHistory = () => {
+    router.push(`/records?petId=${selectedPetId}`);
+};
+
+if (!isLoggedIn) {
+    return <div className="text-center mt-10 text-gray-700">로그인이 필요합니다.</div>;
+}
+
+return (
+    <div className="p-4 max-w-xl mx-auto">
+    <h1 className="text-2xl font-bold mb-4">반려동물 건강 체크</h1>
+
+    <div className="mb-4">
         <label className="block font-semibold mb-2">반려동물을 선택하세요:</label>
         <select
-          className="border p-2 rounded w-full"
-          value={selectedPetId}
-          onChange={(e) => setSelectedPetId(e.target.value)}
+        className="border p-2 rounded w-full"
+        value={selectedPetId || ''}
+        onChange={(e) => setSelectedPetId(Number(e.target.value))}
         >
-          <option value="" disabled>선택하세요</option>
-          {pets.map(pet => (
+        <option value="" disabled>선택하세요</option>
+        {pets.map(pet => (
             <option key={pet.id} value={pet.id}>{pet.name}</option>
-          ))}
+        ))}
         </select>
-      </div>
+    </div>
 
-      <div className="mb-4">
+    <div className="mb-4">
         <label className="block font-semibold mb-2">건강 이상 징후를 모두 선택해주세요:</label>
         <ul className="space-y-2">
-          {healthItems.map(item => (
+        {healthItems.map(item => (
             <li key={item}>
-              <label className="flex items-center">
+            <label className="flex items-center">
                 <input
-                  type="checkbox"
-                  className="mr-2"
-                  checked={selectedItems.includes(item)}
-                  onChange={() => toggleItem(item)}
+                type="checkbox"
+                className="mr-2"
+                checked={selectedItems.includes(item)}
+                onChange={() => toggleItem(item)}
                 />
                 {item}
-              </label>
+            </label>
             </li>
-          ))}
+        ))}
         </ul>
-      </div>
+    </div>
 
-      <button
-        className="bg-indigo-600 text-white px-4 py-2 rounded mt-4 disabled:opacity-50"
+    <div className="flex gap-2">
+        <button
+        className="bg-indigo-600 text-white px-4 py-2 rounded disabled:opacity-50"
         onClick={handleSubmit}
         disabled={!selectedPetId || selectedItems.length === 0}
-      >
+        >
         결과 확인하기
-      </button>
+        </button>
+        <button
+        onClick={viewHistory}
+        className="text-sm text-indigo-700 underline"
+        disabled={!selectedPetId}
+        >
+        건강 기록 보기
+        </button>
+    </div>
 
       {/* 결과 모달 */}
-      {result && (
+    {showModal && result && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-sm w-full text-center shadow-xl relative">
-            <h2 className="text-xl font-bold mb-2">{result.petName}의 건강 상태</h2>
-            <p className="text-lg font-semibold text-gray-700 mb-1">점수: {result.score}점</p>
-            <p className={`text-md font-bold mb-2 ${
-              result.level === '양호' ? 'text-green-600' :
-              result.level === '경고' ? 'text-yellow-500' :
-              'text-red-600'
-            }`}>상태: {result.level}</p>
-
-            {result.areas.length > 0 && (
-              <>
-                <p className="font-semibold text-gray-800 mb-1">주의할 부위:</p>
-                <ul className="text-sm text-gray-600 mb-4 list-disc list-inside">
-                  {result.areas.map((area, idx) => <li key={idx}>{area}</li>)}
-                </ul>
-              </>
-            )}
-
+        <div className="bg-white p-6 rounded shadow-lg w-[90%] max-w-md">
+            <h2 className="text-xl font-bold mb-2">검진 결과</h2>
+            <p><strong>점수:</strong> {result.score}</p>
+            <p><strong>상태:</strong> {result.status}</p>
+            <p className="mt-2 font-semibold">주의가 필요한 항목:</p>
+            <ul className="list-disc ml-5 text-sm">
+            {result.warnings.map((item, index) => (
+                <li key={index}>{item}</li>
+            ))}
+            </ul>
             <button
-              className="bg-gray-300 px-4 py-2 rounded text-sm hover:bg-gray-400"
-              onClick={closeModal}
+            onClick={() => setShowModal(false)}
+            className="mt-4 bg-indigo-600 text-white px-4 py-1 rounded"
             >
-              닫기
+            닫기
             </button>
-          </div>
         </div>
-      )}
+        </div>
+    )}
     </div>
-  );
+);
 }

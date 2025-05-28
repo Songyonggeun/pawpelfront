@@ -80,7 +80,7 @@ export default function UserPage() {
       setExpandedUserId(userId);
       if (!petData[userId]) {
         fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}/pets`, {
-          credentials: 'include' // ✅ 쿠키 포함!
+          credentials: 'include' //  쿠키 포함!
         })
           .then(res => res.json())
           .then(data => {
@@ -97,7 +97,11 @@ export default function UserPage() {
       return;
     }
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/search?${searchType}=${searchKeyword}`)
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/search?${searchType}=${searchKeyword}`
+            , {
+          credentials: 'include' //  쿠키 포함!
+        }
+    )
       .then(res => res.json())
       .then(data => setUsers(data))
       .catch(() => alert('검색에 실패했습니다.'));
@@ -115,7 +119,6 @@ export default function UserPage() {
         >
           <option value="">검색 조건</option>
           <option value="social">이름</option>
-          <option value="email">이메일</option>
           <option value="name">아이디</option>
         </select>
         <input
