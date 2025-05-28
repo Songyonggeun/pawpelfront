@@ -118,7 +118,7 @@ export default function UserPage() {
           onChange={e => setSearchType(e.target.value)}
         >
           <option value="">검색 조건</option>
-          <option value="social">이름</option>
+          <option value="social">이름</option>  
           <option value="name">아이디</option>
         </select>
         <input

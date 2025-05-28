@@ -33,11 +33,11 @@ export default function HealthHome() {
 
         fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/popular/views`)
             .then((res) => res.json())
-            .then((data) => setConsults(data.slice(0, 3)));
+            // .then((data) => setConsults(data.slice(0, 3)));
 
         fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/popular/views`)
             .then((res) => res.json())
-            .then((data) => setCommunityPosts(data.slice(0, 3)));
+            // .then((data) => setCommunityPosts(data.slice(0, 3)));
     }, []);
 
     const calculateDDay = (age, lastCheckupDate) => {
@@ -98,7 +98,7 @@ export default function HealthHome() {
             </div>
 
             {/* 수의사 소개 + 커뮤니티 미리보기 */}
-            {isLoggedIn && (
+
                 <div className="bg-white rounded-xl shadow-md p-6">
                     <div className="flex flex-col md:flex-row justify-between items-start">
                         {/* 수의사 소개 카드 */}
@@ -106,10 +106,9 @@ export default function HealthHome() {
                             <h2 className="text-xl font-semibold mb-2 leading-snug">
                                 우리 아이 건강에 대해<br />궁금한 점이 있으신가요?
                             </h2>
-                            <a href="health/consult" ><p className="text-sm text-gray-600 mb-4">
+                            <a href="health/consult"><p className="text-sm text-gray-600 mb-4">
                                 전문 수의사에게 1:1 상담을 받아보세요.
-                            </p>
-                            </a>
+                            </p></a>
                             <img
                                 src="/images/vet-consult.png"
                                 alt="수의사 이미지"
@@ -142,7 +141,7 @@ export default function HealthHome() {
                         </div>
                     </div>
                 </div>
-            )}
+
 
             {/* 최근 수의사 상담 - 로그인 시에만 표시 */}
             {isLoggedIn && (
