@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import CommentInput from '@/components/(Inputs)/commentInput';
+
 
 export default function PostDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
+  const [currentUserName, setCurrentUserName] = useState(null); // 로그인 사용자명 상태
 
   useEffect(() => {
     if (!id) return;
@@ -30,6 +34,23 @@ export default function PostDetailPage() {
     fetchPost();
   }, [id]);
 
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error('로그인 사용자 정보를 불러올 수 없습니다.');
+        const userData = await res.json();
+        setCurrentUserName(userData.name);
+      } catch (err) {
+        setCurrentUserName(null);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+
   const handleEdit = () => {
     router.push(`/community/edit/${id}`);
   };
@@ -43,7 +64,7 @@ export default function PostDetailPage() {
         });
         if (!res.ok) throw new Error('삭제 실패');
         alert('삭제되었습니다.');
-        router.push('/community');
+        router.push('/community/total');
       } catch (err) {
         alert('삭제 중 오류 발생');
         console.error(err);
@@ -90,32 +111,48 @@ export default function PostDetailPage() {
           <span>댓글 {post.commentCount || 0}</span>
           <span>|</span>
           <span>추천 {post.likeCount || 0}</span>
-          <span className='ml-4'>{new Date(post.createdAt).toLocaleString()}</span>
+          <span className="ml-4">{new Date(post.createdAt).toLocaleString()}</span>
         </div>
       </div>
+
       {/* 본문 박스 */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6 min-h-[300px]">
         <article
           className="prose prose-lg max-w-none"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
       </div>
+      {/* 수정/삭제 버튼 - 작성자일 때만 노출 */}
+      {currentUserName === post.authorName && (
+        <div className="flex justify-end gap-3 mb-6">
+          <button
+            onClick={handleEdit}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          >
+            수정
+          </button>
+          <button
+            onClick={handleDelete}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+          >
+            삭제
+          </button>
+        </div>
+      )}
 
-      {/* 수정/삭제 버튼 */}
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={handleEdit}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-        >
-          수정
-        </button>
-        <button
-          onClick={handleDelete}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-        >
-          삭제
-        </button>
-      </div>
+      {/* 댓글 작성 영역 - 로그인한 사용자 모두 보여주기 */}
+      {currentUserName && (
+        <div className="mt-10">
+          <h2 className="text-lg font-semibold mb-2">댓글 작성</h2>
+          <CommentInput
+            postId={post.id}
+            onCommentAdded={(newComment) => {
+              console.log('댓글 작성됨:', newComment);
+              // TODO: 댓글 목록 갱신 시 사용
+            }}
+          />
+        </div>
+      )}
     </main>
   );
 }
