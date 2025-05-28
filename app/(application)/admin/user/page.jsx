@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -10,16 +9,11 @@ export default function UserPage() {
   const [expandedUserId, setExpandedUserId] = useState(null);
   const [petData, setPetData] = useState({});
 
-  //  검색 상태
+  // 검색 상태
   const [searchType, setSearchType] = useState(''); // social, email, name
   const [searchKeyword, setSearchKeyword] = useState('');
 
   // 페이지 로드 시 사용자 목록 가져오기
-// useEffect(() => {
-//     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`)
-//     .then(res => res.json())
-//       .then(data => setUsers(data)); // 가져온 사용자 목록 저장
-// }, []);
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`, {
       credentials: 'include' // 인증 쿠키 포함
@@ -33,22 +27,30 @@ export default function UserPage() {
       });
   }, []);
 
-
-  // 사용자 삭제 함수
+  // 사용자 삭제 함수 (수정 완료)
   const handleDelete = (id) => {
-      // 삭제 확인창 표시
-      const confirmed = window.confirm('회원을 삭제하시겠습니까?');
-      if (!confirmed) return;
+    if (!window.confirm('회원을 삭제하시겠습니까?')) return;
 
-      fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${id}`, { method: 'DELETE' })
-        .then(() => {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${id}`, {
+      method: 'DELETE',
+      credentials: 'include', // 인증 쿠키 포함
+    })
+      .then(res => {
+        if (res.status === 204) {
           setUsers(prev => prev.filter(user => user.id !== id));
-      });
+          alert('회원이 삭제되었습니다.');
+        } else if (res.status === 404) {
+          alert('삭제할 회원을 찾을 수 없습니다.');
+        } else {
+          alert('회원 삭제에 실패했습니다.');
+        }
+      })
+      .catch(() => alert('서버와 통신 중 오류가 발생했습니다.'));
   };
 
   const startEdit = (user) => {
     setEditingUserId(user.id);
-    setEditName(user.name);
+    setEditName(user.socialName); // 수정 대상 필드가 socialName 인 경우 반영
   };
 
   const cancelEdit = () => {
@@ -60,9 +62,10 @@ export default function UserPage() {
     if (editingUserId === null) return;
 
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${editingUserId}`, {
-      method: 'PATCH', //  PATCH로 수정
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editName }),
+      body: JSON.stringify({ socialName: editName }), // 수정 요청 시 socialName 필드로 보내기
+      credentials: 'include', // 인증 쿠키 포함
     })
       .then(res => res.json())
       .then(updatedUser => {
@@ -70,7 +73,8 @@ export default function UserPage() {
           prev.map(user => user.id === editingUserId ? updatedUser : user)
         );
         cancelEdit();
-      });
+      })
+      .catch(() => alert('회원 정보 수정 중 오류가 발생했습니다.'));
   };
 
   const togglePetInfo = (userId) => {
@@ -80,7 +84,7 @@ export default function UserPage() {
       setExpandedUserId(userId);
       if (!petData[userId]) {
         fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}/pets`, {
-          credentials: 'include' // ✅ 쿠키 포함!
+          credentials: 'include'
         })
           .then(res => res.json())
           .then(data => {
@@ -90,16 +94,35 @@ export default function UserPage() {
     }
   };
 
-  //  검색 기능
+  // 검색 기능
   const handleSearch = () => {
     if (!searchType || !searchKeyword.trim()) {
       alert('검색 조건과 키워드를 입력해주세요.');
       return;
     }
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/search?${searchType}=${searchKeyword}`)
+    let url = '';
+    if (searchType === 'social') {
+      url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/social?socialName=${encodeURIComponent(searchKeyword)}`;
+    } else if (searchType === 'email') {
+      url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/email?email=${encodeURIComponent(searchKeyword)}`;
+    } else if (searchType === 'name') {
+      url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/name?name=${encodeURIComponent(searchKeyword)}`;
+    } else {
+      alert('잘못된 검색 조건입니다.');
+      return;
+    }
+
+    fetch(url, { credentials: 'include' })
       .then(res => res.json())
-      .then(data => setUsers(data))
+      .then(data => {
+        if (!Array.isArray(data)) {
+          alert('검색 결과가 배열이 아닙니다.');
+          setUsers([]);
+        } else {
+          setUsers(data);
+        }
+      })
       .catch(() => alert('검색에 실패했습니다.'));
   };
 
@@ -157,7 +180,7 @@ export default function UserPage() {
                     </span>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => startEdit(user)} className="text-blue-600">이름 수정</button>
+                    <button onClick={() => startEdit(user)} className="text-blue-600">권한 수정</button>
                     <button onClick={() => handleDelete(user.id)} className="text-red-600">회원 삭제</button>
                     <button onClick={() => togglePetInfo(user.id)} className="text-indigo-600">
                       {expandedUserId === user.id ? '펫 정보 닫기' : '펫 정보 보기'}
