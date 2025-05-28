@@ -1,8 +1,36 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function TotalPage() {
+  const [posts, setPosts] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [sortBy, setSortBy] = useState('latest');
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts?page=${page}&size=10&sort=${sortBy}`
+        );
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        setPosts(data.content || []);
+        setTotalPages(data.totalPages || 0);
+      } catch (error) {
+        console.error('게시글 불러오기 실패:', error);
+      }
+    };
+
+    fetchPosts();
+  }, [page, sortBy]);
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+    setPage(0);
+  };
+
   return (
     <div className="bg-white text-black min-h-screen">
       <div className="max-w-6xl mx-auto flex pt-10">
@@ -13,87 +41,56 @@ export default function TotalPage() {
           <div className="flex gap-2 mb-6">
             <select
               className="bg-white text-black border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              defaultValue="latest"
-              onChange={(e) => {
-                const sortBy = e.target.value;
-                console.log('정렬 방식:', sortBy);
-              }}
+              value={sortBy}
+              onChange={handleSortChange}
             >
               <option value="latest">최신순</option>
               <option value="popular">인기순</option>
             </select>
           </div>
 
-          {/* 게시글 목록 */}
           <div className="divide-y divide-gray-200 mt-0">
-            {[
-              {
-                category: '건강일상',
-                title: '대형견 놀이터',
-                content: '전북이나 전남에 대형견 운동장 대관 추천 해주실 수 있나요?',
-                author: '로미미',
-                time: '19분 전',
-                views: 0,
-                likes: 0,
-                comments: 0,
-                categoryColor: 'text-gray-500',
-              },
-              {
-                category: '질문과답',
-                title: '서울에 강아지 수영장 있나요?',
-                content: '한강이나 --천에서 한다는 얘기를',
-                author: '남밤박사',
-                time: '58분 전',
-                views: 3,
-                likes: 1,
-                comments: 1,
-                categoryColor: 'text-red-500',
-              },
-              {
-                category: '질문과답',
-                title: '고양이 치석',
-                content: '고양이 치석 관리 어떻게 하시는지 궁금해요~!',
-                author: '알루루럭우유2',
-                time: '2시간 전',
-                views: 7,
-                likes: 1,
-                comments: 1,
-                categoryColor: 'text-red-500',
-              },
-              {
-                category: '노하우',
-                title: '',
-                content: '',
-                author: '',
-                time: '',
-                views: 0,
-                likes: 0,
-                comments: 0,
-                categoryColor: 'text-yellow-500',
-              },
-            ].map((post, idx) => (
-              <div key={idx} className="py-6">
-                <div className={`text-sm ${post.categoryColor} mb-1`}>{post.category}</div>
-                {post.title && <div className="font-semibold text-lg mb-1">{post.title}</div>}
-                {post.content && <div className="text-gray-700 mb-3 text-sm">{post.content}</div>}
-                {post.author && (
-                  <div className="flex items-center text-xs text-gray-500">
-                    <span>{post.author}</span>
-                    <span className="mx-2">·</span>
-                    <span>{post.time}</span>
-                    <span className="mx-2">·</span>
-                    <span>조회수 {post.views}</span>
-                    <span className="ml-auto flex items-center gap-4">
-                      <span className="flex items-center gap-1">
-                        <HeartIcon />{post.likes}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <CommentIcon />{post.comments}
-                      </span>
+            {posts.map((post) => (
+              <div key={post.id} className="py-6">
+                <div className={`text-sm text-gray-500 mb-1`}>{post.category}</div>
+                <div className="font-semibold text-lg mb-1">{post.title}</div>
+                <div
+                  className="text-gray-700 mb-3 text-sm line-clamp-2"
+                  dangerouslySetInnerHTML={{ __html: post.content }}
+                />
+                <div className="flex items-center text-xs text-gray-500">
+                  <span>{post.authorName}</span>
+                  <span className="mx-2">·</span>
+                  <span>{formatDateRelative(post.createdAt)}</span>
+                  <span className="mx-2">·</span>
+                  <span>조회수 {post.viewCount}</span>
+                  <span className="ml-auto flex items-center gap-4">
+                    <span className="flex items-center gap-1">
+                      <HeartIcon />
+                      {post.likeCount || 0}
                     </span>
-                  </div>
-                )}
+                    <span className="flex items-center gap-1">
+                      <CommentIcon />
+                      {post.commentCount || 0}
+                    </span>
+                  </span>
+                </div>
               </div>
+            ))}
+          </div>
+
+          {/* 페이지네이션 */}
+          <div className="mt-6 flex justify-center gap-2">
+            {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
+              <button
+                key={pageNumber}
+                className={`px-3 py-1 rounded ${
+                  pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                }`}
+                onClick={() => setPage(pageNumber)}
+              >
+                {pageNumber + 1}
+              </button>
             ))}
           </div>
         </main>
@@ -102,28 +99,32 @@ export default function TotalPage() {
         <aside className="w-80 border-l border-gray-200 pl-8">
           <h3 className="text-lg font-bold mb-4">인기글</h3>
           <ol className="space-y-2 text-sm">
-            {[
-              '📢 게시글 챌린지 참여하고 1년치...',
-              '[건강정보] 슈퍼위크에 이거 챙기셨나요?!',
-              '📢 건강토픽 구독하면 영양 간식...',
-              '모모가 추천하는 <항산화제 Top...',
-              '라이펫 슈퍼위크 쇼핑해따용! 😊',
-              '라이펫 슈퍼위크 택배도착이요...',
-              '치킨불 만들기 🐔 (초초초간단해...',
-              '물만 먹으면 "펫켓" 기침하는 아이...',
-              '결국 품절제품을 기다리지 못 하고...',
-              '라이펫 쇼핑목록 공유부탁드려요...',
-            ].map((text, index) => (
-              <li key={index} className="flex items-center gap-2">
-                <span className="text-pink-500 font-bold">{index + 1}</span>
-                <span>{text}</span>
-              </li>
-            ))}
+            {posts
+              .slice(0, 10)
+              .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
+              .map((post, index) => (
+                <li key={post.id} className="flex items-center gap-2">
+                  <span className="text-pink-500 font-bold">{index + 1}</span>
+                  <span className="truncate">{post.title}</span>
+                </li>
+              ))}
           </ol>
         </aside>
       </div>
     </div>
   );
+}
+
+function formatDateRelative(dateString) {
+  const createdDate = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now - createdDate;
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInDays === 0) return '오늘';
+  if (diffInDays < 7) return `${diffInDays}일 전`;
+  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}주 전`;
+  return `${Math.floor(diffInDays / 30)}달 전`;
 }
 
 function HeartIcon() {

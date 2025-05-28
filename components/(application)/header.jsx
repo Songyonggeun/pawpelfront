@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CommunityMenu from '@/components/(application)/communityMenu';
 import HealthCareMenu from '@/components/(application)/healthCare';
-import Link from 'next/link';
 
 export default function Header() {
   const [showCommunityMenu, setShowCommunityMenu] = useState(false);
@@ -13,6 +12,10 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRoles, setUserRoles] = useState([]);
   const router = useRouter();
+
+  const goTo = (path) => () => {
+    router.push(path);
+  };
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -67,7 +70,7 @@ export default function Header() {
 
       setIsLoggedIn(false);
       setUserRoles([]);
-      window.location.href = '/home';
+      window.location.href = '/';
     } catch (err) {
       console.error('로그아웃 실패:', err);
       alert('로그아웃 중 오류가 발생했습니다.');
@@ -77,11 +80,9 @@ export default function Header() {
   return (
     <header className="w-full border-b bg-white">
       <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Link href="/home" className="flex items-center space-x-2 cursor-pointer">
-            <span className="text-blue-500 text-2xl font-bold">✓</span>
-            <span className="text-2xl font-bold text-blue-500">Pawple</span>
-          </Link>
+        <div className="flex items-center space-x-2 cursor-pointer" onClick={goTo('/')}>
+          <span className="text-blue-500 text-2xl font-bold">✓</span>
+          <span className="text-2xl font-bold text-blue-500">Pawple</span>
         </div>
 
         <nav className="hidden md:flex space-x-6 text-gray-700 text-sm items-start mr-auto ml-8">
@@ -103,23 +104,29 @@ export default function Header() {
             <button className="absolute right-3 top-1.5 text-gray-500">🔍</button>
           </div>
 
-          <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="알림">알림</button>
+          <button className="text-left p-1 rounded hover:bg-gray-100 text-sm">알림</button>
 
           {isLoggedIn ? (
-            userRoles.length === 0 ? ( null ) : (
+            userRoles.length === 0 ? null : (
               <div className="flex items-center space-x-3">
                 {userRoles.includes('ADMIN') ? (
-                  <Link href="/management" className="text-gray-600">관리자페이지</Link>
+                  <button onClick={goTo('/management')} className="text-left p-1 rounded hover:bg-gray-100 text-sm">
+                    관리자페이지
+                  </button>
                 ) : (
-                  <Link href="/myPage" className="text-gray-600">마이페이지</Link>
+                  <button onClick={goTo('/myPage')} className="text-left p-1 rounded hover:bg-gray-100 text-sm">
+                    마이페이지
+                  </button>
                 )}
-                <button onClick={handleLogout} className="text-gray-600">로그아웃</button>
+                <button onClick={handleLogout} className="text-left p-1 rounded hover:bg-gray-100 text-sm">
+                  로그아웃
+                </button>
               </div>
             )
           ) : (
-            <div className="p-1 rounded hover:bg-gray-100 text-sm">
-              <Link href="/login" className="text-gray-600">로그인</Link>
-            </div>
+            <button onClick={goTo('/login')} className="text-left p-1 rounded hover:bg-gray-100 text-sm">
+              로그인
+            </button>
           )}
         </div>
 
@@ -144,28 +151,38 @@ export default function Header() {
 
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200 px-4 py-3 space-y-4">
-          <button onClick={toggleCommunityMenu} className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500">커뮤니티</button>
+          <button onClick={toggleCommunityMenu} className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500">
+            커뮤니티
+          </button>
           {showCommunityMenu && <CommunityMenu visible={showCommunityMenu} />}
 
-          <button onClick={toggleHealthCareMenu} className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500">건강관리</button>
+          <button onClick={toggleHealthCareMenu} className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500">
+            건강관리
+          </button>
           {showHealthCareMenu && <HealthCareMenu />}
 
           <div className="flex flex-col space-y-2 text-sm">
             <button className="text-left p-1 rounded hover:bg-gray-100">알림</button>
 
             {!isLoggedIn ? (
-              <Link href="/login" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그인</Link>
+              <button onClick={goTo('/login')} className="text-left p-1 rounded hover:bg-gray-100">
+                로그인
+              </button>
             ) : (
-              userRoles.length === 0 ? ( null ) : (
-                <>
-                  {userRoles.includes('ADMIN') ? (
-                    <Link href="/management" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">관리자페이지</Link>
-                  ) : (
-                    <Link href="/myPage" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">마이페이지</Link>
-                  )}
-                  <button onClick={handleLogout} className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">로그아웃</button>
-                </>
-              )
+              <div className="flex flex-col space-y-2">
+                {userRoles.includes('ADMIN') ? (
+                  <button onClick={goTo('/management')} className="text-left p-1 rounded hover:bg-gray-100">
+                    관리자페이지
+                  </button>
+                ) : (
+                  <button onClick={goTo('/myPage')} className="text-left p-1 rounded hover:bg-gray-100">
+                    마이페이지
+                  </button>
+                )}
+                <button onClick={handleLogout} className="text-left p-1 rounded hover:bg-gray-100">
+                  로그아웃
+                </button>
+              </div>
             )}
           </div>
         </div>

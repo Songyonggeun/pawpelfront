@@ -4,11 +4,12 @@ export const metadata = {
     keywords:['검색 키워드'],
     url:'http://localhost:3000',
     images:[
-        '/favicon-32x32.png'
+        // '/favicon-32x32.png'
+        '/pawple.ico'
     ],
-    icon:'/favicon.ico',
-    shortcut:'/favicon-32x32.png',
-    appleicon:'/apple-touch-icon.png',
+    icon:'/pawple.ico',
+    shortcut:'/pawple.ico',
+    appleicon:'/pawple.ico',
     locale:"ko",
     index:true,
     follow:false

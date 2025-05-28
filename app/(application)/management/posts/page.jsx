@@ -9,7 +9,7 @@ export default function PostPage() {
 
   // 페이지 로드 시 게시물 목록 불러오기
 useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/posts`,{
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post`,{
         credentials: 'include',
     })
     .then((res) => res.json())
@@ -18,7 +18,7 @@ useEffect(() => {
 
   // 게시물 삭제 요청
 const handleDelete = (id) => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/posts/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/${id}`, {
     method: "DELETE",
     credentials: 'include',
     }).then(() => {
@@ -42,7 +42,7 @@ const cancelEdit = () => {
 const handleUpdate = () => {
     if (editingPostId === null) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/posts/${editingPostId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/${editingPostId}`, {
     method: "",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title: editTitle }),
@@ -58,7 +58,7 @@ const handleUpdate = () => {
 
   // 공지로 이동 요청
 const moveToNotice = (id) => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/api/posts/${id}/move`, {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/${id}/move`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ category: "공지사항" }),
