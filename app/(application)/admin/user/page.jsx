@@ -31,7 +31,7 @@ export default function UserPage() {
   const handleDelete = (id) => {
     if (!window.confirm('회원을 삭제하시겠습니까?')) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/delete/${id}`, {
       method: 'DELETE',
       credentials: 'include', // 인증 쿠키 포함
     })
