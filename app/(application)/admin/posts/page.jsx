@@ -9,21 +9,31 @@ export default function PostPage() {
 
   // 페이지 로드 시 게시물 목록 불러오기
 useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/posts`,{
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post`,{
         credentials: 'include',
     })
     .then((res) => res.json())
-    .then((data) => setPosts(data));
+    .then((data) =>
+        {console.log('받은 데이터 :',data);
+            setPosts(data)});
 }, []);
 
   // 게시물 삭제 요청
 const handleDelete = (id) => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/${id}`, {
+    if(window.confirm("삭제하시겠습니까?")){
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/delete/${id}`, {
     method: "DELETE",
     credentials: 'include',
-    }).then(() => {
-      setPosts((prev) => prev.filter((post) => post.id !== id)); // 목록에서 제거
+    }).then((res) => {
+        if (res.ok){
+            setPosts((prev) => prev.filter((post) => post.id !== id)); // 목록에서 제거
+            alert("삭제되었습니다.");
+        }else{
+            alert("삭제에 실패했습니다.");
+        }
     });
+    
+    }
 };
 
   // 수정 시작
@@ -43,7 +53,7 @@ const handleUpdate = () => {
     if (editingPostId === null) return;
 
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/${editingPostId}`, {
-    method: "",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title: editTitle }),
     })

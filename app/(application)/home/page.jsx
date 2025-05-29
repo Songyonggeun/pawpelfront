@@ -30,15 +30,15 @@ export default function LifetCommunityUI() {
             <div className="grid grid-cols-3 gap-6 text-center">
                 <a href="/health/check/select" className="cursor-pointer">
                     <div className="w-18 h-18 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-2xl font-bold">✓</div>
-                    <div className="mt-2 text-m text-gray-800 font-medium">건강체크</div>
+                    <div className="mt-2 text-lg text-gray-800 font-medium">건강체크</div>
                 </a>
                 <a href="/community/total" className="cursor-pointer">
                     <div className="w-18 h-18 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-2xl font-bold">💬</div>
-                    <div className="mt-2 text-m text-gray-800 font-medium">커뮤니티</div>
+                    <div className="mt-2 text-lg text-gray-800 font-medium">커뮤니티</div>
                 </a>
                 <a href="/health/guide" className="cursor-pointer">
                     <div className="w-18 h-18 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-2xl font-bold">📘</div>
-                    <div className="mt-2 text-m text-gray-800 font-medium">건강체크 가이드</div>
+                    <div className="mt-2 text-lg text-gray-800 font-medium">건강체크 가이드</div>
                 </a>
             </div>
             </div>

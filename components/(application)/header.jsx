@@ -81,8 +81,8 @@ export default function Header() {
     <header className="w-full border-b bg-white">
       <div className="max-w-7xl mx-auto px-4 py-10 flex items-center justify-between">
         <div className="flex items-center space-x-2 cursor-pointer" onClick={goTo('/')}>
-          <span className="text-blue-500 text-3xl font-bold">✓</span>
-          <span className="text-3xl font-bold text-blue-500">Pawple</span>
+          <span className="text-blue-500 text-4xl font-bold">✓</span>
+          <span className="text-4xl font-bold text-blue-500">Pawple</span>
         </div>
 
         <nav className="hidden md:flex space-x-6 text-gray-700 text-xl items-start mr-auto ml-8">
@@ -104,13 +104,13 @@ export default function Header() {
             <button className="absolute right-3 top-1.5 text-gray-500">🔍</button>
           </div>
 
-          <button className="text-left p-1 rounded hover:bg-gray-100 text-lg">알림</button>
+          {/* <button className="text-left p-1 rounded hover:bg-gray-100 text-lg">알림</button> */}
 
           {isLoggedIn ? (
             userRoles.length === 0 ? null : (
               <div className="flex items-center space-x-3">
                 {userRoles.includes('ADMIN') ? (
-                  <button onClick={goTo('/management')} className="text-left p-1 rounded hover:bg-gray-100 text-lg">
+                  <button onClick={goTo('/admin')} className="text-left p-1 rounded hover:bg-gray-100 text-lg">
                     관리자페이지
                   </button>
                 ) : (
@@ -171,7 +171,7 @@ export default function Header() {
             ) : (
               <div className="flex flex-col space-y-2">
                 {userRoles.includes('ADMIN') ? (
-                  <button onClick={goTo('/management')} className="text-left p-1 rounded hover:bg-gray-100">
+                  <button onClick={goTo('/admin')} className="text-left p-1 rounded hover:bg-gray-100">
                     관리자페이지
                   </button>
                 ) : (
