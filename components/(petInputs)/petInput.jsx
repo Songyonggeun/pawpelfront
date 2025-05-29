@@ -13,6 +13,8 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [birthYearError, setBirthYearError] = useState('');
+  const [isImageDeleted, setIsImageDeleted] = useState(false);
+
 
   const [formData, setFormData] = useState({
     petName: '',
@@ -51,10 +53,10 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
     }));
   };
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      setImagePreview(URL.createObjectURL(file)); 
+      setImagePreview(URL.createObjectURL(file));
     }
   };
   const handleSubmit = async (e) => {
@@ -73,6 +75,12 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
     formDataObj.append('data', new Blob([JSON.stringify(petPayload)], { type: 'application/json' }));
     if (imageFile) {
       formDataObj.append('image', imageFile);
+    }
+    if (isEdit && isImageDeleted) {
+      await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/pet/delete-image/${pet.id}`, {
+        method: 'PUT',
+        credentials: 'include',
+      });
     }
 
     if (!/^\d{4}$/.test(formData.petAge)) {
@@ -174,49 +182,51 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
               {/* 이미지 업로드 */}
               <div>
                 <label className="block mb-1 text-gray-700 font-medium">이미지</label>
-                {/* 이미지 업로드 */}
-                <div className="flex justify-center">
-                  <label
-                    htmlFor="petImage"
-                    className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 relative overflow-hidden"
-                  >
-                    {imagePreview ? (
-                      <span
-                        className="text-6xl text-gray-100 z-10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setImageFile(null);
-                          setImagePreview(null);
-                        }}
-                        title="이미지 삭제"
+                  <div className="flex justify-center">
+                    <div className="relative w-24 h-24">
+                      <label
+                        htmlFor="petImage"
+                        className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 overflow-hidden"
                       >
-                        ×
-                      </span>
-                    ) : (
-                      <span className="text-6xl text-gray-500">+</span>
-                    )}
+                        {imagePreview ? (
+                          <img
+                            src={imagePreview}
+                            alt="미리보기"
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <span className="text-2xl text-gray-500">+</span>
+                        )}
+                        <input
+                          type="file"
+                          id="petImage"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                      </label>
 
-                    {/* 이미지 배경 */}
-                    {imagePreview && (
-                      <img
-                        src={imagePreview}
-                        alt="미리보기"
-                        className="w-full h-full object-cover rounded-full absolute top-0 left-0"
-                      />
-                    )}
-
-                    <input
-                      type="file"
-                      id="petImage"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-
+                      {imagePreview && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setImageFile(null);
+                            setImagePreview(null);
+                            if (isEdit) setIsImageDeleted(true); // 서버에서 기존 이미지 삭제하도록 플래그
+                          }}
+                          className="absolute top-0 right-0 w-5 h-5 bg-black text-white text-xs rounded-full flex items-center justify-center hover:bg-red-600 z-10"
+                          title="이미지 삭제"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  </div>
               </div>
+
+
 
               {/* 이름, 품종, 나이, 몸무게 */}
               <div>
