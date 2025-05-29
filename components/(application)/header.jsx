@@ -19,29 +19,28 @@ export default function Header() {
 
   useEffect(() => {
     const fetchUserInfo = async () => {
-      const cookies = document.cookie.split(';');
-      const jwtCookie = cookies.find(cookie => cookie.trim().startsWith('_ka_au_fo_th_='));
-      const isLogged = !!jwtCookie;
-      setIsLoggedIn(isLogged);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+          credentials: 'include',
+        });
 
-      if (isLogged) {
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
-            credentials: 'include',
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            setUserRoles(data.roles || []);
-          }
-        } catch (err) {
-          console.error('유저 정보 조회 실패:', err);
+        if (res.ok) {
+          const data = await res.json();
+          setUserRoles(data.roles || []);
+          setIsLoggedIn(true); // ✅ 여기서 상태 설정
+        } else {
+          setIsLoggedIn(false);
+          setUserRoles([]);
         }
+      } catch (err) {
+        console.error('유저 정보 조회 실패:', err);
+        setIsLoggedIn(false);
       }
     };
 
     fetchUserInfo();
   }, []);
+
 
   const toggleCommunityMenu = () => {
     setShowCommunityMenu(prev => !prev);
