@@ -11,11 +11,13 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
   const [selectedPetType, setSelectedPetType] = useState('dog');
   const [selectedGender, setSelectedGender] = useState('MALE');
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [birthYearError, setBirthYearError] = useState('');
 
   const [formData, setFormData] = useState({
     petName: '',
     petBreed: '',
-    petAge: '',
+    birthYear: '',
     weight: '',
   });
 
@@ -29,6 +31,9 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
         petAge: pet.petAge || '',
         weight: pet.weight || '',
       });
+      if (pet.thumbnailUrl || pet.imageUrl) {
+        setImagePreview(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`);
+      }
       setIsModalOpen(true);
     }
   }, [isEdit, pet]);
@@ -36,15 +41,22 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
   const handlePetTypeChange = (type) => setSelectedPetType(type);
   const handleGenderChange = (gender) => setSelectedGender(gender);
   const handleChange = (e) => {
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    if (name === 'birthYear') {
+      setBirthYearError('');
+    }
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
   };
   const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file)); 
+    }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -53,20 +65,24 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
       petGender: selectedGender,
       petName: formData.petName,
       petBreed: formData.petBreed,
-      petAge: parseInt(formData.petAge, 10),
+      petAge: parseInt(formData.petAge, 10), 
       weight: parseFloat(formData.weight),
     };
 
-    const formDataObj = new FormData(); // ✅ 먼저 선언
+    const formDataObj = new FormData();
     formDataObj.append('data', new Blob([JSON.stringify(petPayload)], { type: 'application/json' }));
     if (imageFile) {
       formDataObj.append('image', imageFile);
     }
 
-    const url = isEdit
-    ? `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/pet/update-with-image/${pet.id}`
-    : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/pet/register-with-image`;
+    if (!/^\d{4}$/.test(formData.petAge)) {
+      setBirthYearError('정확한 출생년도를 입력하세요 (예: 2020)');
+      return;
+    }
 
+    const url = isEdit
+    ? `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/pet/update/${pet.id}`
+    : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/pet/register`;
 
     try {
       const response = await fetch(url, {
@@ -84,7 +100,6 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
         });
 
         if (verify.ok) {
-          // 인증 유지되면 페이지 다시 그림
           window.location.reload(); // 또는 router.refresh()
         } else {
           alert("인증이 만료되었습니다. 다시 로그인해주세요.");
@@ -99,7 +114,7 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    onClose(); // 외부 상태 초기화
+    onClose(); 
   };
 
   return (
@@ -159,12 +174,48 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
               {/* 이미지 업로드 */}
               <div>
                 <label className="block mb-1 text-gray-700 font-medium">이미지</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full"
-                />
+                {/* 이미지 업로드 */}
+                <div className="flex justify-center">
+                  <label
+                    htmlFor="petImage"
+                    className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 relative overflow-hidden"
+                  >
+                    {imagePreview ? (
+                      <span
+                        className="text-6xl text-gray-100 z-10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setImageFile(null);
+                          setImagePreview(null);
+                        }}
+                        title="이미지 삭제"
+                      >
+                        ×
+                      </span>
+                    ) : (
+                      <span className="text-6xl text-gray-500">+</span>
+                    )}
+
+                    {/* 이미지 배경 */}
+                    {imagePreview && (
+                      <img
+                        src={imagePreview}
+                        alt="미리보기"
+                        className="w-full h-full object-cover rounded-full absolute top-0 left-0"
+                      />
+                    )}
+
+                    <input
+                      type="file"
+                      id="petImage"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+
               </div>
 
               {/* 이름, 품종, 나이, 몸무게 */}
@@ -181,7 +232,7 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
               </div>
 
               <div>
-                <label className="block mb-1 text-gray-700 font-medium">견종</label>
+                <label className="block mb-1 text-gray-700 font-medium">품종</label>
                 <input
                   type="text"
                   name="petBreed"
@@ -206,15 +257,19 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
               </div>
 
               <div>
-                <label className="block mb-1 text-gray-700 font-medium">나이</label>
+                <label className="block mb-1 text-gray-700 font-medium">출생년도</label>
                 <input
-                  type="number"
+                  type="text"
                   name="petAge"
                   value={formData.petAge}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border rounded-md"
+                  className={`w-full px-3 py-2 border rounded-md ${birthYearError ? 'border-red-500' : ''}`}
+                  placeholder="예: 2020"
                 />
+                {birthYearError && (
+                  <p className="text-red-500 text-sm mt-1">{birthYearError}</p>
+                )}
               </div>
 
               {/* 버튼 */}

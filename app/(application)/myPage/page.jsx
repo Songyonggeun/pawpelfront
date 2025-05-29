@@ -10,26 +10,36 @@ export default function MyPage() {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editPet, setEditPet] = useState(null);
+  const [postCount, setPostCount] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserData = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+        const userRes = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
           credentials: 'include',
         });
-        if (!res.ok) throw new Error('Unauthorized');
-        const data = await res.json();
-        console.log('🐶 pets 확인:', data.pets); // 디버깅용
-        setUserInfo(data);
-        setPets(data.pets || []);
+        if (!userRes.ok) throw new Error('Unauthorized');
+        const userData = await userRes.json();
+        setUserInfo(userData);
+        setPets(userData.pets || []);
+
+        const postRes = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/my-posts`, {
+          credentials: 'include',
+        });
+        if (postRes.ok) {
+          const postData = await postRes.json();
+          setPostCount(postData.content.length || 0);
+        }
       } catch (err) {
+        console.error('데이터 로드 실패:', err);
         router.replace('/login');
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+
+    fetchUserData();
   }, []);
 
   if (!userInfo) {
@@ -41,6 +51,10 @@ export default function MyPage() {
     { title: '건강 체크 기록', href: '/myPage/health' },
     { title: '작성 글', href: '/myPage/posts' },
   ];
+
+  const totalHealthCheckCount = pets.reduce((sum, pet) => {
+    return sum + (pet.healthRecords?.length || 0);
+  }, 0);
 
   return (
     <div className="flex flex-col md:flex-row max-w-7xl mx-auto py-10 px-6 gap-10">
@@ -61,16 +75,25 @@ export default function MyPage() {
           <div className="text-center font-semibold">{userInfo.socialName}</div>
         </div>
 
-        {/* 이메일, 전화번호 */}
+        {/* 사용자 데이터 */}
         <div className="bg-gray-100 p-6 rounded-xl grid grid-cols-2 text-center gap-4 shadow-sm mb-10">
-          <div>
+          {/* <div>
             <div className="text-sm text-gray-500">이메일</div>
             <div className="text-lg font-bold">{userInfo.email}</div>
           </div>
           <div>
             <div className="text-sm text-gray-500">전화번호</div>
             <div className="text-lg font-bold">{userInfo.phoneNumber}</div>
+          </div> */}
+          <div>
+            <div className="text-sm text-gray-500">건강 체크 수</div>
+            <div className="text-lg font-bold">{totalHealthCheckCount}</div>
           </div>
+          <div>
+            <div className="text-sm text-gray-500">작성 글 수</div>
+            <div className="text-lg font-bold">{postCount}</div>
+          </div>
+
         </div>
 
         {/* 반려동물 목록 */}
@@ -89,12 +112,12 @@ export default function MyPage() {
               >
                 {pet.imageUrl ? (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.imageUrl}`}
+                    src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
                     alt={pet.petName}
-                    className="w-12 h-12 rounded-full object-cover mb-2"
+                    className="w-20 h-20 rounded-full object-cover mb-2"
                   />
                 ) : (
-                  <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
+                  <div className="w-20 h-20 bg-gray-200 rounded-full mb-2" />
                 )}
                 <div className="text-sm font-medium">{pet.petName}</div>
               </div>
