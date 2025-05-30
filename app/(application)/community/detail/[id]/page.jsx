@@ -133,19 +133,22 @@ export default function PostDetailPage() {
         </div>
       )}
 
-      {/* post와 post.id가 있을 때만 댓글 컴포넌트 보여주기 */}
+      {/* 댓글 섹션 */}
       {currentUserName && post?.id && (
-        <section className="mt-10 border-t pt-6 max-w-3xl mx-auto">
+        <section className="mt-2 border-t pt-6 max-w-4xl mx-auto w-full">
           <h2 className="text-lg font-semibold mb-4 ml-1">댓글</h2>
 
           {/* 댓글 입력 */}
-          <CommentInput
-            postId={post.id}
-            onCommentAdded={() => setRefreshCommentsFlag(flag => flag + 1)}
-          />
-
+          <div className="mb-1">
+            <CommentInput
+              postId={post.id}
+              onCommentAdded={() => setRefreshCommentsFlag(flag => flag + 1)}
+            />
+          </div>
           {/* 댓글 목록 */}
-          <CommentShow key={refreshCommentsFlag} postId={post.id} />
+          <div className="mt-1">  {/* 댓글 목록과 입력창 간의 간격을 줄이기 위해 mt-1 추가 */}
+            <CommentShow key={refreshCommentsFlag} postId={post.id} />
+          </div>
         </section>
       )}
     </main>
