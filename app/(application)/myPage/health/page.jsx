@@ -61,6 +61,18 @@ export default function PetHealthSection() {
           <div className="flex gap-4 flex-wrap">
             {pets.map((pet) => (
               <div key={pet.id} className="w-40 p-4 border border-gray-300 rounded-lg bg-white shadow-sm">
+                {/* 이미지 영역 */}
+                <div className="flex justify-center mb-2">
+                  {pet.imageUrl ? (
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
+                      alt={pet.petName}
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-gray-200 rounded-full" />
+                  )}
+                </div>
                 <div className="text-center font-semibold mb-2">{pet.petName}</div>
                 {pet.healthRecords && pet.healthRecords.length > 0 ? (
                   pet.healthRecords.map((record, idx) => (
