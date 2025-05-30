@@ -9,3 +9,7 @@
 *{
     font-family: 'KakaoBigSans-ExtraBold';
 }
+
+button:not(:disabled) {
+  cursor: pointer;
+}
