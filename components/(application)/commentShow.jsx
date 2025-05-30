@@ -17,9 +17,7 @@ export default function CommentShow({ postId }) {
     const fetchComments = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/post/${postId}`, {
-          credentials: 'include',
-        });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/post/${postId}`);
         if (!res.ok) throw new Error('댓글을 불러올 수 없습니다.');
         const data = await res.json();
         data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -69,27 +67,27 @@ export default function CommentShow({ postId }) {
     }
   };
 
-const handleDelete = async (commentId) => {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}`, {
-      method: 'DELETE',
-      credentials: 'include', // 쿠키를 포함하여 인증 상태를 전달
-    });
+  const handleDelete = async (commentId) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}`, {
+        method: 'DELETE',
+        credentials: 'include', // 쿠키를 포함하여 인증 상태를 전달
+      });
 
-    if (!res.ok) {
-      // 에러 메시지 출력
-      const errorResponse = await res.json();
-      throw new Error(errorResponse.error || '댓글 삭제 실패');
+      if (!res.ok) {
+        // 에러 메시지 출력
+        const errorResponse = await res.json();
+        throw new Error(errorResponse.error || '댓글 삭제 실패');
+      }
+
+      alert('댓글이 삭제되었습니다.');
+
+      // 댓글 삭제 후 화면에서 해당 댓글을 삭제
+      setComments(comments.filter((comment) => comment.id !== commentId));
+    } catch (err) {
+      alert(err.message);
     }
-
-    alert('댓글이 삭제되었습니다.');
-
-    // 댓글 삭제 후 화면에서 해당 댓글을 삭제
-    setComments(comments.filter((comment) => comment.id !== commentId));
-  } catch (err) {
-    alert(err.message);
-  }
-};
+  };
 
   const totalPages = Math.ceil(comments.length / COMMENTS_PER_PAGE);
   const currentComments = comments.slice(
@@ -103,13 +101,22 @@ const handleDelete = async (commentId) => {
   return (
     <div className="space-y-2 w-full">
       {currentComments.map(comment => (
+        // 전체적으로 bg-white, text-gray-900 등으로 수정
+
         <form
           key={comment.id}
           onSubmit={e => { e.preventDefault(); handleSubmit(comment.id); }}
-          className="bg-zinc-800 text-white p-4 rounded-lg shadow-sm space-y-2 w-full"
+          className="bg-white text-gray-900 p-4 rounded-lg shadow-sm space-y-2 w-full"
         >
           <div className="flex justify-between items-center">
-            <div className="font-bold text-sm text-blue-300">{comment.userName}</div>
+            <div className="font-bold text-sm text-blue-600">
+              {comment.userName}
+              <span className="ml-2 text-xs text-gray-500">
+                {new Date(comment.createdAt).toISOString().slice(0, 10)}
+              </span>
+            </div>
+            <div className="flex gap-2">
+            </div>
             <div className="flex gap-2">
               <button
                 type="submit"
@@ -133,7 +140,7 @@ const handleDelete = async (commentId) => {
               value={editContents[comment.id] || ''}
               onChange={e => handleChange(comment.id, e.target.value)}
               rows={2}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-md p-2 text-sm text-white resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full bg-gray-100 border border-gray-300 rounded-md p-2 text-sm text-gray-900 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
         </form>
