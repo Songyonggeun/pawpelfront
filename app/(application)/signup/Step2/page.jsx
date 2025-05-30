@@ -51,12 +51,19 @@ const Step2 = () => {
   }, [password, confirmPassword]);
 
   useEffect(() => {
-    const domain = emailDomain === "custom" ? customEmailDomain : emailDomain;
-    const fullEmail = `${emailUsername}@${domain}`;
-    setEmail(fullEmail);
+    const domain =
+      emailDomain === "custom" ? customEmailDomain.trim() : emailDomain.trim();
+
+    if (emailUsername && domain) {
+      const fullEmail = `${emailUsername}@${domain}`;
+      console.log("📬 조합된 이메일:", fullEmail);
+      setEmail(fullEmail);
+    } else {
+      setEmail("");
+    }
   }, [emailUsername, emailDomain, customEmailDomain]);
 
-  // 각 값이 변경될 때마다 console.log를 찍는 useEffect
+  // 각 값 변경 시 로그 출력 (디버깅용)
   useEffect(() => {
     console.log("Username changed:", username);
   }, [username]);
@@ -77,7 +84,6 @@ const Step2 = () => {
     console.log("Birth Date changed:", birthDate);
   }, [birthDate]);
 
-
   useEffect(() => {
     console.log("Password changed:", password);
   }, [password]);
@@ -88,17 +94,17 @@ const Step2 = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(username, emailUsername, customEmailDomain, password, confirmPassword, name, phone, birthDate)
-    // 유효성 검사
+
+    // 유효성 검사: custom 도메인일 때만 커스텀 도메인 값 검사
     if (
       !username ||
       !emailUsername ||
-      !customEmailDomain ||
+      (emailDomain === "custom" && !customEmailDomain.trim()) ||
       !password ||
       !confirmPassword ||
       !name.trim() ||
       !phone.trim() ||
-      !birthDate.trim() 
+      !birthDate.trim()
     ) {
       alert("모든 필드를 작성해주세요.");
       return;
@@ -114,7 +120,6 @@ const Step2 = () => {
       return;
     }
 
-    // 제출 시 전체 데이터 확인
     console.log("Form data before submit:");
     console.log("Username:", username);
     console.log("Email:", email);
@@ -129,12 +134,12 @@ const Step2 = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: username,                         // ✅ 사용자 ID
-            pass: password,                   // ✅ 비밀번호
-            socialName: name,                 // 선택사항
-            email: email,                     // ✅ 완성된 전체 이메일
-            phoneNumber: phone.replace(/-/g, ""), // ✅ 01012345678 형식
-            birthDate: birthDate              // ✅ "yyyy-MM-dd" 형식
+            name: username,                         // 사용자 ID
+            pass: password,                         // 비밀번호
+            socialName: name,                       // 이름
+            email: email,                           // 전체 이메일
+            phoneNumber: phone.replace(/-/g, ""),  // 전화번호 (하이픈 제거)
+            birthDate: birthDate                    // 생년월일 (yyyy-MM-dd)
           }),
           credentials: "include"
         }
