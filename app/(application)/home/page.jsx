@@ -1,3 +1,15 @@
+// import React from "react";
+
+// export default function HomePage() {
+//   return (
+//     <div>
+//       <h1>테스트 문장</h1>
+//       <p>이 페이지는 /home 경로에 표시되는 테스트 페이지입니다.</p>
+//     </div>
+//   );
+// }
+
+
 import React from "react";
 import PetInsuranceBanner from "@/components/(Inputs)/advertisement";
 
@@ -18,15 +30,15 @@ export default function LifetCommunityUI() {
             <div className="grid grid-cols-3 gap-6 text-center">
                 <a href="/health/check/select" className="cursor-pointer">
                     <div className="w-18 h-18 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-2xl font-bold">✓</div>
-                    <div className="mt-2 text-m text-gray-800 font-medium">건강체크</div>
+                    <div className="mt-2 text-lg text-gray-800 font-medium">건강체크</div>
                 </a>
                 <a href="/community/total" className="cursor-pointer">
                     <div className="w-18 h-18 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-2xl font-bold">💬</div>
-                    <div className="mt-2 text-m text-gray-800 font-medium">커뮤니티</div>
+                    <div className="mt-2 text-lg text-gray-800 font-medium">커뮤니티</div>
                 </a>
                 <a href="/health/guide" className="cursor-pointer">
                     <div className="w-18 h-18 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-2xl font-bold">📘</div>
-                    <div className="mt-2 text-m text-gray-800 font-medium">건강체크 가이드</div>
+                    <div className="mt-2 text-lg text-gray-800 font-medium">건강체크 가이드</div>
                 </a>
             </div>
             </div>
@@ -47,24 +59,24 @@ export default function LifetCommunityUI() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {[
-                        "[건강정보] 슈퍼위크에 이거 챙기셨나요?!",
-                        "치킨불 만들기 🍗 (초초초간단해요!)",
-                        "결국 품절제품을 기다리지 못 하고...",
-                        "라이펫 쇼핑목록 공유부탁드려요 🥲",
-                        "인형",
-                        "젤리 모으기",
-                        "오 배송에 빨라요",
-                        "다들 진드기 관리 어케 하시나요...",
-                        "플러그오프 준비중"
-                    ].map((title, idx) => (
-                        <div key={idx} className="bg-gray-100 rounded-lg p-4 text-gray-900">
-                        <div className="flex justify-between">
-                            <span className="font-semibold">{idx + 1}. {title}</span>
-                            <span className="text-sm text-gray-500">1일 전 ♡ 10 💬 5</span>
-                        </div>
-                        </div>
-                    ))}
+                        {[
+                            "[건강정보] 슈퍼위크에 이거 챙기셨나요?!",
+                            "치킨불 만들기 🍗 (초초초간단해요!)",
+                            "결국 품절제품을 기다리지 못 하고...",
+                            "라이펫 쇼핑목록 공유부탁드려요 🥲",
+                            "인형",
+                            "젤리 모으기",
+                            "오 배송에 빨라요",
+                            "다들 진드기 관리 어케 하시나요...",
+                            "플러그오프 준비중"
+                        ].map((title, idx) => (
+                            <div key={idx} className="bg-gray-800 rounded-lg p-4 text-white">
+                                <div className="flex justify-between">
+                                    <span className="font-semibold">{idx + 1}. {title}</span>
+                                    <span className="text-sm text-gray-400">1일 전 ♡ 10 💬 5</span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>

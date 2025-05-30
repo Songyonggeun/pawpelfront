@@ -8,32 +8,30 @@ export default function UserPage() {
   const [editName, setEditName] = useState('');
   const [expandedUserId, setExpandedUserId] = useState(null);
   const [petData, setPetData] = useState({});
-
-  // 검색 상태
-  const [searchType, setSearchType] = useState(''); // social, email, name
+  const [searchType, setSearchType] = useState('');
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [expandedInfoUserId, setExpandedInfoUserId] = useState(null);
+  const [userDetailData, setUserDetailData] = useState({});
 
-  // 페이지 로드 시 사용자 목록 가져오기
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`, {
-      credentials: 'include' // 인증 쿠키 포함
+      credentials: 'include'
     })
       .then(res => res.json())
       .then(data => {
-        setUsers(Array.isArray(data) ? data : []); // 혹시 모를 예외 대비
+        setUsers(Array.isArray(data) ? data : []);
       })
       .catch(() => {
         alert("회원 정보를 불러오지 못했습니다.");
       });
   }, []);
 
-  // 사용자 삭제 함수 (수정 완료)
   const handleDelete = (id) => {
     if (!window.confirm('회원을 삭제하시겠습니까?')) return;
 
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${id}`, {
       method: 'DELETE',
-      credentials: 'include', // 인증 쿠키 포함
+      credentials: 'include',
     })
       .then(res => {
         if (res.status === 204) {
@@ -50,7 +48,7 @@ export default function UserPage() {
 
   const startEdit = (user) => {
     setEditingUserId(user.id);
-    setEditName(user.socialName); // 수정 대상 필드가 socialName 인 경우 반영
+    setEditName(user.socialName);
   };
 
   const cancelEdit = () => {
@@ -66,6 +64,8 @@ export default function UserPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ socialName: editName }), // 수정 요청 시 socialName 필드로 보내기
       credentials: 'include', // 인증 쿠키 포함
+      body: JSON.stringify({ socialName: editName }),
+      credentials: 'include',
     })
       .then(res => res.json())
       .then(updatedUser => {
@@ -94,7 +94,6 @@ export default function UserPage() {
     }
   };
 
-  // 검색 기능
   const handleSearch = () => {
     if (!searchType || !searchKeyword.trim()) {
       alert('검색 조건과 키워드를 입력해주세요.');
@@ -126,8 +125,28 @@ export default function UserPage() {
       .catch(() => alert('검색에 실패했습니다.'));
   };
 
+  const toggleUserInfo = (userId) => {
+    if (expandedInfoUserId === userId) {
+      setExpandedInfoUserId(null);
+    } else {
+      setExpandedInfoUserId(userId);
+      if (!userDetailData[userId]) {
+        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}`, {
+          credentials: 'include'
+        })
+          .then(res => res.json())
+          .then(data => {
+            setUserDetailData(prev => ({ ...prev, [userId]: data }));
+          })
+          .catch(() => {
+            alert('회원 상세 정보를 불러오는 중 오류가 발생했습니다.');
+          });
+      }
+    }
+  };
+
   return (
-    <div className="p-4 max-w-xl mx-auto">
+    <div className="p-4 max-w-full mx-auto">
       <h1 className="text-2xl font-bold mb-4">회원 관리</h1>
 
       <div className="flex items-center gap-2 mb-4">
@@ -156,62 +175,103 @@ export default function UserPage() {
         </button>
       </div>
 
-      <ul className="space-y-4">
-        {users.map(user => (
-          <li key={user.id} className="bg-gray-100 p-3 rounded shadow">
-            {editingUserId === user.id ? (
-              <div className="flex gap-2 w-full">
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="border p-1 rounded flex-1"
-                />
-                <button onClick={handleUpdate} className="text-green-600">저장</button>
-                <button onClick={cancelEdit} className="text-gray-600">취소</button>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-between items-center">
-                  <div className="flex flex-col">
-                    <span><strong>이름:</strong> {user.socialName}</span>
-                    <span className="text-sm text-gray-700">
-                      <strong>아이디:</strong> {user.name}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => startEdit(user)} className="text-blue-600">권한 수정</button>
-                    <button onClick={() => handleDelete(user.id)} className="text-red-600">회원 삭제</button>
-                    <button onClick={() => togglePetInfo(user.id)} className="text-indigo-600">
-                      {expandedUserId === user.id ? '펫 정보 닫기' : '펫 정보 보기'}
-                    </button>
-                  </div>
-                </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border border-gray-300">
+          <thead className="bg-gray-200">
+            <tr>
+              <th className="p-2 border">이름</th>
+              <th className="p-2 border">아이디</th>
+              <th className="p-2 border">이메일</th>
+              <th className="p-2 border">권한</th>
+              <th className="p-2 border">가입일</th>
+              <th className="p-2 border">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map(user => (
+              <tr key={user.id} className="border-t">
+                <td className="p-2 border">
+                  {editingUserId === user.id ? (
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="border p-1 rounded w-full"
+                    />
+                  ) : (
+                    user.socialName
+                  )}
+                </td>
+                <td className="p-2 border">{user.name}</td>
+                <td className="p-2 border">{user.email}</td>
+                <td className="p-2 border">{user.roles?.join(', ')}</td>
+                <td className="p-2 border">
+                  {user.created ? new Date(user.created).toLocaleDateString() : '정보 없음'}
+                </td>
+                <td className="p-2 border">
+                  {editingUserId === user.id ? (
+                    <>
+                      <button onClick={handleUpdate} className="text-green-600 mr-2">저장</button>
+                      <button onClick={cancelEdit} className="text-gray-600">취소</button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => startEdit(user)} className="text-blue-600 mr-2">수정</button>
+                      <button onClick={() => handleDelete(user.id)} className="text-red-600 mr-2">삭제</button>
+                      <button onClick={() => togglePetInfo(user.id)} className="text-indigo-600 mr-2">
+                        {expandedUserId === user.id ? '펫 닫기' : '펫 보기'}
+                      </button>
+                      <button onClick={() => toggleUserInfo(user.id)} className="text-green-600">
+                        {expandedInfoUserId === user.id ? '정보 닫기' : '정보 보기'}
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
 
-                {expandedUserId === user.id && (
-                  <div className="mt-2 pl-4 border-l-4 border-indigo-300 bg-white rounded p-2">
-                    {petData[user.id] ? (
-                      petData[user.id].length > 0 ? (
-                        <ul className="list-disc ml-4 text-sm text-gray-800">
-                          {petData[user.id].map((pet, index) => (
-                            <li key={index}>
-                              <strong>{pet.petName}</strong> ({pet.petType}, {pet.petAge}살)
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-gray-500">등록된 펫 정보가 없습니다.</p>
-                      )
-                    ) : (
-                      <p className="text-sm text-gray-400">펫 정보를 불러오는 중...</p>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+            {/* 펫 정보 행 */}
+            {users.map(user => (
+              expandedUserId === user.id && petData[user.id] && (
+                <tr key={`${user.id}-pets`} className="bg-white border-t">
+                  <td colSpan={6} className="p-3 text-sm text-gray-700">
+                    <strong>펫 정보:</strong>{' '}
+                    {petData[user.id].length > 0
+                      ? petData[user.id].map((pet, index) => (
+                          <span key={index}>{pet.petName} ({pet.petType}, {pet.petAge}살){index < petData[user.id].length - 1 ? ', ' : ''}</span>
+                        ))
+                      : '등록된 펫이 없습니다.'}
+                  </td>
+                </tr>
+              )
+            ))}
+
+            {/* 상세 정보 행 */}
+            {users.map(user => (
+              expandedInfoUserId === user.id && userDetailData[user.id] && (
+                <tr key={`${user.id}-info`} className="bg-white border-t">
+                  <td colSpan={6} className="p-3 text-sm text-gray-800">
+                    <div className="space-y-1">
+                      <p><strong>전화번호:</strong> {userDetailData[user.id].phoneNumber || '정보 없음'}</p>
+                      <p><strong>생년월일:</strong> {userDetailData[user.id].birthDate || '정보 없음'}</p>
+                      {userDetailData[user.id].attr && Object.keys(userDetailData[user.id].attr).length > 0 && (
+                        <div>
+                          <strong>속성:</strong>
+                          <ul className="list-disc ml-5 text-gray-600">
+                            {Object.entries(userDetailData[user.id].attr).map(([key, value]) => (
+                              <li key={key}>{key}: {String(value)}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -21,7 +21,7 @@ export default function HealthResult() {
 
   return (
     <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">Step 3. 결과 확인</h1>
+      <h1 className="text-xl font-bold mb-4">결과 확인</h1>
       <p><strong>점수:</strong> {result.totalScore}</p>
       <p><strong>상태:</strong> {result.resultStatus}</p>
       <p><strong>검진 일자:</strong> {new Date(result.checkedAt).toLocaleString()}</p>
