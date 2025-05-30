@@ -24,7 +24,7 @@ export default function CommentInput({ postId, onCommentAdded }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
+        credentials: 'include', // 쿠키(세션) 전송
         body: JSON.stringify({
           content,
           postId,
@@ -37,9 +37,8 @@ export default function CommentInput({ postId, onCommentAdded }) {
 
       const newComment = await res.json();
       setContent('');
-
       if (onCommentAdded) {
-        onCommentAdded(newComment); // 부모 컴포넌트에서 댓글 리스트 새로고침 등 처리 가능
+        onCommentAdded(newComment); // 부모 컴포넌트에 알림
       }
     } catch (err) {
       console.error(err);
@@ -50,19 +49,19 @@ export default function CommentInput({ postId, onCommentAdded }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-2 pt-2">
+    <form onSubmit={handleSubmit} className="mt-2 pt-2 flex items-start gap-2">
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="댓글을 입력하세요..."
-        rows={3}
-        className="w-full border rounded-md p-2 mb-2"
+        rows={2}
+        className="border rounded-md p-2 resize-none flex-grow"
+        style={{ width: '300px' }} // 필요하면 고정 너비 지정
       />
-      {error && <div className="text-red-500 mb-2">{error}</div>}
       <button
         type="submit"
         disabled={loading}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 self-center"
       >
         {loading ? '작성 중...' : '댓글 작성'}
       </button>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import CommentInput from '@/components/(Inputs)/commentInput';
-
+import CommentShow from '@/components/(application)/commentShow';
 
 export default function PostDetailPage() {
   const { id } = useParams();
@@ -11,7 +11,10 @@ export default function PostDetailPage() {
 
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
-  const [currentUserName, setCurrentUserName] = useState(null); // 로그인 사용자명 상태
+  const [currentUserName, setCurrentUserName] = useState(null);
+
+  // 댓글 목록 강제 갱신용 상태
+  const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -26,7 +29,6 @@ export default function PostDetailPage() {
         setPost(data);
         setError(null);
       } catch (err) {
-        console.error(err);
         setError(err.message);
       }
     };
@@ -43,32 +45,31 @@ export default function PostDetailPage() {
         if (!res.ok) throw new Error('로그인 사용자 정보를 불러올 수 없습니다.');
         const userData = await res.json();
         setCurrentUserName(userData.name);
-      } catch (err) {
+      } catch {
         setCurrentUserName(null);
       }
     };
     fetchCurrentUser();
   }, []);
 
-
   const handleEdit = () => {
     router.push(`/community/edit/${id}`);
   };
 
   const handleDelete = async () => {
-    if (confirm('정말로 삭제하시겠습니까?')) {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${id}`, {
-          method: 'DELETE',
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error('삭제 실패');
-        alert('삭제되었습니다.');
-        router.push('/community/total');
-      } catch (err) {
-        alert('삭제 중 오류 발생');
-        console.error(err);
-      }
+    if (!confirm('정말로 삭제하시겠습니까?')) return;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('삭제 실패');
+      alert('삭제되었습니다.');
+      router.push('/community/total');
+    } catch (err) {
+      alert('삭제 중 오류 발생');
+      console.error(err);
     }
   };
 
@@ -90,21 +91,14 @@ export default function PostDetailPage() {
 
   return (
     <main className="w-full max-w-4xl mx-auto px-6 py-10 text-gray-900 font-sans">
-      {/* 카테고리 */}
-      <div className="text-sm text-blue-500 font-medium mb-1 ml-5">
-        {post.category}
-      </div>
+      <div className="text-sm text-blue-500 font-medium mb-1 ml-5">{post.category}</div>
 
-      {/* 제목 */}
       <h1 className="text-2xl sm:text-3xl font-bold border-b border-gray-300 pb-3 mb-4 ml-4">
         {post.title}
       </h1>
 
       <div className="flex justify-between text-sm text-gray-600 mb-4">
-        {/* 작성자 (왼쪽) */}
         <div className="font-medium ml-5">{post.authorName}</div>
-
-        {/* 조회수, 댓글, 추천, 작성일 (오른쪽) */}
         <div className="flex flex-wrap items-center gap-x-2 text-right">
           <span>조회수 {post.viewCount}</span>
           <span>|</span>
@@ -115,14 +109,13 @@ export default function PostDetailPage() {
         </div>
       </div>
 
-      {/* 본문 박스 */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6 min-h-[300px]">
         <article
           className="prose prose-lg max-w-none"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
       </div>
-      {/* 수정/삭제 버튼 - 작성자일 때만 노출 */}
+
       {currentUserName === post.authorName && (
         <div className="flex justify-end gap-3 mb-6">
           <button
@@ -140,18 +133,20 @@ export default function PostDetailPage() {
         </div>
       )}
 
-      {/* 댓글 작성 영역 - 로그인한 사용자 모두 보여주기 */}
-      {currentUserName && (
-        <div className="mt-10">
-          <h2 className="text-lg font-semibold mb-2">댓글 작성</h2>
+      {/* post와 post.id가 있을 때만 댓글 컴포넌트 보여주기 */}
+      {currentUserName && post?.id && (
+        <section className="mt-10 border-t pt-6 max-w-3xl mx-auto">
+          <h2 className="text-lg font-semibold mb-4 ml-1">댓글</h2>
+
+          {/* 댓글 입력 */}
           <CommentInput
             postId={post.id}
-            onCommentAdded={(newComment) => {
-              console.log('댓글 작성됨:', newComment);
-              // TODO: 댓글 목록 갱신 시 사용
-            }}
+            onCommentAdded={() => setRefreshCommentsFlag(flag => flag + 1)}
           />
-        </div>
+
+          {/* 댓글 목록 */}
+          <CommentShow key={refreshCommentsFlag} postId={post.id} />
+        </section>
       )}
     </main>
   );
