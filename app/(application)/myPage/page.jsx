@@ -57,7 +57,7 @@ export default function MyPage() {
   }, 0);
 
   return (
-    <div className="flex flex-col md:flex-row max-w-7xl mx-auto py-10 px-6 gap-10">
+    <div className="flex flex-col md:flex-row max-w-[1100px] mx-auto px-6 py-6 gap-10">
       {/* 왼쪽 메뉴 */}
       <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0 bg-gray-50 min-h-[80vh]">
         <nav className="mt-[10px] px-[10px]">

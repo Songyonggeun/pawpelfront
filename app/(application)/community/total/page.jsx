@@ -51,10 +51,10 @@ export default function TotalPage() {
   }, [baseUrl]);
 
   return (
-    <div className="bg-white text-black min-h-screen">
-      <div className="max-w-6xl mx-auto pt-10 px-4">
-        <div className="flex flex-col md:flex-row gap-8">
-          <main className="flex-1">
+    <div className="bg-white text-black min-h-screen max-w-[1100px] mx-auto px-6">
+      <div className="max-w-[1100px] mx-auto pt-10 px-4">
+        <div className="flex flex-col md:flex-row gap-8 overflow-hidden">
+          <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
             <h2 className="text-2xl font-bold mb-2">전체글</h2>
             <div className="divide-y divide-gray-200 mt-0">
               {posts.map((post) => (
@@ -116,11 +116,13 @@ export default function TotalPage() {
           <aside className="w-full mt-8 border-t border-gray-200 md:w-80 md:ml-8 md:border-l md:border-t-0 md:pl-8">
             <h3 className="text-lg font-bold mb-4">인기글</h3>
             <ol className="space-y-2 text-sm">
-              {popularPosts.map((post, index) => (
-                <li key={post.id} className="flex items-center gap-2">
-                  <span className="text-pink-500 font-bold">{index + 1}</span>
-                  <Link href={`/community/detail/${post.id}`}>
-                    <span className="truncate cursor-pointer hover:underline">{post.title}</span>
+              {popularPosts.slice(0, 10).map((post, index) => (
+                <li key={post.id} className="flex items-start gap-2">
+                  <span className="text-pink-500 font-bold flex-shrink-0">{index + 1}</span>
+                  <Link href={`/community/detail/${post.id}`} className="block max-w-[250px]">
+                    <span className="block truncate whitespace-nowrap overflow-hidden hover:underline text-gray-800">
+                      {post.title}
+                    </span>
                   </Link>
                 </li>
               ))}

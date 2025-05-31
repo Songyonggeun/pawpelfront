@@ -9,6 +9,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   const [showCommunityMenu, setShowCommunityMenu] = useState(false);
   const [showHealthCareMenu, setShowHealthCareMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
   // 새 상태: 헤더 보임 여부
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -18,6 +19,10 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
 
   // 마우스 위치 상태
   const [mouseAtTop, setMouseAtTop] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // 스크롤 이벤트 처리
   useEffect(() => {
@@ -85,7 +90,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
         method: 'POST',
         credentials: 'include',
       });
-      window.location.href = '/home';
+      window.location.href = '/';
     } catch (err) {
       console.error('로그아웃 실패:', err);
       alert('로그아웃 중 오류가 발생했습니다.');
@@ -99,47 +104,53 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
         headerVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div className="max-w-[1100px] mx-auto px-6 py-6 flex items-end justify-between">
         <div className="flex items-center space-x-2">
-          <Link href="/home" className="flex items-center space-x-2 cursor-pointer">
+          <Link href="/" className="flex items-center space-x-2 cursor-pointer">
             <span className="text-blue-500 text-2xl font-bold">✓</span>
             <span className="text-2xl font-bold text-blue-500">Pawple</span>
           </Link>
         </div>
 
-        <nav className="hidden md:flex space-x-6 text-gray-700 text-sm items-start mr-auto ml-8">
-          <button onClick={toggleCommunityMenu} className="relative hover:text-blue-500">커뮤니티</button>
-          <button onClick={toggleHealthCareMenu} className="relative hover:text-blue-500">건강관리</button>
+        <nav className="hidden md:flex text-gray-700 text-base font-bold items-start mr-auto ml-12">
+          <button onClick={toggleCommunityMenu} className="ml-0 hover:text-blue-500">
+            커뮤니티
+          </button>
+          <button onClick={toggleHealthCareMenu} className="ml-12 hover:text-blue-500">
+            건강관리
+          </button>
         </nav>
 
         <div className="hidden md:flex items-center space-x-6">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="검색어를 입력해주세요."
-              className="border border-gray-300 rounded-full px-4 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            <button className="absolute right-3 top-1.5 text-gray-500">🔍</button>
-          </div>
-
-          <button className="p-1 rounded hover:bg-gray-100 text-sm" aria-label="알림">알림</button>
-
-          {isLoggedIn ? (
-            userRoles.length === 0 ? null : (
-              <div className="flex items-center space-x-3">
-                {userRoles.includes('ADMIN') ? (
-                  <Link href="/management" className="text-gray-600">관리자페이지</Link>
-                ) : (
-                  <Link href="/myPage" className="text-gray-600">마이페이지</Link>
-                )}
-                <button onClick={handleLogout} className="text-gray-600">로그아웃</button>
-              </div>
-            )
-          ) : (
-            <div className="p-1 rounded hover:bg-gray-100 text-sm">
-              <Link href="/login" className="text-gray-600">로그인</Link>
+        {isClient && (
+          <div className="hidden md:flex items-center space-x-6">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="검색어를 입력해주세요."
+                className="border border-gray-300 rounded-full px-4 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+              <button className="absolute right-3 top-1.5 text-gray-500">🔍</button>
             </div>
-          )}
+
+            {isLoggedIn ? (
+              userRoles.length === 0 ? null : (
+                <div className="flex items-center space-x-3">
+                  {userRoles.includes('ADMIN') ? (
+                    <Link href="/admin" className="text-sm text-gray-500 hover:text-blue-500">관리자페이지</Link>
+                  ) : (
+                    <Link href="/myPage" className="text-sm text-gray-500 hover:text-blue-500">마이페이지</Link>
+                  )}
+                  <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-blue-500">로그아웃</button>
+                </div>
+              )
+            ) : (
+              <div className="p-1 rounded hover:bg-gray-100 text-sm">
+                <Link href="/login" className="text-sm text-gray-500 hover:text-blue-500">로그인</Link>
+              </div>
+            )}
+          </div>
+        )}
         </div>
 
         <button className="md:hidden p-2 rounded-md hover:bg-gray-100" onClick={toggleMobileMenu} aria-label="모바일 메뉴 토글">
@@ -150,13 +161,13 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
       </div>
 
       {showCommunityMenu && (
-        <div className="max-w-7xl mx-auto px-4 border-t border-gray-200 md:block hidden">
+        <div className="max-w-[1100px] mx-auto px-4 border-t border-gray-200 md:block hidden">
           <CommunityMenu visible={showCommunityMenu} />
         </div>
       )}
 
       {showHealthCareMenu && (
-        <div className="max-w-7xl mx-auto px-4 border-t border-gray-200 md:block hidden">
+        <div className="max-w-[1100px] mx-auto px-4 border-t border-gray-200 md:block hidden">
           <HealthCareMenu />
         </div>
       )}

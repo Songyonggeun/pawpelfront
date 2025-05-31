@@ -146,7 +146,7 @@ export default function EditPage() {
   if (!user) return <div className="text-center mt-10">로딩 중...</div>;
 
   return (
-      <div className="flex max-w-7xl mx-auto py-10 px-4 md:px-6 gap-10">
+      <div className="flex max-w-[1100px] mx-auto px-6 py-6 md:px-6 gap-10">
         {/* 왼쪽 메뉴 영역 */}
         <aside className="w-full md:w-60 flex-shrink-0 bg-gray-50 min-h-[80vh]">
           <nav className="mt-[10px] px-[10px]">

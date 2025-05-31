@@ -25,7 +25,7 @@ export default function LifetCommunityUI() {
             </div>
 
             <section className="w-full border-t border-gray-200 bg-white">
-                <div className="max-w-7xl mx-auto px-4 py-6">
+                <div className="max-w-[1100px] mx-auto px-6 py-6">
                     <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900">
                         인기 급상승 🔥
                     </h2>
