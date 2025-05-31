@@ -17,7 +17,7 @@ export default function HealthGuideTabs() {
   const [activeTab, setActiveTab] = useState('puppy');
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
       {/* 탭 버튼 */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '32px' }}>
         {tabs.map((tab) => (
