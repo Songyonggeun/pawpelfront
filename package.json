@@ -1,7 +1,7 @@
 {
   "name": "project",
   "version": "1.0.0",
-  "description": "",
+  "description": "프로젝트프런트",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -23,5 +23,17 @@
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",
     "tailwindcss": "^4.1.6"
-  }
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Songyonggeun/pawpelfront.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Songyonggeun/pawpelfront/issues"
+  },
+  "homepage": "https://github.com/Songyonggeun/pawpelfront#readme"
 }
