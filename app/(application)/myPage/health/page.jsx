@@ -58,37 +58,71 @@ export default function PetHealthSection() {
       <main className="flex-1 order-1 md:order-2">
         <section>
           <h2 className="text-lg font-semibold mb-4">건강검진 내역</h2>
-          <div className="flex gap-4 flex-wrap">
-            {pets.map((pet) => (
-              <div key={pet.id} className="w-40 p-4 border border-gray-300 rounded-lg bg-white shadow-sm">
-                {/* 이미지 영역 */}
-                <div className="flex justify-center mb-2">
-                  {pet.imageUrl ? (
-                    <img
-                      src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
-                      alt={pet.petName}
-                      className="w-20 h-20 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 bg-gray-200 rounded-full" />
-                  )}
+
+          <div className="flex flex-col gap-4">
+            {pets.map((pet) => {
+              const currentYear = new Date().getFullYear();
+              const petAge = currentYear - pet.petAge;
+
+              const sortedRecords = (pet.healthRecords || []).slice().sort((a, b) => {
+                return new Date(b.checkedAt) - new Date(a.checkedAt);
+              });
+
+              return (
+                <div key={pet.id} className="flex border border-gray-300 rounded-lg bg-white shadow-sm p-4">
+                  {/* 왼쪽: 이미지 & 정보 */}
+                  <div className="flex flex-col items-center justify-center w-32 mr-6">
+                    {pet.imageUrl ? (
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
+                        alt={pet.petName}
+                        className="w-24 h-24 rounded-full object-cover mb-2"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 bg-gray-200 rounded-full mb-2" />
+                    )}
+                    <div className="text-center font-semibold">{pet.petName}</div>
+                    <div className="text-sm text-gray-500">{petAge}세</div>
+                  </div>
+
+                  {/* 오른쪽: 건강검진 표 */}
+                  <div className="flex-1 overflow-x-auto">
+                    {sortedRecords.length > 0 ? (
+                      <table className="w-full text-xs table-auto border-collapse">
+                        <thead>
+                          <tr className="bg-gray-50 border-b border-gray-200">
+                            <th className="px-3 py-2 text-center whitespace-nowrap">검진일자</th>
+                            <th className="px-3 py-2 text-center whitespace-nowrap">점수</th>
+                            <th className="px-3 py-2 text-center whitespace-nowrap">결과</th>
+                            <th className="px-3 py-2 text-center whitespace-nowrap">주의 항목</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedRecords.map((record, idx) => (
+                            <tr key={idx} className="border-t border-gray-200">
+                              <td className="px-3 py-2 text-center whitespace-nowrap">
+                                {formatDate(record.checkedAt)}
+                              </td>
+                              <td className="px-3 py-2 text-center whitespace-nowrap">
+                                {record.totalScore}
+                              </td>
+                              <td className="px-3 py-2 text-center whitespace-normal break-words">
+                                {record.resultStatus}
+                              </td>
+                              <td className="text-center whitespace-normal break-words">
+                                {record.warnings?.join(', ') || '없음'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <div className="text-sm text-gray-400">검진 내역 없음</div>
+                    )}
+                  </div>
                 </div>
-                <div className="text-center font-semibold mb-2">{pet.petName}</div>
-                {pet.healthRecords && pet.healthRecords.length > 0 ? (
-                  pet.healthRecords.map((record, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => setSelectedRecord(record)}
-                      className="text-center text-sm text-gray-700 hover:underline cursor-pointer"
-                    >
-                      {formatDate(record.checkedAt)}
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-sm text-gray-400 text-center">검진 내역 없음</div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {selectedRecord && (

@@ -32,7 +32,7 @@ export default function HealthGuideTabs() {
               background: activeTab === tab.id ? '#026DCE' : '#f8f8f8',
               color: activeTab === tab.id ? '#fff' : '#333',
               fontWeight: 600,
-              fontSize: '18px',
+              fontSize: '16px',
               boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
               transition: 'all 0.3s',
             }}
