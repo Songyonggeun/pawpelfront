@@ -5,10 +5,24 @@ import { useRouter } from "next/navigation";
 const WritePost = () => {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState(""); // 서브카테고리 상태 추가
   const [authorName, setAuthorName] = useState(null); // 작성자 상태 추가
   const editorRef = useRef(null);
   const quillRef = useRef(null);
   const router = useRouter();
+
+  // 서브카테고리 옵션 배열 (토픽일 때만 보임)
+  const topicSubCategories = [
+    "영양제",
+    "홈케어",
+    "식이관리",
+    "행동",
+    "병원",
+    "투약",
+    "신부전",
+    "슬개골탈구",
+    "췌장",
+  ];
 
   useEffect(() => {
     // Quill 에디터 로딩
@@ -74,6 +88,10 @@ const WritePost = () => {
       alert("카테고리를 선택해주세요.");
       return;
     }
+    if (category === "토픽" && !subCategory) {
+      alert("서브카테고리를 선택해주세요.");
+      return;
+    }
 
     const content = quillRef.current?.root.innerHTML || "";
 
@@ -81,6 +99,7 @@ const WritePost = () => {
       title,
       content,
       category,
+      subCategory: category === "토픽" ? subCategory : null, // 토픽일 때만 포함
       authorName,
     };
 
@@ -135,7 +154,10 @@ const WritePost = () => {
           id="category"
           name="category"
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setSubCategory(""); // 카테고리 변경 시 서브카테고리 초기화
+          }}
           className="w-full border border-gray-300 rounded px-4 py-2 mt-2"
         >
           <option value="">카테고리를 선택해주세요</option>
@@ -144,6 +166,28 @@ const WritePost = () => {
           <option value="일상">일상</option>
         </select>
       </div>
+
+      {category === "토픽" && (
+        <div className="mb-6">
+          <label htmlFor="subCategory" className="block text-sm font-medium text-gray-700">
+            서브카테고리 (토픽 선택 시)
+          </label>
+          <select
+            id="subCategory"
+            name="subCategory"
+            value={subCategory}
+            onChange={(e) => setSubCategory(e.target.value)}
+            className="w-full border border-gray-300 rounded px-4 py-2 mt-2"
+          >
+            <option value="">서브카테고리를 선택해주세요</option>
+            {topicSubCategories.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="mb-6">
         <div ref={editorRef} className="bg-white" />
