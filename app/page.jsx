@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import PetInsuranceBanner from "@/components/(Inputs)/advertisement";
+import Link from 'next/link';
 
 export default function LifetCommunityUI() {
   const [posts, setPosts] = useState([]);
@@ -89,22 +90,23 @@ export default function LifetCommunityUI() {
               return (
                 <div
                   key={idx}
-                  className="bg-gray-100 rounded-lg p-4 text-gray-900 flex items-start gap-4 min-h-[64px]"
+                  className="bg-gray-100 hover:bg-gray-200 transition-colors duration-150 rounded-lg p-4 text-gray-900 flex items-start gap-4 min-h-[64px] cursor-pointer"
+                  onClick={() => {
+                    if (post?.id) {
+                      window.location.href = `/community/detail/${post.id}`;
+                    }
+                  }}
                 >
-                  {/* 순위 영역 (인기글일 때만) */}
+                  {/* 순위 표시 (인기글일 때만) */}
                   {activeTab === "popular" && (
                     <div className="text-blue-500 text-xl font-bold w-8 flex-none text-center">
                       {idx + 1}
                     </div>
                   )}
 
-                  {/* 게시글 정보 또는 빈칸 */}
+                  {/* 게시글 정보 */}
                   {post && post.id ? (
-                    <div
-                      className={`flex-1 min-w-0 ${
-                        activeTab !== "popular" ? "pl-1" : ""
-                      }`}
-                    >
+                    <div className={`flex-1 min-w-0 ${activeTab !== "popular" ? "pl-1" : ""}`}>
                       <div className="font-semibold text-base truncate whitespace-nowrap overflow-hidden">
                         {post.title}
                       </div>
@@ -119,6 +121,8 @@ export default function LifetCommunityUI() {
                 </div>
               );
             })}
+
+
           </div>
         </div>
       </section>
