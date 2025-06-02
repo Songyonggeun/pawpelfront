@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function HealthResult() {
   const [result, setResult] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     const petId = localStorage.getItem('selectedPetId');
@@ -17,14 +19,57 @@ export default function HealthResult() {
       });
   }, []);
 
-  if (!result) return <p className="text-center">결과 불러오는 중...</p>;
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+  };
+
+  if (!result) {
+    return <p className="text-center py-10 text-gray-500">결과 불러오는 중...</p>;
+  }
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">결과 확인</h1>
-      <p><strong>점수:</strong> {result.totalScore}</p>
-      <p><strong>상태:</strong> {result.resultStatus}</p>
-      <p><strong>검진 일자:</strong> {new Date(result.checkedAt).toLocaleString()}</p>
+    <div className="mt-10 max-w-sm mx-auto p-6 bg-white shadow-lg rounded-lg border border-gray-200">
+      <h2 className="text-xl font-bold text-blue-600 mb-6 text-center">건강검진 결과</h2>
+
+      <div className="space-y-3 text-sm text-gray-800">
+        <div className="flex justify-between">
+          <span className="font-semibold">검진일자:</span>
+          <span>{formatDate(result.checkedAt)}</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span className="font-semibold">점수:</span>
+          <span>{result.totalScore}</span>
+        </div>
+
+        <div className="flex justify-between">
+          <span className="font-semibold">검진결과:</span>
+          <span>{result.resultStatus}</span>
+        </div>
+
+        <div>
+          <p className="font-semibold mb-1">주의 항목:</p>
+          {result.warnings?.length > 0 ? (
+            <ul className="list-disc list-inside text-gray-700">
+              {result.warnings.map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-400">없음</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6 text-right">
+        <button
+          onClick={() => router.push('/myPage/health')}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+        >
+          전체 기록 보기
+        </button>
+      </div>
     </div>
   );
 }
