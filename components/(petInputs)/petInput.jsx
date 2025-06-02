@@ -19,7 +19,7 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
   const [formData, setFormData] = useState({
     petName: '',
     petBreed: '',
-    birthYear: '',
+    petAge: '',
     weight: '',
   });
 
@@ -44,7 +44,7 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
   const handleGenderChange = (gender) => setSelectedGender(gender);
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'birthYear') {
+    if (name === 'petAge') {
       setBirthYearError('');
     }
     setFormData((prev) => ({
