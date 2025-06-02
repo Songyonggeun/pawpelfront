@@ -31,17 +31,19 @@ export default function CommentShow({ postId }) {
     setEditContents({ [id]: content });
   };
 
-  const handleSave = async (id) => {
+  const handleSave = async (id, userId) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: editContents[id],
-          userId: comment.userId
-         }),
+        body: JSON.stringify({
+          content: editContents[id],
+          userId: userId,
+        }),
       });
       if (!res.ok) throw new Error('댓글 수정 실패');
+      alert('댓글이 수정되었습니다.');
       setEditingId(null);
       fetchComments();
     } catch (err) {
@@ -85,7 +87,7 @@ export default function CommentShow({ postId }) {
           <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
             <div className="flex gap-2">
               <span className="text-gray-700 font-medium">
-                 {comment.userName ?? '작성자 없음'}
+                {comment.userName ?? '작성자 없음'}
               </span>
               <span className="text-gray-400">|</span>
               <span>{formatDate(comment.createdAt)}</span>
@@ -95,7 +97,7 @@ export default function CommentShow({ postId }) {
               {editingId === comment.id ? (
                 <>
                   <button
-                    onClick={() => handleSave(comment.id)}
+                    onClick={() => handleSave(comment.id, comment.userId)}
                     className="text-blue-500 hover:underline"
                   >
                     저장
