@@ -118,11 +118,90 @@ export default function UserPage() {
   };
 
 
+  const handleSearch = () => {
+    if (!searchType || !searchKeyword.trim()) {
+      alert('검색 조건과 키워드를 입력해주세요.');
+      return;
+    }
 
+    let url = '';
+    if (searchType === 'social') {
+      url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/social?socialName=${encodeURIComponent(searchKeyword)}`;
+    } else if (searchType === 'email') {
+      url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/email?email=${encodeURIComponent(searchKeyword)}`;
+    } else if (searchType === 'name') {
+      url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/name?name=${encodeURIComponent(searchKeyword)}`;
+    } else {
+      alert('잘못된 검색 조건입니다.');
+      return;
+    }
+
+    fetch(url, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (!Array.isArray(data)) {
+          alert('검색 결과가 배열이 아닙니다.');
+          setUsers([]);
+        } else {
+          setUsers(data);
+        }
+      })
+      .catch(() => alert('검색에 실패했습니다.'));
+  };
+
+  const toggleUserInfo = (userId) => {
+    if (expandedInfoUserId === userId) {
+      setExpandedInfoUserId(null);
+    } else {
+      setExpandedInfoUserId(userId);
+      if (!userDetailData[userId]) {
+        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}`, {
+          credentials: 'include'
+        })
+          .then(res => res.json())
+          .then(data => {
+            setUserDetailData(prev => ({ ...prev, [userId]: data }));
+          })
+          .catch(() => {
+            alert('회원 상세 정보를 불러오는 중 오류가 발생했습니다.');
+          });
+      }
+    }
+  };
 
 
   return (
     <div className="flex-1 overflow-x-auto">
+
+      <h1 className="text-2xl font-bold mb-4">회원 관리</h1>
+
+      <div className="flex justify-center items-center gap-2 mb-4">
+        <select
+          className="border p-2 rounded w-32"
+          value={searchType}
+          onChange={e => setSearchType(e.target.value)}
+        >
+          <option value="">검색 조건</option>
+          <option value="social">이름</option>
+          <option value="email">이메일</option>
+          <option value="name">아이디</option>
+        </select>
+        <input
+          type="text"
+          className="border p-2 rounded w-64"
+          placeholder="검색어 입력"
+          value={searchKeyword}
+          onChange={e => setSearchKeyword(e.target.value)}
+        />
+        <button
+          onClick={handleSearch}
+          className="bg-blue-500 text-white px-3 py-2 rounded"
+        >
+          검색
+        </button>
+      </div>
+
+      
       <table className="w-full text-xs table-auto border-collapse border border-gray-300">
         <thead>
           <tr className="bg-gray-300 border-b border-gray-200">
