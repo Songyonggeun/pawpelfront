@@ -13,7 +13,6 @@ export default function PostDetailPage() {
   const [error, setError] = useState(null);
   const [currentUserName, setCurrentUserName] = useState(null);
 
-  // 댓글 목록 강제 갱신용 상태
   const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
 
   useEffect(() => {
@@ -109,7 +108,7 @@ export default function PostDetailPage() {
         </div>
       </div>
 
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6 min-h-[300px]">
+      <div className="bg-transparent border-none p-2 mb-6 min-h-[300px]">
         <article
           className="prose prose-lg max-w-none"
           dangerouslySetInnerHTML={{ __html: post.content }}
