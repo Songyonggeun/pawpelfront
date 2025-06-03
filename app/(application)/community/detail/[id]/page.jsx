@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import CommentInput from '@/components/(Inputs)/commentInput';
 import CommentShow from '@/components/(application)/commentShow';
+import LikeCard from '@/components/(application)/postLike';
 
 export default function PostDetailPage() {
   const { id } = useParams();
@@ -14,6 +15,10 @@ export default function PostDetailPage() {
   const [currentUserName, setCurrentUserName] = useState(null);
 
   const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
+  const handleLikeCountChange = (newCount) => {
+    setPost((prev) => ({ ...prev, likeCount: newCount }));
+  };
+
 
   useEffect(() => {
     if (!id) return;
@@ -34,6 +39,7 @@ export default function PostDetailPage() {
 
     fetchPost();
   }, [id]);
+
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -135,6 +141,15 @@ export default function PostDetailPage() {
       {/* 댓글 섹션 */}
       {post?.id && (
         <section className="mt-2 border-t pt-6 max-w-4xl mx-auto w-full">
+          <LikeCard
+            postId={post.id}
+            initialLikeCount={post.likeCount}
+            initialIsLiked={post.isLiked}  // API에서 받아온 값이어야 함
+            onLikeCountChange={handleLikeCountChange}
+          />
+
+
+
           <h2 className="text-lg font-semibold mb-4 ml-1">댓글</h2>
 
           {/* 댓글 입력: 로그인한 경우에만 보이게 */}
