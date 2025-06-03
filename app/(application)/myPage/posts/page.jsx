@@ -61,7 +61,7 @@ export default function MyPostsPage() {
                   <td className="py-2">{posts.length - index}</td>
                   <td className="py-2">{post.category || '-'}</td>
                   <td className="py-2 text-left px-4 text-blue-600 cursor-pointer hover:underline">
-                    <Link href={`/community/post/${post.id}`}>{post.title}</Link>
+                    <Link href={`/community/detail/${post.id}`}>{post.title}</Link>
                   </td>
                   <td className="py-2">{post.createdAt.slice(0, 10)}</td>
                   <td className="py-2">{post.viewCount}</td>
