@@ -64,7 +64,7 @@ export default function UserPage() {
     setExpandedInfoUserId(userId);
     setShowInfoModal(true);
     if (!userDetailData[userId]) {
-      fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user`, {
+      fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}`, {
         credentials: 'include'
       })
         .then(res => res.json())
