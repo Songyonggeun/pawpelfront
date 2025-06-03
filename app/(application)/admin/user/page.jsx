@@ -82,8 +82,8 @@ export default function UserPage() {
   const handleRoleChange = () => {
     if (!selectedUserId || !selectedRole) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/roles`, {
-      method: 'PUT',
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/roles/${selectedUserId}`, {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
