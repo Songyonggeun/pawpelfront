@@ -13,3 +13,12 @@
 button:not(:disabled) {
   cursor: pointer;
 }
+
+@keyframes vertical-slide {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+.animate-vertical-slide {
+  animation: vertical-slide 8s linear infinite;
+}
