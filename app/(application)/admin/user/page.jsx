@@ -268,7 +268,7 @@ export default function UserPage() {
               {petData[expandedUserId].map((pet, index) => (
                 <div
                   key={pet.id ?? `${pet.petName}-${index}`}
-                  className="flex flex-col items-center border p-2 rounded w-28 cursor-pointer hover:bg-gray-100"
+                  className="flex flex-col items-center border p-2 rounded w-36 cursor-pointer hover:bg-gray-100"
                   onClick={() => setEditPet(pet)}  // 기존 스타일 따라 클릭 가능하게도 넣어봤어요
                 >
                   {pet.imageUrl ? (
@@ -285,7 +285,7 @@ export default function UserPage() {
                   )}
                   <span className="text-sm font-medium text-center">{pet.petName}</span>
                   <span className="text-xs text-gray-600 text-center">
-                    ({pet.petType}, {pet.petAge}살)
+                    ({pet.petBreed},{(2025-pet.petAge)}살)
                   </span>
                 </div>
               ))}
