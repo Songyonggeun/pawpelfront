@@ -134,7 +134,7 @@ export default function SignUpUnified() {
   return (
     <div className="flex flex-col justify-start items-center min-h-screen bg-gray-100 py-10 px-4">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-2xl">
-        <h1 className="text-2xl font-semibold mb-6 text-center">회원가입</h1>
+        {/* <h1 className="text-2xl font-semibold mb-6 text-center">회원가입</h1> */}
 
         {/* 약관 동의 섹션 */}
         <div className="space-y-4 mb-6 border border-gray-300 rounded-xl p-4 bg-gray-50">
@@ -219,7 +219,7 @@ export default function SignUpUnified() {
 
       {/* 이용약관 모달 */}
       {showTermsModal && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg w-11/12 max-w-lg">
             <h2 className="text-xl font-semibold mb-4">이용약관</h2>
             <p className="text-sm mb-4">
@@ -237,7 +237,7 @@ export default function SignUpUnified() {
 
       {/* 개인정보처리방침 모달 */}
       {showPrivacyModal && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg w-11/12 max-w-lg">
             <h2 className="text-xl font-semibold mb-4">개인정보 처리방침</h2>
             <p className="text-sm mb-4">
