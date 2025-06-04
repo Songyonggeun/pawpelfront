@@ -7,7 +7,6 @@ import UsernameInput from "@/components/(Inputs)/UserNameInput";
 import EmailInput from "@/components/(Inputs)/EmailInput";
 import NameInput from "@/components/(Inputs)/NameInput";
 import PhoneInput from "@/components/(Inputs)/PhoneInput";
-import BirthDateInput from "@/components/(Inputs)/BirthdateInput";
 import PasswordInput from "@/components/(Inputs)/PasswordInput";
 
 const Step2 = () => {
@@ -30,7 +29,6 @@ const Step2 = () => {
 
   const [name, setName] = useState("");  // 이름
   const [phone, setPhone] = useState("");  // 전화번호
-  const [birthDate, setBirthDate] = useState("");  // 생년월일
 
   useEffect(() => {
     const isAgreed = localStorage.getItem("isAgreed");
@@ -81,10 +79,6 @@ const Step2 = () => {
   }, [phone]);
 
   useEffect(() => {
-    console.log("Birth Date changed:", birthDate);
-  }, [birthDate]);
-
-  useEffect(() => {
     console.log("Password changed:", password);
   }, [password]);
 
@@ -103,8 +97,7 @@ const Step2 = () => {
       !password ||
       !confirmPassword ||
       !name.trim() ||
-      !phone.trim() ||
-      !birthDate.trim()
+      !phone.trim()
     ) {
       alert("모든 필드를 작성해주세요.");
       return;
@@ -125,7 +118,6 @@ const Step2 = () => {
     console.log("Email:", email);
     console.log("Name:", name);
     console.log("Phone:", phone);
-    console.log("Birth Date:", birthDate);
 
     try {
       const response = await fetch(
@@ -138,8 +130,7 @@ const Step2 = () => {
             pass: password,                         // 비밀번호
             socialName: name,                       // 이름
             email: email,                           // 전체 이메일
-            phoneNumber: phone.replace(/-/g, ""),  // 전화번호 (하이픈 제거)
-            birthDate: birthDate                    // 생년월일 (yyyy-MM-dd)
+            phoneNumber: phone.replace(/-/g, "")   // 전화번호 (하이픈 제거)
           }),
           credentials: "include"
         }
@@ -177,7 +168,7 @@ const Step2 = () => {
   if (loading || !isAllowed) return null;
 
   return (
-    <div className="flex justify-center items-start sm:items-start min-h-screen bg-gray-100 px-4 py-8 sm:py-30">
+    <div className="flex justify-center items-start sm:items-start min-h-screen bg-gray-100 px-4 py-2 sm:py-8">
       <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-2xl">
         <h1 className="text-2xl font-semibold mb-6 text-center">회원가입</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -209,7 +200,6 @@ const Step2 = () => {
 
           <NameInput name={name} setName={setName} />
           <PhoneInput phone={phone} setPhone={setPhone} />
-          <BirthDateInput birthDate={birthDate} setBirthDate={setBirthDate} />
 
           <button
             type="submit"
