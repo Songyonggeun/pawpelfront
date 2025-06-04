@@ -1,0 +1,59 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export default function VaccineResult() {
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    const petId = localStorage.getItem('vaccinePetId');
+    if (!petId) return;
+
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/history?petId=${petId}`, {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => setHistory(data))
+      .catch((err) => {
+        console.error('이력 불러오기 실패:', err);
+      });
+  }, []);
+
+  const formatDate = (str) => {
+    const date = new Date(str);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+      date.getDate()
+    ).padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-xl font-bold mb-6 text-center">예방접종 이력</h1>
+
+      {history.length === 0 ? (
+        <p className="text-center text-gray-500">등록된 예방접종 이력이 없습니다.</p>
+      ) : (
+        <table className="w-full text-sm border border-gray-200">
+          <thead>
+            <tr className="bg-gray-100 text-gray-700">
+              <th className="border border-gray-300 py-2 px-3 text-left">백신 단계</th>
+              <th className="border border-gray-300 py-2 px-3 text-left">접종일</th>
+              <th className="border border-gray-300 py-2 px-3 text-left">다음 예정일</th>
+              <th className="border border-gray-300 py-2 px-3 text-left">D-Day</th>
+            </tr>
+          </thead>
+          <tbody>
+            {history.map((item, idx) => (
+              <tr key={idx} className="text-gray-800">
+                <td className="border border-gray-200 px-3 py-2">{item.vaccineName}</td>
+                <td className="border border-gray-200 px-3 py-2">{formatDate(item.vaccinatedAt)}</td>
+                <td className="border border-gray-200 px-3 py-2">{formatDate(item.nextVaccinationDate)}</td>
+                <td className="border border-gray-200 px-3 py-2">{item.dday}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}

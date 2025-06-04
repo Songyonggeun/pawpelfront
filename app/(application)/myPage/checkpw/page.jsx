@@ -34,8 +34,8 @@ export default function CheckPasswordPage() {
 
   const menuItems = [
     { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    // { title: '반려동물 관리', href: '/myPage/checkpw' },
-    { title: '건강 체크 기록', href: '/myPage/health' },
+    { title: '건강체크 기록', href: '/myPage/health' },
+    { title: '백신접종 기록', href: '/myPage/vaccine' },
     { title: '작성 글', href: '/myPage/posts' },
   ];
 
