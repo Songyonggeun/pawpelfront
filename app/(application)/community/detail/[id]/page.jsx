@@ -13,12 +13,18 @@ export default function PostDetailPage() {
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
   const [currentUserName, setCurrentUserName] = useState(null);
+  const [followingIds, setFollowingIds] = useState([]);
+  const [blockedIds, setBlockedIds] = useState([]);
+
+  const [showPopover, setShowPopover] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
+  const [selectedAuthor, setSelectedAuthor] = useState(null);
 
   const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
+
   const handleLikeCountChange = (newCount) => {
     setPost((prev) => ({ ...prev, likeCount: newCount }));
   };
-
 
   useEffect(() => {
     if (!id) return;
@@ -40,16 +46,17 @@ export default function PostDetailPage() {
     fetchPost();
   }, [id]);
 
-
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
           credentials: 'include',
         });
         if (!res.ok) throw new Error('로그인 사용자 정보를 불러올 수 없습니다.');
         const userData = await res.json();
         setCurrentUserName(userData.name);
+        setFollowingIds(userData.followingIds || []);
+        setBlockedIds(userData.blockedIds || []);
       } catch {
         setCurrentUserName(null);
       }
@@ -75,6 +82,88 @@ export default function PostDetailPage() {
     } catch (err) {
       alert('삭제 중 오류 발생');
       console.error(err);
+    }
+  };
+
+  const handleAuthorClick = (event, authorName) => {
+    event.preventDefault();
+    const rect = event.target.getBoundingClientRect();
+    setPopoverPosition({ x: rect.left, y: rect.bottom + window.scrollY });
+    setSelectedAuthor(authorName);
+    setShowPopover((prev) => !prev);
+  };
+
+  const handleFollow = async () => {
+    try {
+      if (blockedIds.includes(post.authorId)) {
+        const confirmResult = confirm('팔로우하면 차단이 해제됩니다. 계속하시겠습니까?');
+        if (!confirmResult) return;
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/follow/${post.authorId}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('팔로우 실패');
+
+      alert('팔로우 완료');
+      setFollowingIds((prev) => [...prev, post.authorId]);
+      setBlockedIds((prev) => prev.filter((id) => id !== post.authorId));
+      setShowPopover(false);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/unfollow/${post.authorId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('언팔로우 실패');
+      alert('언팔로우 완료');
+      setFollowingIds((prev) => prev.filter((id) => id !== post.authorId));
+      setShowPopover(false);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const handleBlock = async () => {
+    try {
+      if (followingIds.includes(post.authorId)) {
+        const confirmResult = confirm('차단하기를 하면 언팔로우 됩니다. 계속하시겠습니까?');
+        if (!confirmResult) return; 
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/block/${post.authorId}`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('차단 실패');
+
+      alert('차단 완료');
+      setBlockedIds((prev) => [...prev, post.authorId]);
+      setFollowingIds((prev) => prev.filter((id) => id !== post.authorId));
+      setShowPopover(false);
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const handleUnblock = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/unblock/${post.authorId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('차단 해제 실패');
+      alert('차단 해제 완료');
+      setBlockedIds((prev) => prev.filter((id) => id !== post.authorId));
+      setShowPopover(false);
+    } catch (e) {
+      alert(e.message);
     }
   };
 
@@ -106,13 +195,75 @@ export default function PostDetailPage() {
         )}
       </div>
 
-
       <h1 className="text-2xl sm:text-3xl font-bold border-b border-gray-300 pb-3 mb-4 ml-4">
         {post.title}
       </h1>
 
       <div className="flex justify-between text-sm text-gray-600 mb-4">
-        <div className="font-medium ml-5">{post.authorName}</div>
+        <div className="font-medium ml-5">
+          <span
+            onClick={(e) => handleAuthorClick(e, post.authorName)}
+            className="cursor-pointer hover:underline text-blue-600"
+          >
+            {post.authorName}
+          </span>
+        </div>
+
+        {showPopover && (
+          <div
+            className="absolute bg-white border shadow-md rounded-md p-3 z-50"
+            style={{ top: popoverPosition.y + 8, left: popoverPosition.x }}
+          >
+            <div className="text-sm font-semibold mb-2">{selectedAuthor}</div>
+
+            {currentUserName && (
+              <>
+                {followingIds.includes(post.authorId) ? (
+                  <button
+                    onClick={handleUnfollow}
+                    className="block w-full text-left py-1 px-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    언팔로우 하기
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleFollow}
+                    className="block w-full text-left py-1 px-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    팔로우 하기
+                  </button>
+                )}
+
+                {blockedIds.includes(post.authorId) ? (
+                  <button
+                    onClick={handleUnblock}
+                    className="block w-full text-left py-1 px-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    차단 해제 하기
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleBlock}
+                    className="block w-full text-left py-1 px-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    차단 하기
+                  </button>
+                )}
+              </>
+            )}
+
+            {/* <button
+              onClick={() => {
+                router.push(`/community/author/${post.authorId}`);
+                setShowPopover(false);
+              }}
+              className="block w-full text-left py-1 px-2 hover:bg-gray-100 cursor-pointer"
+            >
+              작성 글 보기
+            </button> */}
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center gap-x-2 text-right">
           <span>조회수 {post.viewCount}</span>
           <span>|</span>
@@ -147,21 +298,17 @@ export default function PostDetailPage() {
         </div>
       )}
 
-      {/* 댓글 섹션 */}
       {post?.id && (
         <section className="mt-2 border-t pt-6 max-w-4xl mx-auto w-full">
           <LikeCard
             postId={post.id}
             initialLikeCount={post.likeCount}
-            initialIsLiked={post.isLiked}  // API에서 받아온 값이어야 함
+            initialIsLiked={post.isLiked}
             onLikeCountChange={handleLikeCountChange}
           />
 
-
-
           <h2 className="text-lg font-semibold mb-4 ml-1">댓글</h2>
 
-          {/* 댓글 입력: 로그인한 경우에만 보이게 */}
           {currentUserName && (
             <div className="mb-1">
               <CommentInput
@@ -171,7 +318,6 @@ export default function PostDetailPage() {
             </div>
           )}
 
-          {/* 댓글 목록은 항상 보이도록 */}
           <div className="mt-1">
             <CommentShow key={refreshCommentsFlag} postId={post.id} />
           </div>
