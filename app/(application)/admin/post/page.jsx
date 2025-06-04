@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PostPage() {
   const [posts, setPosts] = useState([]);
@@ -13,8 +14,9 @@ export default function PostPage() {
   const [sortField, setSortField] = useState("author");
   const [sortOrder, setSortOrder] = useState("asc");
 
-  const itemsPerPage = 20;
 
+  const itemsPerPage = 20;
+const router = useRouter();
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post`, {
       credentials: "include",
@@ -262,17 +264,21 @@ export default function PostPage() {
           </tr>
         </thead>
         <tbody>
-          {paginatedPosts.map((post) => (
+            {paginatedPosts.map((post) => (
             <tr key={post.id} className="border-b hover:bg-gray-50 text-center">
-              <td className="px-4 py-2 text-left max-w-[250px] truncate" title={post.title}>
+                <td
+                onClick={() => router.push(`/community/detail/${post.id}`)}
+                className="px-4 py-2 text-left max-w-[250px] truncate cursor-pointer hover:underline"
+                title={post.title}
+                >
                 {post.isPublic ? (
-                  <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
-                    {post.title}
-                  </span>
-                ) : (
-                  <span className="text-gray-400">비공개 처리된 게시글입니다</span>
-                )}
-              </td>
+            <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
+                {post.title}
+            </span>
+  ) : (
+    <span className="text-gray-400">비공개 처리된 게시글입니다</span>
+  )}
+</td>
               <td className="px-4 py-2">{post.authorName ?? "작성자 없음"}</td>
               <td className="px-4 py-2">{formatDate(post.createdAt)}</td>
               <td className="px-4 py-2">
