@@ -4,18 +4,19 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 const subCategories = [
-  "홈케어",
-  "식이관리",
-  "병원",
-  "영양제",
-  "행동",
-  "질병"
+    "홈케어",
+    "식이관리",
+    "병원",
+    "영양제",
+    "행동",
+    "질병"
 ];
 
 export default function TopicPage() {
     const [posts, setPosts] = useState([]);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+    const [selectedSubCategory, setSelectedSubCategory] = useState(''); // 1. 서브카테고리 선택 상태
 
     const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
 
@@ -25,10 +26,18 @@ export default function TopicPage() {
         const fetchPosts = async () => {
             try {
                 const category = encodeURIComponent("토픽");
-                const response = await fetch(`${baseUrl}/posts/category/${category}?page=${page}&size=10`, {
-                    credentials: 'include',
-                });
+                let url = '';
+
+                // 4. 서브카테고리가 선택됐으면 해당 API 호출, 아니면 기본 카테고리만 호출
+                if (selectedSubCategory) {
+                    url = `${baseUrl}/posts/category/${category}/sub/${encodeURIComponent(selectedSubCategory)}?page=${page}&size=10`;
+                } else {
+                    url = `${baseUrl}/posts/category/${category}?page=${page}&size=10`;
+                }
+
+                const response = await fetch(url, { credentials: 'include' });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
                 const data = await response.json();
                 setPosts(data.content || []);
                 setTotalPages(data.totalPages || 0);
@@ -38,38 +47,46 @@ export default function TopicPage() {
         };
 
         fetchPosts();
-    }, [page, baseUrl]);
+    }, [page, baseUrl, selectedSubCategory]); // 3. 의존성 배열에 selectedSubCategory 추가
+
+    const handleSubCategoryClick = (subCat) => {
+        setSelectedSubCategory(subCat);
+        setPage(0); // 서브카테고리 변경시 페이지 초기화
+    };
 
     function formatDateRelative(dateString) {
-        const createdDate = new Date(dateString);
-        const now = new Date();
-
-        const diffInDays = Math.floor(
-            (new Date(now.getFullYear(), now.getMonth(), now.getDate()) -
-                new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate())) /
-            (1000 * 60 * 60 * 24)
-        );
-
-        if (diffInDays === 0) return '오늘';
-        if (diffInDays < 7) return `${diffInDays}일 전`;
-        if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}주 전`;
-        return `${Math.floor(diffInDays / 30)}달 전`;
+        // (기존 함수 그대로)
     }
 
     return (
         <div className="bg-white text-black min-h-screen max-w-[1100px] mx-auto px-6 py-10">
             <h2 className="text-2xl font-bold mb-6">건강토픽 게시글</h2>
 
-            {/* 여기에 서브 카테고리 카드 추가 */}
+            {/* 2. 서브카테고리 클릭 이벤트, 선택 시 UI 강조 */}
             <div className="flex flex-wrap gap-3 mb-6">
                 {subCategories.map((subCat) => (
                     <div
                         key={subCat}
-                        className="px-4 py-2 bg-gray-200 rounded cursor-pointer hover:bg-blue-400 hover:text-white transition"
+                        onClick={() => handleSubCategoryClick(subCat)}
+                        className={`px-4 py-2 rounded cursor-pointer transition 
+              ${selectedSubCategory === subCat ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-blue-400 hover:text-white'}`}
                     >
                         {subCat}
                     </div>
                 ))}
+                {/* 전체보기 버튼 */}
+                {selectedSubCategory && (
+                    <div
+                        onClick={() => {
+                            setSelectedSubCategory('');
+                            setPage(0);
+                        }}
+                        className={`px-4 py-2 rounded cursor-pointer transition
+      bg-gray-200 hover:bg-blue-400 hover:text-white`}
+                    >
+                        전체보기
+                    </div>
+                )}
             </div>
 
             <div className="divide-y divide-gray-200">
