@@ -89,7 +89,7 @@ export default function HealthHome() {
                         <div>
                             <div className="font-bold text-lg">{pets[currentIndex].petName}</div>
                             <div className="text-gray-600 text-sm">
-                                {pets[currentIndex].petType} · {pets[currentIndex].petAge}살
+                                {pets[currentIndex].petType} · {(2025 - pets[currentIndex].petAge)}살
                             </div>
                         </div>
                     </div>
