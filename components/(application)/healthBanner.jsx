@@ -12,7 +12,6 @@ export default function HealthBanner({ isLoggedIn }) {
   const ITEM_HEIGHT = 36;
   const INTERVAL_MS = 5000;
 
-  // 📌 윈도우 너비가 1100px 이하일 때 숨김 처리
   useEffect(() => {
     const checkWidth = () => {
       setShowBanner(window.innerWidth > 1100);
@@ -82,7 +81,7 @@ export default function HealthBanner({ isLoggedIn }) {
 
   if (!isLoggedIn) {
     return (
-      <div className="max-w-[600px] bg-gray-100 text-gray-500 py-2 px-4 text-xs font-bold text-center rounded">
+      <div className="max-w-[600px] bg-gray-100 text-gray-500 py-2 px-4 text-xs font-bold text-center rounded-2xl">
         로그인하고 반려동물의 건강 상태를 확인해보세요!
       </div>
     );
@@ -101,12 +100,12 @@ export default function HealthBanner({ isLoggedIn }) {
 
   return (
     <Link href="/myPage/health" className="block">
-      <div className="overflow-hidden h-[36px] bg-white rounded-lg px-4 cursor-pointer hover:opacity-90">
+      <div className="overflow-hidden h-[36px] bg-white rounded-2xl px-4 cursor-pointer hover:opacity-90">
         <div ref={containerRef} className="flex flex-col">
           {healthResults.map((pet, index) => (
             <div
               key={index}
-              className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded shadow-sm"
+              className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-xl shadow-sm"
               style={{ height: `${ITEM_HEIGHT}px` }}
             >
               <span className="font-bold text-sm whitespace-nowrap min-w-0 truncate">{pet.petName}</span>
