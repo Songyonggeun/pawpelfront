@@ -69,7 +69,7 @@ export default function HealthBanner({ isLoggedIn }) {
   if (!isLoggedIn) {
     return (
       <div className="max-w-[600px] bg-gray-100 text-gray-500 py-2 px-4 text-xs font-bold text-center rounded">
-        로그인해서 반려동물 건강체크를 해보세요!
+        로그인하고 반려동물의 건강 상태를 확인해보세요!
       </div>
     );
   }

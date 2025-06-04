@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import PetInsuranceBanner from "@/components/(Inputs)/advertisement";
+import PetAdBanner from "@/components/(Inputs)/advertisement";
 import Link from 'next/link';
 
 export default function LifetCommunityUI() {
@@ -30,7 +30,7 @@ export default function LifetCommunityUI() {
 
   return (
     <div>
-      <PetInsuranceBanner />
+      <PetAdBanner />
 
       {/* 상단 메뉴 */}
       <div className="flex justify-center my-6">
