@@ -55,9 +55,20 @@ export default function TopicPage() {
     };
 
     function formatDateRelative(dateString) {
-        // (기존 함수 그대로)
-    }
+        const createdDate = new Date(dateString);
+        const now = new Date();
 
+        const diffInDays = Math.floor(
+            (new Date(now.getFullYear(), now.getMonth(), now.getDate()) -
+                new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate())
+            ) / (1000 * 60 * 60 * 24)
+        );
+
+        if (diffInDays === 0) return '오늘';
+        if (diffInDays < 7) return `${diffInDays}일 전`;
+        if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}주 전`;
+        return `${Math.floor(diffInDays / 30)}달 전`;
+    }
     return (
         <div className="bg-white text-black min-h-screen max-w-[1100px] mx-auto px-6 py-10">
             <h2 className="text-2xl font-bold mb-6">건강토픽 게시글</h2>
