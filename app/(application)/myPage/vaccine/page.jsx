@@ -106,7 +106,42 @@ export default function PetVaccineSection() {
                             <td className="px-3 py-2 text-center whitespace-nowrap">{record.vaccineName}</td>
                             <td className="px-3 py-2 text-center whitespace-nowrap">{formatDate(record.vaccinatedAt)}</td>
                             <td className="px-3 py-2 text-center whitespace-nowrap">{formatDate(record.nextVaccinationDate)}</td>
-                            <td className="px-3 py-2 text-center whitespace-nowrap">{record.dday}</td>
+                            <td className="px-3 py-2 text-center whitespace-nowrap">
+                              {(() => {
+                                const currentName = record.vaccineName;
+                                const vaccineNames = pet.vaccineRecords.map(r => r.vaccineName);
+
+                                // 백신 단계 추출 (1차 ~ 6차 or 종합)
+                                const match = currentName.match(/^(\d)차접종/);
+                                const isComprehensive = currentName.includes('종합백신');
+
+                                let isCompleted = false;
+
+                                if (match) {
+                                  const currentStep = parseInt(match[1]);
+                                  const nextStep = currentStep + 1;
+
+                                  if (nextStep <= 6) {
+                                    isCompleted = vaccineNames.some(name => name.startsWith(`${nextStep}차접종`));
+                                  } else {
+                                    isCompleted = vaccineNames.some(name => name.includes('종합백신'));
+                                  }
+                                } else if (isComprehensive) {
+                                  const currentDate = new Date(record.vaccinatedAt);
+                                  isCompleted = pet.vaccineRecords.some(other =>
+                                    other.vaccineName.includes('종합백신') &&
+                                    new Date(other.vaccinatedAt) > currentDate
+                                  );
+                                }
+
+                                return isCompleted ? (
+                                  <span className="text-green-600 font-semibold">완료</span>
+                                ) : (
+                                  record.dday
+                                );
+                              })()}
+                            </td>
+
                           </tr>
                         ))}
                       </tbody>

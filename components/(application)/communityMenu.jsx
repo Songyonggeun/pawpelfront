@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function CommunityMenu() {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between flex-wrap gap-4 text-sm text-gray-600 p-4 max-w-[1100px] mx-auto">
-      <ul className="flex flex-col md:flex-row gap-4">
+      <ul className="flex flex-col md:flex-row gap-8">
         {/* <li><Link href="/community/home" className="hover:underline block">홈</Link></li> */}
         <li><Link href="/community/total" className="hover:underline block">전체글</Link></li>
         <li><Link href="/community/topic" className="hover:underline block">건강토픽</Link></li>
