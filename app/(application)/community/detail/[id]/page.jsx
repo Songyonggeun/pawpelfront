@@ -96,7 +96,16 @@ export default function PostDetailPage() {
 
   return (
     <main className="w-full max-w-4xl mx-auto px-6 py-10 text-gray-900 font-sans">
-      <div className="text-sm text-blue-500 font-medium mb-1 ml-5">{post.category}</div>
+      <div className="text-sm text-blue-500 font-medium mb-1 ml-5 flex items-center">
+        <span>{post.category}</span>
+        {post.subCategory && (
+          <>
+            <span className="mx-2 text-gray-400">{'>'}</span>
+            <span>{post.subCategory}</span>
+          </>
+        )}
+      </div>
+
 
       <h1 className="text-2xl sm:text-3xl font-bold border-b border-gray-300 pb-3 mb-4 ml-4">
         {post.title}
@@ -114,7 +123,7 @@ export default function PostDetailPage() {
         </div>
       </div>
 
-      <div className="bg-transparent border-none p-2 mb-6 min-h-[300px]">
+      <div className="bg-transparent border-none p-2 mb-6 min-h-[300px] ml-5">
         <article
           className="prose prose-lg max-w-none"
           dangerouslySetInnerHTML={{ __html: post.content }}

@@ -3,6 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+const subCategories = [
+  "홈케어",
+  "식이관리",
+  "병원",
+  "영양제",
+  "행동",
+  "질병"
+];
+
 export default function TopicPage() {
     const [posts, setPosts] = useState([]);
     const [page, setPage] = useState(0);
@@ -28,11 +37,9 @@ export default function TopicPage() {
             }
         };
 
-
         fetchPosts();
     }, [page, baseUrl]);
 
-    // 날짜를 상대적으로 보여주는 함수 (필요시 재사용)
     function formatDateRelative(dateString) {
         const createdDate = new Date(dateString);
         const now = new Date();
@@ -52,6 +59,18 @@ export default function TopicPage() {
     return (
         <div className="bg-white text-black min-h-screen max-w-[1100px] mx-auto px-6 py-10">
             <h2 className="text-2xl font-bold mb-6">건강토픽 게시글</h2>
+
+            {/* 여기에 서브 카테고리 카드 추가 */}
+            <div className="flex flex-wrap gap-3 mb-6">
+                {subCategories.map((subCat) => (
+                    <div
+                        key={subCat}
+                        className="px-4 py-2 bg-gray-200 rounded cursor-pointer hover:bg-blue-400 hover:text-white transition"
+                    >
+                        {subCat}
+                    </div>
+                ))}
+            </div>
 
             <div className="divide-y divide-gray-200">
                 {posts.length === 0 ? (
@@ -94,8 +113,7 @@ export default function TopicPage() {
                 {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
                     <button
                         key={pageNumber}
-                        className={`px-3 py-1 rounded ${pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                            }`}
+                        className={`px-3 py-1 rounded ${pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
                         onClick={() => setPage(pageNumber)}
                     >
                         {pageNumber + 1}
