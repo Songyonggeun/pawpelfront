@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import CommentLike from './commentLike';
 
 export default function CommentShow({ postId }) {
   const [comments, setComments] = useState([]);
@@ -15,7 +16,7 @@ export default function CommentShow({ postId }) {
     fetchCurrentUser();
   }, [postId]);
 
-   const fetchCurrentUser = async () => {
+  const fetchCurrentUser = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
         credentials: 'include',
@@ -64,6 +65,21 @@ export default function CommentShow({ postId }) {
     });
 
     return roots;
+  };
+
+  // 좋아요 상태를 업데이트하는 함수
+  const handleLike = async (commentId) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('좋아요 처리 실패');
+      fetchComments(); // 좋아요 갱신을 위해 댓글 다시 불러오기
+    } catch (err) {
+      alert('좋아요 처리 중 오류가 발생했습니다.');
+      console.error(err);
+    }
   };
 
   const handleChange = (id, value) => {
@@ -163,6 +179,10 @@ export default function CommentShow({ postId }) {
     // comment.userImageUrl 가 있다고 가정, 없으면 빈 이미지 혹은 기본 이미지 처리
     const userImageUrl = comment.userImageUrl || '/default-profile.png';
 
+    // 좋아요 상태 및 수 - API에서 받아온 comment.likeCount, comment.likedByCurrentUser 가 있다고 가정
+    const likeCount = comment.likeCount || 0;
+    const likedByCurrentUser = comment.likedByCurrentUser || false;
+
     return (
       <div
         key={comment.id}
@@ -176,10 +196,18 @@ export default function CommentShow({ postId }) {
         />
         <div className="flex-1">
           <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <span className="text-gray-700 font-medium">{comment.userName ?? '작성자 없음'}</span>
               <span>|</span>
               <span>{formatDate(comment.createdAt)}</span>
+
+              {/* 분리된 CommentLike 컴포넌트 사용 */}
+              <CommentLike
+                commentId={comment.id}
+                initialLikeCount={comment.likeCount || 0}
+                initialIsLiked={comment.likedByCurrentUser || false}
+                onLikeToggle={() => fetchComments()} // 좋아요 토글 후 댓글 다시 불러오기
+              />
             </div>
 
             <div className="flex gap-2">
@@ -266,14 +294,13 @@ export default function CommentShow({ postId }) {
             </button>
           )}
 
-          {/* 자식 댓글 재귀 렌더링 */}
           {comment.children && comment.children.map(child =>
             renderComment(child, comment.userName, depth + 1)
           )}
         </div>
       </div>
     );
-  };
+  };  
 
   return (
     <div className="space-y-4 max-w-full">
