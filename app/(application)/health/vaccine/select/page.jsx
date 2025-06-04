@@ -162,7 +162,7 @@ export default function VaccineForm() {
 
       {/* 모달 */}
       {showGuide && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg w-[90%] max-w-md p-6 border border-gray-300">
             <h3 className="text-sm font-semibold mb-4">백신 접종 가이드</h3>
             <table className="w-full text-xs border border-gray-200">
