@@ -5,14 +5,26 @@ import Link from 'next/link';
 
 export default function HealthBanner({ isLoggedIn }) {
   const [healthResults, setHealthResults] = useState([]);
+  const [showBanner, setShowBanner] = useState(true); // ← 추가
   const containerRef = useRef(null);
   const currentIndex = useRef(0);
 
   const ITEM_HEIGHT = 36;
   const INTERVAL_MS = 5000;
 
+  // 📌 윈도우 너비가 1100px 이하일 때 숨김 처리
   useEffect(() => {
-    if (!isLoggedIn) return;
+    const checkWidth = () => {
+      setShowBanner(window.innerWidth > 1100);
+    };
+
+    checkWidth(); // 초기 실행
+    window.addEventListener('resize', checkWidth);
+    return () => window.removeEventListener('resize', checkWidth);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn || !showBanner) return;
 
     const fetchUserPets = async () => {
       try {
@@ -40,7 +52,7 @@ export default function HealthBanner({ isLoggedIn }) {
     };
 
     fetchUserPets();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, showBanner]);
 
   useEffect(() => {
     if (healthResults.length === 0) return;
@@ -59,12 +71,14 @@ export default function HealthBanner({ isLoggedIn }) {
           container.style.transition = 'none';
           container.style.transform = 'translateY(0)';
           currentIndex.current = 0;
-        }, 400); 
+        }, 400);
       }
     }, INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [healthResults]);
+
+  if (!showBanner) return null;
 
   if (!isLoggedIn) {
     return (
@@ -95,9 +109,9 @@ export default function HealthBanner({ isLoggedIn }) {
               className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded shadow-sm"
               style={{ height: `${ITEM_HEIGHT}px` }}
             >
-              <span className="font-bold text-sm">{pet.petName}</span>
-              <span className="font-extrabold text-sm">{pet.score}점</span>
-              <span className={`text-white text-xs rounded-full px-2 py-0.5 ${getStatusBadgeClass(pet.status)}`}>
+              <span className="font-bold text-sm whitespace-nowrap min-w-0 truncate">{pet.petName}</span>
+              <span className="font-extrabold text-sm whitespace-nowrap min-w-0 truncate">{pet.score}점</span>
+              <span className={`text-white text-xs rounded-full px-2 py-0.5 ${getStatusBadgeClass(pet.status)} whitespace-nowrap min-w-0 truncate`}>
                 {pet.status}
               </span>
             </div>

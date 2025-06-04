@@ -87,8 +87,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
       }`}
     >
       <div className="max-w-[1100px] mx-auto px-6 py-6 flex items-center justify-between">
-        {/* 좌측: 로고 + 메뉴 */}
-        <div className="flex items-end">
+        <div className="flex items-center">
           <Link href="/" className="flex items-center space-x-2 cursor-pointer">
             <span className="text-blue-500 text-2xl font-bold">✓</span>
             <span className="text-2xl font-bold text-blue-500">Pawple</span>
@@ -100,9 +99,11 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
           </nav>
         </div>
 
-        {/* 우측: 배너 + 검색창 + 로그인/마이페이지 */}
         <div className="hidden md:flex items-center space-x-6">
-          <HealthBanner isLoggedIn={isLoggedIn} className="mb-3" />
+          <HealthBanner
+            isLoggedIn={isLoggedIn}
+            className="hidden max-[1100px]:hidden"
+          />
 
           {isClient && (
             <div className="hidden md:flex items-center space-x-6">
