@@ -46,11 +46,15 @@ export default function UserPage() {
     setShowPetModal(true);
     if (!petData[userId]) {
       fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/user/${userId}/pets`, {
-        credentials: 'include'
+        credentials: 'include',
       })
         .then(res => res.json())
         .then(data => {
+          // data가 PetShowing 배열인지 확인 필요
           setPetData(prev => ({ ...prev, [userId]: data }));
+        })
+        .catch(() => {
+          alert("펫 정보를 불러오는 중 오류가 발생했습니다.");
         });
     }
   };
@@ -255,20 +259,51 @@ export default function UserPage() {
       )}
 
       {/* 펫 정보 모달 */}
+      {/* 펫 정보 모달 */}
       {showPetModal && expandedUserId && petData[expandedUserId] && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-lg bg-white p-6 rounded shadow-lg">
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-lg bg-white p-6 rounded shadow-lg overflow-y-auto max-h-[70vh]">
           <h2 className="text-xl font-semibold mb-4">펫 정보</h2>
-          <p>
-            {petData[expandedUserId].length > 0 ?
-              petData[expandedUserId].map((pet, index) => (
-                <span key={index}>{pet.petName} ({pet.petType}, {pet.petAge}살){index < petData[expandedUserId].length - 1 ? ', ' : ''}</span>
-              )) : '등록된 펫이 없습니다.'}
-          </p>
+          {petData[expandedUserId].length > 0 ? (
+            <div className="flex flex-wrap gap-4">
+              {petData[expandedUserId].map((pet, index) => (
+                <div
+                  key={pet.id ?? `${pet.petName}-${index}`}
+                  className="flex flex-col items-center border p-2 rounded w-28 cursor-pointer hover:bg-gray-100"
+                  onClick={() => setEditPet(pet)}  // 기존 스타일 따라 클릭 가능하게도 넣어봤어요
+                >
+                  {pet.imageUrl ? (
+                    <img
+                      src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
+                      alt={pet.petName}
+                      className="w-20 h-20 object-cover rounded-full mb-2"
+                      onError={(e) => { e.currentTarget.src = "/default-pet.png"; }}
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-gray-200 flex items-center justify-center text-gray-400 rounded-full mb-2">
+                      이미지 없음
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-center">{pet.petName}</span>
+                  <span className="text-xs text-gray-600 text-center">
+                    ({pet.petType}, {pet.petAge}살)
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>등록된 펫이 없습니다.</p>
+          )}
           <div className="flex justify-end mt-4">
-            <button onClick={closePetModal} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">닫기</button>
+            <button
+              onClick={closePetModal}
+              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              닫기
+            </button>
           </div>
         </div>
       )}
+
 
       {/* 상세 정보 모달 */}
       {showInfoModal && expandedInfoUserId && userDetailData[expandedInfoUserId] && (
@@ -276,6 +311,7 @@ export default function UserPage() {
           <h2 className="text-xl font-semibold mb-4">회원 상세 정보</h2>
           <p><strong>전화번호:</strong> {userDetailData[expandedInfoUserId].phoneNumber || '정보 없음'}</p>
           <p><strong>생년월일:</strong> {userDetailData[expandedInfoUserId].birthDate || '정보 없음'}</p>
+          <p><strong>포인트:</strong> {userDetailData[expandedInfoUserId].point || '정보 없음'}</p>
           {userDetailData[expandedInfoUserId].attr && Object.keys(userDetailData[expandedInfoUserId].attr).length > 0 && (
             <div>
               <strong>속성:</strong>
