@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function VaccineResult() {
   const [history, setHistory] = useState([]);
@@ -54,6 +55,15 @@ export default function VaccineResult() {
           </tbody>
         </table>
       )}
+
+        <div className="mt-6 text-center">
+            <button
+                onClick={() => router.push('/myPage/vaccine')}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+            >
+                전체 기록 보기
+            </button>
+        </div>
     </div>
   );
 }
