@@ -61,7 +61,8 @@ export default function LoginPage() {
         )}
 
         <div className="flex justify-center gap-x-5 text-sm text-blue-600 mb-4">
-          <Link href="/signup/Step1" className="hover:underline">회원가입</Link>
+          {/* <Link href="/signup/Step1" className="hover:underline">회원가입</Link> */}
+          <Link href="/signup" className="hover:underline">회원가입</Link>
           <Link href="/find/findid" className="hover:underline">아이디 찾기</Link>
         </div>
 
