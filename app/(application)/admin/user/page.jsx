@@ -276,6 +276,8 @@ export default function UserPage() {
           <h2 className="text-xl font-semibold mb-4">회원 상세 정보</h2>
           <p><strong>전화번호:</strong> {userDetailData[expandedInfoUserId].phoneNumber || '정보 없음'}</p>
           <p><strong>생년월일:</strong> {userDetailData[expandedInfoUserId].birthDate || '정보 없음'}</p>
+          <p><strong>포인트:</strong> {userDetailData[expandedInfoUserId].point || '정보 없음'}</p>
+          
           {userDetailData[expandedInfoUserId].attr && Object.keys(userDetailData[expandedInfoUserId].attr).length > 0 && (
             <div>
               <strong>속성:</strong>
