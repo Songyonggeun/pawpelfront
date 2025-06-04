@@ -36,27 +36,37 @@ export default function VaccineForm() {
     }
 
     setLoading(true);
-    const params = new URLSearchParams({
-      petId: selectedPetId,
-      step,
-      selectedDate: date,
-    });
+
+    // Form 데이터 구성 (백엔드에서 @RequestParam 방식 처리)
+    const formData = new URLSearchParams();
+    formData.append('petId', selectedPetId);
+    formData.append('step', step);
+    formData.append('selectedDate', date);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/calculate?${params}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/calculate`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
         credentials: 'include',
       });
+
+      if (!res.ok) throw new Error('백엔드 오류');
+
       const data = await res.json();
       localStorage.setItem('vaccineResult', JSON.stringify(data));
+      localStorage.setItem('vaccinePetId', selectedPetId); // 결과 페이지용 petId 저장
       router.push('/health/vaccine/result');
     } catch (err) {
       console.error('백신 저장 실패:', err);
-      alert('서버 오류가 발생했습니다.');
+      alert('예방접종 정보 저장에 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
+
 
   const vaccineSteps = [
     { step: 1, label: '1차접종 (종합백신 + 코로나 장염)' },

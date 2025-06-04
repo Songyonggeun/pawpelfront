@@ -18,8 +18,19 @@ export default function PetVaccineSection() {
         });
         if (!res.ok) throw new Error('Unauthorized');
         const data = await res.json();
+
+        const petsWithVaccines = await Promise.all(
+          (data.pets || []).map(async (pet) => {
+            const vaccineRes = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/history?petId=${pet.id}`, {
+              credentials: 'include',
+            });
+            const vaccineRecords = vaccineRes.ok ? await vaccineRes.json() : [];
+            return { ...pet, vaccineRecords };
+          })
+        );
+
         setUserInfo(data);
-        setPets(data.pets || []);
+        setPets(petsWithVaccines);
       } catch (err) {
         router.replace('/login');
       } finally {
@@ -41,7 +52,7 @@ export default function PetVaccineSection() {
     { title: '작성 글', href: '/myPage/posts' },
   ];
 
-  if (!userInfo) {
+  if (loading) {
     return <div className="text-center py-10">로딩 중...</div>;
   }
 

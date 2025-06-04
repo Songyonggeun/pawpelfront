@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 
 export default function VaccineResult() {
   const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const petId = localStorage.getItem('vaccinePetId');
@@ -17,6 +19,9 @@ export default function VaccineResult() {
       .then((data) => setHistory(data))
       .catch((err) => {
         console.error('이력 불러오기 실패:', err);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
@@ -31,7 +36,9 @@ export default function VaccineResult() {
     <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-xl font-bold mb-6 text-center">예방접종 이력</h1>
 
-      {history.length === 0 ? (
+      {loading ? (
+        <p className="text-center text-gray-500">불러오는 중입니다...</p>
+      ) : history.length === 0 ? (
         <p className="text-center text-gray-500">등록된 예방접종 이력이 없습니다.</p>
       ) : (
         <table className="w-full text-sm border border-gray-200">
@@ -56,14 +63,14 @@ export default function VaccineResult() {
         </table>
       )}
 
-        <div className="mt-6 text-center">
-            <button
-                onClick={() => router.push('/myPage/vaccine')}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-            >
-                전체 기록 보기
-            </button>
-        </div>
+      <div className="mt-6 text-center">
+        <button
+          onClick={() => router.push('/myPage/vaccine')}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+        >
+          전체 기록 보기
+        </button>
+      </div>
     </div>
   );
 }
