@@ -81,16 +81,23 @@ const router = useRouter();
         return res.json();
       })
       .then((updatedPost) => {
-        if (!updatedPost) return;
+  if (!updatedPost) return;
 
-        const updateLists = (list) =>
-          list.map((post) => (post.id === editingPostId ? updatedPost : post));
+  const updateLists = (list) =>
+    list.map((post) =>
+      post.id === editingPostId
+        ? {
+            ...updatedPost,
+            authorName: post.authorName ?? "작성자 없음", // 작성자 이름 유지
+          }
+        : post
+    );
 
-        setPosts((prev) => updateLists(prev));
-        setFilteredPosts((prev) => updateLists(prev));
-        cancelEdit();
-        alert("게시글 공개 여부가 수정되었습니다.");
-      });
+  setPosts((prev) => updateLists(prev));
+  setFilteredPosts((prev) => updateLists(prev));
+  cancelEdit();
+  alert("게시글 공개 여부가 수정되었습니다.");
+});
   };
 
   const handleSearch = () => {
@@ -150,30 +157,30 @@ const router = useRouter();
 
       if (!window.confirm(confirmText)) return;
 
-      fetch(
+        fetch(
         `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/move/${postId}`,
         {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ target: selectedTarget }),
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ target: selectedTarget }),
         }
-      ).then((res) => {
+        ).then((res) => {
         if (res.ok) {
-          alert("게시글이 이동되었습니다.");
-          setIsDropdownOpen(false);
-          setSelectedTarget("");
+            alert("게시글이 이동되었습니다.");
+            setIsDropdownOpen(false);
+            setSelectedTarget("");
         } else {
-          alert("이동에 실패했습니다.");
+            alert("이동에 실패했습니다.");
         }
-      });
+        });
     };
 
     return (
-      <div className="inline-block relative">
+        <div className="inline-block relative">
         <button
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="text-blue-600 hover:underline"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="text-blue-600 hover:underline"
         >
           이동
         </button>
@@ -267,18 +274,18 @@ const router = useRouter();
             {paginatedPosts.map((post) => (
             <tr key={post.id} className="border-b hover:bg-gray-50 text-center">
                 <td
-                onClick={() => router.push(`/community/detail/${post.id}`)}
-                className="px-4 py-2 text-left max-w-[250px] truncate cursor-pointer hover:underline"
-                title={post.title}
+                    onClick={() => router.push(`/community/detail/${post.id}`)}
+                    className={`px-4 py-2 text-left max-w-[250px] truncate cursor-pointer hover:underline ${
+                    (editingPostId === post.id && editVisibility === "비공개") || (!editingPostId && !post.isPublic)
+                        ? "text-gray-400"
+                        : ""
+                    }`}
+                    title={post.title}
                 >
-                {post.isPublic ? (
-            <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
-                {post.title}
-            </span>
-  ) : (
-    <span className="text-gray-400">비공개 처리된 게시글입니다</span>
-  )}
-</td>
+                    <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
+                    {post.title}
+                    </span>
+                </td>
               <td className="px-4 py-2">{post.authorName ?? "작성자 없음"}</td>
               <td className="px-4 py-2">{formatDate(post.createdAt)}</td>
               <td className="px-4 py-2">
