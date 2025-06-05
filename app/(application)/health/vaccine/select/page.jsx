@@ -28,6 +28,35 @@ export default function VaccineForm() {
     };
     fetchPets();
   }, []);
+// {마지막 접종 정보}
+useEffect(() => {
+  const fetchPets = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Unauthorized');
+      const data = await res.json();
+
+      const petsWithLastVaccine = await Promise.all(
+        (data.pets || []).map(async (pet) => {
+          const vaccineRes = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/history?petId=${pet.id}`, {
+            credentials: 'include',
+          });
+          const records = vaccineRes.ok ? await vaccineRes.json() : [];
+          const lastRecord = records.length > 0 ? records[records.length-1] : null;
+          return { ...pet, lastVaccine: lastRecord };
+        })
+      );
+
+      setPets(petsWithLastVaccine);
+    } catch (err) {
+      router.replace('/login');
+    }
+  };
+
+  fetchPets();
+}, []);
 
   const handleSubmit = async () => {
     if (!selectedPetId) {
@@ -105,16 +134,26 @@ export default function VaccineForm() {
       {/* 반려동물 선택 */}
       <div className="flex gap-4 flex-wrap justify-center mb-6">
         {pets.map((pet) => (
-          <div
-            key={pet.id}
-            onClick={() => setSelectedPetId(pet.id)}
-            className={`w-32 h-40 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
-              ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
-          >
-            <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
-            <div className="text-sm font-medium">{pet.petName}</div>
-          </div>
-        ))}
+  <div
+    key={pet.id}
+    onClick={() => setSelectedPetId(pet.id)}
+    className={`w-32 h-44 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
+      ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
+  >
+    <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
+    <div className="text-sm font-medium">{pet.petName}</div>
+
+    {/* 추가된 부분: 마지막 백신 정보 */}
+    {pet.lastVaccine ? (
+      <div className="text-[10px] text-gray-500 text-center mt-1">
+        {pet.lastVaccine.vaccineName}<br />
+        {new Date(pet.lastVaccine.vaccinatedAt).toLocaleDateString('ko-KR')}
+      </div>
+    ) : (
+      <div className="text-[10px] text-gray-400 mt-1 text-center">접종 이력 없음</div>
+    )}
+  </div>
+))}
       </div>
 
       {/* 백신 단계 선택 + 안내 버튼 */}
