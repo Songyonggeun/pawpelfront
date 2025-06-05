@@ -34,7 +34,7 @@ export default function VaccineForm() {
 
     const lastRecord = records.length > 0 ? records[0] : null;
     const stepSet = new Set(records.map((r) => r.step));
-    const isFullyVaccinated = stepSet.size >= 7; // 1~7단계가 모두 기록됨
+    const isFullyVaccinated = stepSet.size >= 6; // 1~7단계가 모두 기록됨
 
     return { ...pet, 
       lastVaccine: lastRecord,
@@ -65,10 +65,14 @@ const handleSubmit = async () => {
   // 👉 선택된 펫의 기록 중, 같은 step이 있는지 검사
   const alreadyExists = selectedPet?.vaccineRecords?.some((record) => record.step === step);
 
+  if (step !== 7) {
+  const alreadyExists = selectedPet?.vaccineRecords?.some((record) => record.step === step);
+  
   if (alreadyExists) {
     alert(`이미 ${step}차 접종이 저장되어 있습니다.`);
     return;
   }
+}
 
   setLoading(true);
 
@@ -150,7 +154,7 @@ const handleSubmit = async () => {
     <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
     <div className="text-sm font-medium">{pet.petName}</div>
 
-    {pet.isFullyVaccinated ? (
+    {/* {pet.isFullyVaccinated ? (
       <div className="text-[10px] text-green-600 font-semibold mt-1 text-center">
         모든 백신 접종 완료 🎉
       </div>
@@ -161,7 +165,7 @@ const handleSubmit = async () => {
       </div>
     ) : (
       <div className="text-[10px] text-gray-400 mt-1 text-center">접종 이력 없음</div>
-    )}
+    )} */}
 
   </div>
 ))}
