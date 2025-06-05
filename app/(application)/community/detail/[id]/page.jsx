@@ -147,31 +147,37 @@ export default function PostDetailPage() {
         </div>
       )}
 
-      {/* 댓글 섹션 */}
       {post?.id && (
         <section className="mt-2 border-t pt-6 max-w-4xl mx-auto w-full">
-          <LikeCard
-            postId={post.id}
-            initialLikeCount={post.likeCount}
-            initialIsLiked={post.isLiked}  // API에서 받아온 값이어야 함
-            onLikeCountChange={handleLikeCountChange}
-          />
-
-
+          {/* LikeCard를 댓글 위 왼쪽에 배치 */}
+          <div className="flex justify-start mb-4">
+            <LikeCard
+              postId={post.id}
+              initialLikeCount={post.likeCount}
+              initialIsLiked={post.isLiked}
+              onLikeCountChange={(newCount, newIsLiked) => {
+                setPost((prev) => ({
+                  ...prev,
+                  likeCount: newCount,
+                  isLiked: newIsLiked,
+                }));
+              }}
+            />
+          </div>
 
           <h2 className="text-lg font-semibold mb-4 ml-1">댓글</h2>
 
-          {/* 댓글 입력: 로그인한 경우에만 보이게 */}
+          {/* 댓글 입력 */}
           {currentUserName && (
             <div className="mb-1">
               <CommentInput
                 postId={post.id}
-                onCommentAdded={() => setRefreshCommentsFlag(flag => flag + 1)}
+                onCommentAdded={() => setRefreshCommentsFlag((flag) => flag + 1)}
               />
             </div>
           )}
 
-          {/* 댓글 목록은 항상 보이도록 */}
+          {/* 댓글 목록 */}
           <div className="mt-1">
             <CommentShow key={refreshCommentsFlag} postId={post.id} />
           </div>

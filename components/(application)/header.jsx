@@ -11,6 +11,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRoles, setUserRoles] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const router = useRouter();
 
   const goTo = (path) => () => {
@@ -59,6 +60,18 @@ export default function Header() {
       setShowHealthCareMenu(false);
     }
   };
+
+  const handleSearchInputChange = (e) => {
+    setSearchKeyword(e.target.value);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchKeyword.trim()) {
+      router.push(`/search?keyword=${encodeURIComponent(searchKeyword.trim())}`);
+    }
+  };
+
 
   const handleLogout = async () => {
     try {
