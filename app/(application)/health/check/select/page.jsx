@@ -36,28 +36,28 @@ export default function SelectPetPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-6 text-center">건강검진 대상 선택</h1>
+    <div className="max-w-7x3 mx-auto p-6">
+      <h1 className="text-xl font-semibold mb-6 text-center">건강검진 대상 선택</h1>
 
-      <div className="flex justify-center mb-6">
+      {/* <div className="flex justify-center mb-6">
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
           className="border border-gray-300 rounded px-4 py-2"
         />
-      </div>
+      </div> */}
 
       <div className="flex gap-4 flex-wrap justify-center mb-6">
         {pets.map((pet) => (
           <div
             key={pet.id}
             onClick={() => setSelectedPetId(pet.id)}
-            className={`w-32 h-40 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
+            className={`w-60 h-60 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
               ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
           >
-            <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
-            <div className="text-sm font-medium">{pet.petName}</div>
+            <div className="w-28 h-28 bg-gray-200 rounded-full mb-2" />
+            <div className="text-m font-medium">{pet.petName}</div>
           </div>
         ))}
       </div>
