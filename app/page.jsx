@@ -34,24 +34,30 @@ export default function LifetCommunityUI() {
 
       {/* 상단 메뉴 */}
       <div className="flex justify-center my-6">
-        <div className="grid grid-cols-3 gap-6 text-center">
+        <div className="grid grid-cols-4 gap-6 text-center">
           <a href="/health/check/select" className="cursor-pointer">
-            <div className="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-2xl font-bold">
+            <div className="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-3xl font-bold">
               ✓
             </div>
             <div className="mt-2 text-sm text-gray-800 font-medium">건강체크</div>
           </a>
-          <a href="/community/total" className="cursor-pointer">
-            <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-2xl font-bold">
-              💬
+          <a href="/health/vaccine/select" className="cursor-pointer">
+            <div className="w-20 h-20 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold">
+              💉
             </div>
-            <div className="mt-2 text-sm text-gray-800 font-medium">커뮤니티</div>
+            <div className="mt-2 text-sm text-gray-800 font-medium">접종체크</div>
           </a>
           <a href="/health/guide" className="cursor-pointer">
-            <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-2xl font-bold">
+            <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-3xl font-bold">
               📘
             </div>
             <div className="mt-2 text-sm text-gray-800 font-medium">건강체크 가이드</div>
+          </a>
+          <a href="/community/total" className="cursor-pointer">
+            <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold">
+              💬
+            </div>
+            <div className="mt-2 text-sm text-gray-800 font-medium">커뮤니티</div>
           </a>
         </div>
       </div>

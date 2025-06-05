@@ -111,18 +111,22 @@ export default function HealthHome() {
             )}
 
             {/* 기능 아이콘 영역 */}
-            <div className="grid grid-cols-3 gap-6 text-center">
+            <div className="grid grid-cols-4 gap-6 text-center">
                 <a href="/health/check/select" className="cursor-pointer">
-                    <div className="w-14 h-14 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-2xl font-bold">✓</div>
+                    <div className="w-18 h-18 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-2xl font-bold">✓</div>
                     <div className="mt-2 text-sm text-gray-800 font-medium">건강체크</div>
                 </a>
-                <a href="/consult" className="cursor-pointer">
-                    <div className="w-14 h-14 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-2xl font-bold">💬</div>
-                    <div className="mt-2 text-sm text-gray-800 font-medium">수의사 상담</div>
+                <a href="/health/vaccine/select" className="cursor-pointer">
+                    <div className="w-18 h-18 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-indigo-600 text-2xl font-bold">💉</div>
+                    <div className="mt-2 text-sm text-gray-800 font-medium">접종체크</div>
                 </a>
                 <a href="/health/guide" className="cursor-pointer">
-                    <div className="w-14 h-14 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-2xl font-bold">📘</div>
+                    <div className="w-18 h-18 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-2xl font-bold">📘</div>
                     <div className="mt-2 text-sm text-gray-800 font-medium">건강체크 가이드</div>
+                </a>
+                <a href="/consult" className="cursor-pointer">
+                    <div className="w-18 h-18 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-2xl font-bold">💬</div>
+                    <div className="mt-2 text-sm text-gray-800 font-medium">수의사 상담</div>
                 </a>
             </div>
 
