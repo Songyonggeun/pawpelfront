@@ -162,7 +162,26 @@ export default function PetVaccineSection() {
                                 <td className="px-3 py-2 text-center whitespace-nowrap">{step}</td>
                                 <td className="px-3 py-2 text-center whitespace-nowrap">{record ? formatDate(record.vaccinatedAt) : '-'}</td>
                                 <td className="px-3 py-2 text-center whitespace-nowrap">{nextDate}</td>
-                                <td className="px-3 py-2 text-center whitespace-nowrap">{record ? '완료' : dday}</td>
+                                <td className={`px-3 py-2 text-center whitespace-nowrap ${record ? 'text-green-600 font-semibold' : ''}`}>
+                                  {record ? (
+                                    <>
+                                      완료
+                                      {idx > 0 && nextDates[idx - 1] && (() => {
+                                        const expectedDate = new Date(nextDates[idx - 1]);
+                                        const actualDate = new Date(record.vaccinatedAt);
+                                        const diffDays = Math.floor((actualDate - expectedDate) / (1000 * 60 * 60 * 24));
+                                        if (diffDays === 0) return null;
+                                        const diffColor = diffDays < 0 ? 'text-blue-500' : 'text-red-500';
+                                        return (
+                                          <span className={`ml-1 ${diffColor}`}>
+                                            ({diffDays < 0 ? `-${-diffDays}` : `+${diffDays}`}일)
+                                          </span>
+                                        );
+                                      })()}
+                                    </>
+                                  ) : dday}
+                                </td>
+
                               </tr>
                             );
                           })}
