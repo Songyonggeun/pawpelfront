@@ -42,6 +42,9 @@ export default function PetVaccineSection() {
 
         setUserInfo(data);
         setPets(petsWithVaccines);
+
+        setExpandedPetIds(petsWithVaccines.map((pet) => pet.id));
+
       } catch (err) {
         router.replace('/login');
       } finally {
@@ -50,6 +53,7 @@ export default function PetVaccineSection() {
     };
     fetchData();
   }, []);
+
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
@@ -62,7 +66,8 @@ export default function PetVaccineSection() {
     const result = [];
     let baseDate = new Date(firstDate);
     for (let i = 1; i < VACCINE_STEPS.length; i++) {
-      baseDate.setDate(baseDate.getDate() + 21);
+      const interval = i === VACCINE_STEPS.length - 1 ? 365 : 21;
+      baseDate.setDate(baseDate.getDate() + interval);
       result.push(new Date(baseDate));
     }
     return result;
@@ -107,12 +112,23 @@ export default function PetVaccineSection() {
           <h2 className="text-lg font-semibold mb-4">백신접종 내역</h2>
 
           <div className="flex flex-col gap-4">
-            {pets.map((pet) => {
-              const vaccineMap = Object.fromEntries(
-                pet.vaccineRecords.map((r) => [r.vaccineName, r])
-              );
-              const firstVaccine = vaccineMap[VACCINE_STEPS[0]];
-              const nextDates = firstVaccine ? calcNextDates(firstVaccine.vaccinatedAt) : [];
+            {pets.length === 0 ? (
+              <div className="text-center text-gray-500 py-10">
+                <p className="mb-4">등록된 반려동물이 없습니다.<br />펫을 등록해주세요.</p>
+                <button
+                  onClick={() => router.push('/myPage')}
+                  className="inline-block px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                >
+                  등록하러 가기
+                </button>
+              </div>
+            ) : (
+              pets.map((pet) => {
+                const vaccineMap = Object.fromEntries(
+                  pet.vaccineRecords.map((r) => [r.vaccineName, r])
+                );
+                const firstVaccine = vaccineMap[VACCINE_STEPS[0]];
+                const nextDates = firstVaccine ? calcNextDates(firstVaccine.vaccinatedAt) : [];
 
               return (
                 <div key={pet.id} className="border border-gray-300 rounded-lg bg-white shadow-sm p-4">
@@ -136,7 +152,7 @@ export default function PetVaccineSection() {
                       onClick={() => toggleExpand(pet.id)}
                       className="text-sm px-3 py-1 border rounded hover:bg-gray-100"
                     >
-                      백신기록 보기
+                      {expandedPetIds.includes(pet.id) ? '백신기록 숨기기' : '백신기록 보기'}
                     </button>
                   </div>
 
@@ -190,8 +206,9 @@ export default function PetVaccineSection() {
                     </div>
                   )}
                 </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </section>
       </main>
