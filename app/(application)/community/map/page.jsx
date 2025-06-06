@@ -4,17 +4,17 @@
 
     const PLACES = [
     { id: 1, name: 'N동물의료센터 강북점', lat: 37.618355, lng: 127.029623, address: '서울 강북구 도봉로', phone: '02-984-0075' },
-    { id: 2, name: '청담아이윌 24시 동물병원', lat: 37.519709, lng: 127.049219, address: '서울 강남구 청담동', phone: '02-6925-7021' },
+    { id: 2, name: '청담아이윌 24시 동물병원', lat: 37.519663, lng: 127.049190, address: '서울 강남구 청담동', phone: '02-6925-7021' },
     { id: 3, name: '와이즈 24시 동물병원', lat: 37.511230, lng: 127.023870, address: '서울 강남구 논현동', phone: '02-3446-8253' },
-    { id: 4, name: '24시 SNC 동물 메디컬센터', lat: 37.499428, lng: 127.038716, address: '서울 강남구 논현동', phone: '02-562-7582' },
-    { id: 5, name: '24시 애니동물병원', lat: 37.586807, lng: 127.020251, address: '서울 성북구 안암동', phone: '02-926-8275' },
-    { id: 6, name: '24시 시유동물메디컬센터', lat: 37.520136, lng: 126.969896, address: '서울 용산구 이촌동', phone: '02-793-0075' },
-    { id: 7, name: '24시 잠실ON동물의료센터', lat: 37.511761, lng: 127.079078, address: '서울 송파구 잠실동', phone: '0508-1496-0745' },
-    { id: 8, name: 'VIP동물의료센터 성북점', lat: 37.592507, lng: 127.013479, address: '서울 성북구 동소문동', phone: '02-953-0075' },
-    { id: 9, name: '24시 더케어동물의료센터', lat: 37.603561, lng: 127.147287, address: '경기도 구리시 수택동', phone: '031-516-8585' },
-    { id: 10, name: '마음반려동물의료원', lat: 37.267648, lng: 127.026393, address: '경기도 수원시 팔달구', phone: '031-211-0975' },
-    { id: 11, name: '24시 위너스 동물의료센터', lat: 37.658514, lng: 127.246219, address: '경기도 남양주시 호평동', phone: '031-511-7582' },
-    { id: 12, name: '24시 송도 온 동물의료센터', lat: 37.388554, lng: 126.638635, address: '인천 연수구 송도동', phone: '0507-1472-7591' },
+    { id: 4, name: '24시 SNC 동물 메디컬센터', lat: 37.497476, lng: 127.038908, address: '서울 강남구 논현동', phone: '02-562-7582' },
+    { id: 5, name: '24시 애니동물병원', lat: 37.583963, lng: 127.019823, address: '서울 성북구 안암동', phone: '02-926-8275' },
+    { id: 6, name: '24시 시유동물메디컬센터', lat: 37.519990, lng: 126.969858, address: '서울 용산구 이촌동', phone: '02-793-0075' },
+    { id: 7, name: '24시 잠실ON동물의료센터', lat: 37.511579, lng: 127.079069, address: '서울 송파구 잠실동', phone: '0508-1496-0745' },
+    { id: 8, name: 'VIP동물의료센터 성북점', lat: 37.592325, lng: 127.013544, address: '서울 성북구 동소문동', phone: '02-953-0075' },
+    { id: 9, name: '24시 더케어동물의료센터', lat: 37.603334, lng: 127.147298, address: '경기도 구리시 수택동', phone: '031-516-8585' },
+    { id: 10, name: '마음반려동물의료원', lat: 37.267472, lng: 127.026415, address: '경기도 수원시 팔달구', phone: '031-211-0975' },
+    { id: 11, name: '24시 위너스 동물의료센터', lat: 37.658282, lng: 127.246152, address: '경기도 남양주시 호평동', phone: '031-511-7582' },
+    { id: 12, name: '24시 송도 온 동물의료센터', lat: 37.388427, lng: 126.638564, address: '인천 연수구 송도동', phone: '0507-1472-7591' },
     ];
 
     const ITEMS_PER_PAGE = 10;
@@ -88,25 +88,41 @@
 
     const handleSearch = async () => {
         if (!searchTerm.trim()) return;
-
+      
         try {
-        const res = await fetch(`/api/searchPlace?query=${encodeURIComponent(searchTerm)}`);
-        const data = await res.json();
-
-        const items = data.items.map((item, idx) => ({
-            id: idx,
-            name: item.title.replace(/<[^>]*>?/g, ''),
-            lat: parseFloat(item.mapy),
-            lng: parseFloat(item.mapx),
-            address: item.roadAddress || item.address,
-        }));
-
-        setPlaces(items);
-        setCurrentPage(1);
+          const res = await fetch(`/api/searchPlace?query=${encodeURIComponent(searchTerm)}`);
+          const data = await res.json();
+      
+          const convertedItems = await Promise.all(
+            data.items.map(async (item, idx) => {
+              const tm128 = new naver.maps.Point(parseFloat(item.mapx), parseFloat(item.mapy));
+      
+              // TM128 → 위경도로 변환
+              const latlng = await new Promise((resolve) => {
+                naver.maps.TransCoord.convert(
+                  tm128,
+                  naver.maps.TransCoord.TM128,
+                  naver.maps.TransCoord.LatLng,
+                  (result) => resolve(result)
+                );
+              });
+      
+              return {
+                id: idx,
+                name: item.title.replace(/<[^>]*>?/g, ''),
+                lat: latlng.y,
+                lng: latlng.x,
+                address: item.roadAddress || item.address,
+              };
+            })
+          );
+      
+          setPlaces(convertedItems);
+          setCurrentPage(1);
         } catch (err) {
-        console.error('검색 실패:', err);
+          console.error('검색 실패:', err);
         }
-    };
+      };
 
     const renderMarkers = (placesToShow) => {
         if (!mapRef.current) return;
@@ -118,10 +134,18 @@
         markersRef.current = [];
 
         placesToShow.forEach((place) => {
-        const marker = new naver.maps.Marker({
-            position: new naver.maps.LatLng(place.lat, place.lng),
-            map: mapRef.current,
-        });
+            const pawIcon = {
+                url: '/paw-print.png',           // public 폴더에 두는 발바닥 아이콘 이미지 경로
+                size: new naver.maps.Size(32, 32), // 아이콘 크기 (필요시 조절)
+                origin: new naver.maps.Point(0, 0),
+                anchor: new naver.maps.Point(16, 32), // 아이콘 기준점 (아래 중앙)
+              };
+              
+              const marker = new naver.maps.Marker({
+                  position: new naver.maps.LatLng(place.lat, place.lng),
+                  map: mapRef.current,
+                  icon: pawIcon,
+              });
 
         naver.maps.Event.addListener(marker, 'click', () => {
             infoWindowRef.current.setContent(`<div style="padding:5px;">${place.name}</div>`);
