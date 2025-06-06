@@ -32,41 +32,44 @@ export default function LifetCommunityUI() {
     <div>
       <PetAdBanner />
 
-      {/* 상단 메뉴 */}
+      {/* 중앙 메뉴 */}
       <div className="flex justify-center my-6">
-        <div className="grid grid-cols-4 gap-6 text-center">
-          <a href="/health/check/select" className="cursor-pointer">
-            <div className="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-3xl font-bold">
-              ✓
-            </div>
-            <div className="mt-2 text-sm text-gray-800 font-medium">건강체크</div>
-          </a>
-          <a href="/health/vaccine/select" className="cursor-pointer">
-            <div className="w-20 h-20 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold">
-              💉
-            </div>
-            <div className="mt-2 text-sm text-gray-800 font-medium">접종체크</div>
-          </a>
-          <a href="/health/guide" className="cursor-pointer">
-            <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-3xl font-bold">
-              📘
-            </div>
-            <div className="mt-2 text-sm text-gray-800 font-medium">건강체크 가이드</div>
-          </a>
-          <a href="/community/total" className="cursor-pointer">
-            <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold">
-              💬
-            </div>
-            <div className="mt-2 text-sm text-gray-800 font-medium">커뮤니티</div>
-          </a>
-          <a href="/community/map" className="cursor-pointer">
-            <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold">
-              🗺️
-            </div>
-            <div className="mt-2 text-sm text-gray-800 font-medium">지도</div>
-          </a>
+        <div className="overflow-x-auto px-4">
+          <div className="flex gap-15 min-w-max">
+            <a href="/health/guide" className="cursor-pointer text-center min-w-[80px]">
+              <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-3xl font-bold">
+                📘
+              </div>
+              <div className="mt-2 text-sm text-gray-800 font-medium">건강체크 가이드</div>
+            </a>
+            <a href="/health/check/select" className="cursor-pointer text-center min-w-[80px]">
+              <div className="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-3xl font-bold">
+                ✓
+              </div>
+              <div className="mt-2 text-sm text-gray-800 font-medium">건강체크</div>
+            </a>
+            <a href="/health/vaccine/select" className="cursor-pointer text-center min-w-[80px]">
+              <div className="w-20 h-20 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold">
+                💉
+              </div>
+              <div className="mt-2 text-sm text-gray-800 font-medium">접종체크</div>
+            </a>
+            <a href="/community/map" className="cursor-pointer text-center min-w-[80px]">
+              <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold">
+                🗺️
+              </div>
+              <div className="mt-2 text-sm text-gray-800 font-medium">지도</div>
+            </a>
+            <a href="/community/total" className="cursor-pointer text-center min-w-[80px]">
+              <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold">
+                💬
+              </div>
+              <div className="mt-2 text-sm text-gray-800 font-medium">커뮤니티</div>
+            </a>
+          </div>
         </div>
       </div>
+
 
       {/* 인기글 섹션 */}
       <section className="w-full border-t border-gray-200 bg-white">

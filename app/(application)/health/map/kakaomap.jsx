@@ -172,7 +172,7 @@ export default function KakaoMap() {
                 : 'bg-gray-100 text-gray-800 hover:bg-gray-300 hover:text-black border-transparent'
             }`}
           >
-            전체
+            서울
           </button>
           {Object.keys(districts).map(d => (
             <button
@@ -211,6 +211,9 @@ export default function KakaoMap() {
             <li className="text-gray-500 text-xs">해당 구에 등록된 병원이 없습니다.</li>
           )}
         </ul>
+      </div>
+      <div className="mt-10">
+        <span className="text-xs space-y-10 text-gray-500">* 추후 타지역도 업데이트 예정입니다.</span>
       </div>
     </div>
   );

@@ -34,6 +34,7 @@ export default function HealthCareMenu() {
         {isVetOrAdmin && (
           <li><a href="/health/consult/list" className="hover:underline block">상담리스트</a></li>
         )}
+        <li><a href="/health/map" className="hover:underline block">24시동물병원</a></li>
       </ul>
     </div>
   );

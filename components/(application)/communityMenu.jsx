@@ -17,7 +17,7 @@ export default function CommunityMenu() {
       <div className="w-full md:w-auto">
         <Link
           href="/community/write"
-          className="block text-center w-auto px-3 py-1 bg-sky-400 text-white rounded-full hover:bg-blue-700 text-sm"
+          className="block text-center w-auto px-3 py-1 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-500 hover:text-white text-xs"
         >
           글쓰기
         </Link>
