@@ -15,10 +15,6 @@ export default function PostDetailPage() {
   const [currentUserName, setCurrentUserName] = useState(null);
 
   const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
-  const handleLikeCountChange = (newCount) => {
-    setPost((prev) => ({ ...prev, likeCount: newCount }));
-  };
-
 
   useEffect(() => {
     if (!id) return;
@@ -39,7 +35,6 @@ export default function PostDetailPage() {
 
     fetchPost();
   }, [id]);
-
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -106,15 +101,33 @@ export default function PostDetailPage() {
         )}
       </div>
 
-
       <h1 className="text-2xl sm:text-3xl font-bold border-b border-gray-300 pb-3 mb-4 ml-4">
         {post.title}
       </h1>
 
-      <div className="flex justify-between text-sm text-gray-600 mb-4">
-        <div className="font-medium ml-5">{post.authorName}</div>
+      {/* 작성자 + 펫 정보 표시 */}
+      <div className="flex justify-between text-sm text-gray-600 mb-4 ml-5">
+        <div className="flex items-center gap-3">
+          {post.pet && (
+            <div className="flex items-center gap-2">
+              {post.pet.imageUrl ? (
+                <img
+                  src={post.pet.imageUrl}
+                  className="w-8 h-8 rounded-full object-cover border"
+                  alt={post.pet.petName}
+                />
+              ) : (
+                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 border">
+                  🐾
+                </div>
+              )}
+            </div>
+          )}
+          <div className="font-medium">{post.authorName}</div>
+        </div>
+
         <div className="flex flex-wrap items-center gap-x-2 text-right">
-          <span>조회수 {post.viewCount}</span>
+          <span>조회수 {post.viewCount || 0}</span>
           <span>|</span>
           <span>댓글 {post.commentCount || 0}</span>
           <span>|</span>
@@ -123,13 +136,48 @@ export default function PostDetailPage() {
         </div>
       </div>
 
-      <div className="bg-transparent border-none p-2 mb-6 min-h-[300px] ml-5">
+      {/* 펫 카드 */}
+      {post.pet && (
+        <div
+          className="
+            border rounded-md p-3 shadow-sm bg-gray-50 ml-5
+            w-[90%] max-w-[350px]
+            sm:w-[70%] sm:max-w-[400px]
+            md:w-[50%] md:max-w-[350px]
+          "
+        >
+          <div className="flex items-center gap-4 flex-wrap">
+            {post.pet.imageUrl ? (
+              <img
+                src={post.pet.imageUrl}
+                alt={post.pet.petName}
+                className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
+                🐾
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="font-semibold text-lg truncate">{post.pet.petName}</div>
+              <div className="text-sm text-gray-600">{post.pet.petGender}</div>
+              <div className="text-sm text-gray-600">
+                {post.pet.petAge !== null ? `${post.pet.petAge}년생생` : '나이 정보 없음'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 본문 */}
+      <div className="bg-transparent border-none p-2 mb-6 min-h-[300px] ml-5 w-[90%] max-w-4xl">
         <article
           className="prose prose-lg max-w-none"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
       </div>
 
+      {/* 수정/삭제 버튼 (작성자만 표시) */}
       {currentUserName === post.authorName && (
         <div className="flex justify-end gap-3 mb-6">
           <button
@@ -147,9 +195,9 @@ export default function PostDetailPage() {
         </div>
       )}
 
+      {/* 좋아요 + 댓글 */}
       {post?.id && (
         <section className="mt-2 border-t pt-6 max-w-4xl mx-auto w-full">
-          {/* LikeCard를 댓글 위 왼쪽에 배치 */}
           <div className="flex justify-start mb-4">
             <LikeCard
               postId={post.id}
@@ -167,7 +215,6 @@ export default function PostDetailPage() {
 
           <h2 className="text-lg font-semibold mb-4 ml-1">댓글</h2>
 
-          {/* 댓글 입력 */}
           {currentUserName && (
             <div className="mb-1">
               <CommentInput
@@ -177,7 +224,6 @@ export default function PostDetailPage() {
             </div>
           )}
 
-          {/* 댓글 목록 */}
           <div className="mt-1">
             <CommentShow key={refreshCommentsFlag} postId={post.id} />
           </div>

@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import CommentLike from './commentLike';
+import UserIcon from '../(icon)/userIcon';
 
 export default function CommentShow({ postId }) {
   const [comments, setComments] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);  // 로그인 사용자 정보
+  const [currentUser, setCurrentUser] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editContents, setEditContents] = useState({});
   const [replyTo, setReplyTo] = useState(null);
@@ -23,7 +24,7 @@ export default function CommentShow({ postId }) {
       });
       if (!res.ok) throw new Error('사용자 정보 불러오기 실패');
       const user = await res.json();
-      setCurrentUser(user);  // user.imageUrl 사용 가능
+      setCurrentUser(user);
     } catch (err) {
       console.error(err);
     }
@@ -41,7 +42,6 @@ export default function CommentShow({ postId }) {
     }
   };
 
-  // 평평한 배열을 트리 구조로 변환하는 함수
   const buildCommentTree = (flatComments) => {
     const map = {};
     const roots = [];
@@ -67,7 +67,6 @@ export default function CommentShow({ postId }) {
     return roots;
   };
 
-  // 좋아요 상태를 업데이트하는 함수
   const handleLike = async (commentId) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`, {
@@ -75,7 +74,7 @@ export default function CommentShow({ postId }) {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('좋아요 처리 실패');
-      fetchComments(); // 좋아요 갱신을 위해 댓글 다시 불러오기
+      fetchComments();
     } catch (err) {
       alert('좋아요 처리 중 오류가 발생했습니다.');
       console.error(err);
@@ -176,10 +175,6 @@ export default function CommentShow({ postId }) {
   };
 
   const renderComment = (comment, parentUserName = null, depth = 0) => {
-    // comment.userImageUrl 가 있다고 가정, 없으면 빈 이미지 혹은 기본 이미지 처리
-    const userImageUrl = comment.userImageUrl || '/default-profile.png';
-
-    // 좋아요 상태 및 수 - API에서 받아온 comment.likeCount, comment.likedByCurrentUser 가 있다고 가정
     const likeCount = comment.likeCount || 0;
     const likedByCurrentUser = comment.likedByCurrentUser || false;
 
@@ -189,79 +184,68 @@ export default function CommentShow({ postId }) {
         style={{ marginLeft: depth * 4 }}
         className="border-l border-gray-200 pl-3 my-2 flex gap-2 items-start"
       >
-        <img
-          src={userImageUrl}
-          alt={`${comment.userName ?? '작성자'} 프로필`}
-          className="w-8 h-8 rounded-full object-cover"
-        />
+        <div className="flex-shrink-0">
+          <UserIcon />
+        </div>
         <div className="flex-1">
           <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
             <div className="flex gap-2 items-center">
-              <span className="text-gray-700 font-medium">{comment.userName ?? '작성자 없음'}</span>
+              <span className="text-gray-700 font-medium leading-none">{comment.userName ?? '작성자 없음'}</span>
               <span>|</span>
               <span>{formatDate(comment.createdAt)}</span>
-
-              {/* 분리된 CommentLike 컴포넌트 사용 */}
               <CommentLike
                 commentId={comment.id}
-                initialLikeCount={comment.likeCount || 0}
-                initialIsLiked={comment.likedByCurrentUser || false}
-                onLikeToggle={() => fetchComments()} // 좋아요 토글 후 댓글 다시 불러오기
+                initialLikeCount={likeCount}
+                initialIsLiked={likedByCurrentUser}
+                onLikeToggle={() => fetchComments()}
               />
-            </div>
-
-            <div className="flex gap-2">
-              {editingId === comment.id ? (
-                <>
-                  <button
-                    onClick={() => handleSave(comment.id, comment.userId)}
-                    className="text-blue-500 hover:underline"
-                  >
-                    저장
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className="text-gray-500 hover:underline"
-                  >
-                    취소
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => handleEdit(comment.id, comment.content)}
-                    className="text-blue-500 hover:underline"
-                  >
-                    수정
-                  </button>
-                  <button
-                    onClick={() => handleDelete(comment.id)}
-                    className="text-red-500 hover:underline"
-                  >
-                    삭제
-                  </button>
-                </>
-              )}
             </div>
           </div>
 
           {editingId === comment.id ? (
-            <textarea
-              rows={1}
-              className="w-full rounded-md border border-gray-300 p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
-              value={editContents[comment.id] || ''}
-              onChange={(e) => handleChange(comment.id, e.target.value)}
-            />
+            <>
+              <textarea
+                rows={1}
+                className="w-full rounded-md border border-gray-300 p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
+                value={editContents[comment.id] || ''}
+                onChange={(e) => handleChange(comment.id, e.target.value)}
+              />
+              <div className="mt-1 flex gap-2 text-xs">
+                <button onClick={() => handleSave(comment.id, comment.userId)} className="text-blue-500 hover:underline">저장</button>
+                <button onClick={handleCancel} className="text-gray-500 hover:underline">취소</button>
+              </div>
+            </>
           ) : (
-            <p className="text-sm">
-              {parentUserName && (
-                <span className="text-gray-500">@{parentUserName} </span>
-              )}
-              {comment.content}{' '}
-            </p>
+            <>
+              <p className="text-sm">
+                {parentUserName && <span className="text-gray-500">@{parentUserName} </span>}
+                {comment.content}
+              </p>
+
+              <div className="mt-1 flex gap-2 text-sm">
+                <button
+                  onClick={() => handleReply(comment.id)}
+                  className="text-blue-500 hover:underline"
+                >
+                  답글 달기
+                </button>
+                <button
+                  onClick={() => handleEdit(comment.id, comment.content)}
+                  className="text-gray-600 hover:underline"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => handleDelete(comment.id)}
+                  className="text-red-500 hover:underline"
+                >
+                  삭제
+                </button>
+              </div>
+            </>
           )}
 
-          {replyTo === comment.id ? (
+          {replyTo === comment.id && (
             <div className="mt-2">
               <textarea
                 rows={1}
@@ -285,13 +269,6 @@ export default function CommentShow({ postId }) {
                 </button>
               </div>
             </div>
-          ) : (
-            <button
-              onClick={() => handleReply(comment.id)}
-              className="text-sm text-blue-500 hover:underline mt-1"
-            >
-              답글 달기
-            </button>
           )}
 
           {comment.children && comment.children.map(child =>
@@ -300,7 +277,7 @@ export default function CommentShow({ postId }) {
         </div>
       </div>
     );
-  };  
+  };
 
   return (
     <div className="space-y-4 max-w-full">
