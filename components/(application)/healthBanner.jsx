@@ -5,7 +5,8 @@ import Link from 'next/link';
 
 export default function HealthBanner({ isLoggedIn }) {
   const [healthResults, setHealthResults] = useState([]);
-  const [showBanner, setShowBanner] = useState(true); // ← 추가
+  const [showBanner, setShowBanner] = useState(true);
+  const [petsExist, setPetsExist] = useState(false);
   const containerRef = useRef(null);
   const currentIndex = useRef(0);
 
@@ -32,6 +33,7 @@ export default function HealthBanner({ isLoggedIn }) {
         });
         const data = await res.json();
         const pets = data.pets || [];
+        setPetsExist(pets.length > 0); 
 
         const latestResults = pets.map((pet) => {
           const records = pet.healthRecords || [];
@@ -81,9 +83,21 @@ export default function HealthBanner({ isLoggedIn }) {
 
   if (!isLoggedIn) {
     return (
-      <div className="max-w-[600px] bg-gray-100 text-gray-500 py-2 px-4 text-xs font-bold text-center rounded-2xl">
-        로그인하고 반려동물의 건강 상태를 확인해보세요!
-      </div>
+      <Link href="/login" className="block">
+        <div className="max-w-[600px] bg-gray-100 text-gray-500 py-2 px-4 text-xs font-bold text-center rounded-2xl hover:bg-gray-200 cursor-pointer">
+          로그인하고 반려동물의 건강 상태를 확인해보세요!
+        </div>
+      </Link>
+    );
+  }
+
+  if (!petsExist) {
+    return (
+      <Link href="/myPage" className="block">
+        <div className="max-w-[600px] bg-gray-100 text-gray-500 py-2 px-4 text-xs font-bold text-center rounded-2xl hover:bg-gray-200 cursor-pointer">
+          반려동물을 등록해보세요!
+        </div>
+      </Link>
     );
   }
 
