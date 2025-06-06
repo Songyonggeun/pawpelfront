@@ -36,6 +36,7 @@ export default function CheckPasswordPage() {
     { title: '회원 정보 수정', href: '/myPage/checkpw' },
     { title: '건강체크 기록', href: '/myPage/health' },
     { title: '백신접종 기록', href: '/myPage/vaccine' },
+    { title: '상담 글', href: '/myPage/consult' },
     { title: '작성 글', href: '/myPage/posts' },
   ];
 

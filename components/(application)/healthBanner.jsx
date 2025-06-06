@@ -168,9 +168,9 @@ export default function HealthBanner({ isLoggedIn }) {
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case '양호': return 'bg-emerald-400';
-      case '경고': return 'bg-yellow-300';
-      case '위험': return 'bg-rose-400';
+      case '양호': return 'bg-green-700';
+      case '경고': return 'bg-orange-600';
+      case '위험': return 'bg-red-700';
       default: return 'bg-gray-300';
     }
   };
@@ -180,12 +180,15 @@ export default function HealthBanner({ isLoggedIn }) {
   };
 
   return (
-    <Link href="/myPage/health" className="block">
-      <div className="overflow-hidden h-[36px] bg-white rounded-2xl px-4 cursor-pointer hover:opacity-90">
-        <div ref={containerRef} className="flex flex-col">
-          {combinedSlides.map((item, index) => (
+    <div className="overflow-hidden h-[36px] bg-white rounded-2xl px-4 cursor-pointer hover:opacity-90">
+      <div ref={containerRef} className="flex flex-col">
+        {combinedSlides.map((item, index) => (
+          <Link
+            key={index}
+            href={item.type === 'health' ? '/myPage/health' : '/myPage/vaccine'}
+            className="block"
+          >
             <div
-              key={index}
               className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-xl shadow-sm"
               style={{ height: `${ITEM_HEIGHT}px` }}
             >
@@ -206,9 +209,10 @@ export default function HealthBanner({ isLoggedIn }) {
                 </>
               )}
             </div>
-          ))}
-        </div>
+          </Link>
+        ))}
       </div>
-    </Link>
+    </div>
+
   );
 }
