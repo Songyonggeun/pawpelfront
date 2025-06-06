@@ -25,6 +25,7 @@ export default function ConsultDetailPage() {
         });
         const data = await res.json();
         setConsult(data);
+        console.log('[consult]', data); 
       } catch (err) {
         router.replace('/login');
       }
@@ -49,19 +50,6 @@ export default function ConsultDetailPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
-      {/* 반려동물 정보 카드 */}
-      {consult.pet && (
-        <div className="bg-gray-50 rounded-xl p-4 shadow-md">
-          <h2 className="text-sm font-semibold mb-2">🐾 반려동물 정보</h2>
-          <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
-            <div><strong>이름:</strong> {consult.pet.petName}</div>
-            <div><strong>종류:</strong> {consult.pet.petType}</div>
-            <div><strong>품종:</strong> {consult.pet.breed}</div>
-            <div><strong>성별:</strong> {consult.pet.gender}</div>
-            <div><strong>출생연도:</strong> {consult.pet.birthYear}년</div>
-          </div>
-        </div>
-      )}
 
       {/* 상담글 카드 */}
       <div className="bg-white rounded-xl shadow-md p-6">
@@ -72,7 +60,12 @@ export default function ConsultDetailPage() {
 
         <div className="text-lg font-semibold mb-2">{consult.title}</div>
         <div className="text-xs text-gray-500 mb-4">{consult.username} · {consult.createdAt?.split('T')[0]}</div>
-        <div className="text-sm whitespace-pre-wrap text-gray-800">{consult.content}</div>
+        {consult.petName && (
+          <div className="bg-gray-50 rounded-md px-3 py-3 mt-3 text-xs text-gray-600">
+            🐾 <strong>{consult.petName}</strong> / {consult.petType}, {consult.breed}, {consult.gender}, {consult.birthYear}년생
+          </div>
+        )}
+        <div className="text-sm mt-4 whitespace-pre-wrap text-gray-800">{consult.content}</div>
       </div>
 
       {/* 수의사 답변 영역 - 조건부 렌더링 */}
