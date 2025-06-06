@@ -37,6 +37,10 @@ export const metadata = {
 
 export default function RootLayout({children}){
     return <html lang={meta.locale} suppressHydrationWarning>
+        <head>
+            {/* preload 스타일 파일 명시적으로 설정 */}
+            <link rel="preload" href="/_next/static/chunks/app_globals_73c37791.css" as="style" />
+        </head>
         <body>
             <HeaderComponent/>
             {children}

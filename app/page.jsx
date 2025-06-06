@@ -59,6 +59,12 @@ export default function LifetCommunityUI() {
             </div>
             <div className="mt-2 text-sm text-gray-800 font-medium">커뮤니티</div>
           </a>
+          <a href="/community/map" className="cursor-pointer">
+            <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold">
+              🗺️
+            </div>
+            <div className="mt-2 text-sm text-gray-800 font-medium">지도</div>
+          </a>
         </div>
       </div>
 
