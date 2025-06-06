@@ -7,7 +7,7 @@ export default function ConsultDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const [consult, setConsult] = useState(null);
-  const [userRole, setUserRole] = useState(null);
+  const [userRoles, setUserRoles] = useState([]);
   const [replyContent, setReplyContent] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -18,20 +18,20 @@ export default function ConsultDetailPage() {
           credentials: 'include',
         });
         const userData = await userRes.json();
-        setUserRole(userData.roles[0]);
+        setUserRoles(userData.roles || []);
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/consult/${id}`, {
           credentials: 'include',
         });
         const data = await res.json();
         setConsult(data);
-        console.log('[consult]', data); 
       } catch (err) {
         router.replace('/login');
       }
     };
     fetchData();
   }, [id]);
+
 
   const handleSubmit = async () => {
     const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/consult/${id}/reply`, {
@@ -68,40 +68,43 @@ export default function ConsultDetailPage() {
         <div className="text-sm mt-4 whitespace-pre-wrap text-gray-800">{consult.content}</div>
       </div>
 
-      {/* 수의사 답변 영역 - 조건부 렌더링 */}
-      {(consult.replyContent || userRole === 'vet') && (
+      {/* 수의사 답변 영역 */}
+      {(consult.replyContent || userRoles.includes('VET')) && (
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="text-base font-semibold mb-3">수의사 답변</div>
 
-          {/* 답변이 등록되어 있는 경우: 모두 볼 수 있음 */}
           {consult.replyContent ? (
-              <div className="text-sm whitespace-pre-wrap text-gray-800">
-                {consult.replyContent}
-                <div className="text-xs text-gray-400 mt-3">
-                  {consult.replyAuthor} · {consult.replyCreatedAt?.split('T')[0]}
-                </div>
+            <div className="text-sm whitespace-pre-wrap text-gray-800">
+              {consult.replyContent}
+              <div className="text-xs text-gray-400 mt-3">
+                {consult.replyAuthor} · {consult.replyCreatedAt?.split('T')[0]}
               </div>
-            ) : (
-              // 답변이 없고 수의사만 입력창을 볼 수 있음
-              userRole === 'vet' && !isSubmitted && (
-                <div>
-                  <textarea
-                    className="w-full border rounded p-2 text-sm h-32"
-                    value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
-                    placeholder="수의사로서의 의견을 입력해주세요."
-                  />
+            </div>
+          ) : (
+            userRoles.includes('VET') && !isSubmitted && (
+              <div className="w-full space-y-2">
+                <textarea
+                  className="w-full p-3 text-sm h-32 rounded-xl border"
+                  style={{ borderColor: '#ddd' }}
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder="수의사로서의 의견을 입력해주세요."
+                />
+
+                <div className="flex justify-end">
                   <button
                     onClick={handleSubmit}
-                    className="mt-2 px-4 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                    className="px-4 py-1 text-sm text-white rounded-full shadow"
+                    style={{ backgroundColor: '#64a9f6' }}
                   >
-                    답변 등록
+                    확인
                   </button>
                 </div>
-              )
-            )}
-          </div>
-        )}
+              </div>
+            )
+          )}
+        </div>
+      )}
 
     </div>
   );

@@ -14,8 +14,7 @@ function formatDate(dateString) {
 
 const statusLabel = {
   PENDING: '답변대기',
-  ANSWERED: '답변완료',
-  CLOSED: '종료됨',
+  ANSWERED: '답변완료'
 };
 
 const categoryOptions = [
@@ -106,7 +105,7 @@ export default function ConsultListPage() {
           </button>
           {showStatusModal && (
             <div className="absolute top-full left-0 z-10 bg-white border shadow rounded mt-1 text-xs">
-              {['전체', 'PENDING', 'ANSWERED', 'CLOSED'].map(status => (
+              {['전체', 'PENDING', 'ANSWERED'].map(status => (
                 <div
                   key={status}
                   className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
