@@ -55,38 +55,39 @@ export default function SignUpUnified() {
     }
   }, [emailUsername, emailDomain, customEmailDomain]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!isAgreed) {
-      alert("모든 약관에 동의해주세요.");
-      return;
-    }
+  if (!isAgreed) {
+    alert("모든 약관에 동의해주세요.");
+    return;
+  }
 
-    if (
-      !username ||
-      !emailUsername ||
-      (emailDomain === "custom" && !customEmailDomain.trim()) ||
-      !password ||
-      !confirmPassword ||
-      !name.trim() ||
-      !phone.trim()
-    ) {
-      alert("모든 항목을 입력해주세요.");
-      return;
-    }
+  if (
+    !username ||
+    !emailUsername ||
+    (emailDomain === "custom" && !customEmailDomain.trim()) ||
+    !password ||
+    !confirmPassword ||
+    !name.trim() ||
+    !phone.trim()
+  ) {
+    alert("모든 항목을 입력해주세요.");
+    return;
+  }
 
-    if (!isUsernameChecked) {
-      alert("아이디 중복 확인을 해주세요.");
-      return;
-    }
+  if (!isUsernameChecked) {
+    alert("아이디 중복 확인을 해주세요.");
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      alert("비밀번호가 일치하지 않습니다.");
-      return;
-    }
+  if (password !== confirmPassword) {
+    alert("비밀번호가 일치하지 않습니다.");
+    return;
+  }
 
     try {
+      // 회원가입 요청
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/permit/auth/signup`,
         {
@@ -105,7 +106,8 @@ export default function SignUpUnified() {
 
       if (response.ok) {
         alert("회원가입이 완료되었습니다.");
-        router.push("/signup/Welcome");
+        localStorage.removeItem("isAgreed");
+        window.location.href = "/signup/Welcome";
       } else {
         const result = await response.json();
         switch (result.message) {
@@ -133,7 +135,7 @@ export default function SignUpUnified() {
 
   return (
     <div className="flex flex-col justify-start items-center min-h-screen bg-gray-100 py-10 px-4">
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-2xl">
+      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-xl">
         {/* <h1 className="text-2xl font-semibold mb-6 text-center">회원가입</h1> */}
 
         {/* 약관 동의 섹션 */}

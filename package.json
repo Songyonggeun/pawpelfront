@@ -23,6 +23,7 @@
     "react-icons": "^5.5.0"
   },
   "devDependencies": {
+    "@types/navermaps": "^3.9.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.4",
     "tailwindcss": "^4.1.8"

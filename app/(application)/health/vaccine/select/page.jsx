@@ -61,9 +61,21 @@ const handleSubmit = async () => {
   }
 
   const selectedPet = pets.find((p) => p.id === selectedPetId);
+  
+  if (step === 7 && selectedPet?.vaccineRecords) {
+    const lastAnnual = selectedPet.vaccineRecords
+      .filter((r) => r.step === 7)
+      .sort((a, b) => new Date(b.vaccinatedAt) - new Date(a.vaccinatedAt))[0];
 
-  // 👉 선택된 펫의 기록 중, 같은 step이 있는지 검사
-  const alreadyExists = selectedPet?.vaccineRecords?.some((record) => record.step === step);
+    if (lastAnnual) {
+      const diff = new Date() - new Date(lastAnnual.vaccinatedAt);
+      const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+      if (diffDays < 365) {
+        const confirm = window.confirm(`이 반려동물은 종합백신을 최근에 접종했습니다.\n계속 등록할까요?`);
+        if (!confirm) return;
+      }
+    }
+  }
 
   if (step !== 7) {
   const alreadyExists = selectedPet?.vaccineRecords?.some((record) => record.step === step);

@@ -1,6 +1,7 @@
 // import Provider from '@/components/provider';
 // import { ThemeInitializer } from '@/components/public';
 import HeaderComponent from "@/components/(application)/header.server";
+import FooterComponent from "@/components/(application)/footer"
 import { metadata as meta } from "@/setting/meta";
 import './globals.css';
 export const metadata = {
@@ -37,9 +38,14 @@ export const metadata = {
 
 export default function RootLayout({children}){
     return <html lang={meta.locale} suppressHydrationWarning>
+        <head>
+            {/* preload 스타일 파일 명시적으로 설정 */}
+            <link rel="preload" href="/_next/static/chunks/app_globals_73c37791.css" as="style" />
+        </head>
         <body>
             <HeaderComponent/>
             {children}
+            <FooterComponent/>
         </body>
     </html>
 }

@@ -37,7 +37,7 @@ const EmailInput = ({
 
   return (
     <div>
-      <label className="block mb-1 text-gray-700 font-medium">이메일</label>
+      <label className="block mb-1 text-sm text-gray-700 font-medium">이메일</label>
       <div className="flex items-center gap-1">
         {/* 아이디 입력 */}
         <input
@@ -46,29 +46,29 @@ const EmailInput = ({
           value={emailUsername}
           onChange={handleUsernameChange}
           required
-          className="w-2/5 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-2/5 px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder:text-sm"
           placeholder="아이디 입력"
         />
         <span>@</span>
 
         {/* 도메인 입력 (직접입력일 때만 활성화) */}
-<input
-  name="email2"
-  type="text"
-  value={customEmailDomain}
-  onChange={handleCustomDomainChange}
-  disabled={emailDomain !== "custom"}
-  placeholder={emailDomain === "custom" ? "도메인 입력" : emailDomain}
-  className={`w-1/3 px-2 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-    emailDomain === "custom" ? "focus:ring-blue-400 bg-white" : "bg-gray-100 text-gray-500"
-  }`}
-/>
+        <input
+          name="email2"
+          type="text"
+          value={customEmailDomain}
+          onChange={handleCustomDomainChange}
+          disabled={emailDomain !== "custom"}
+          placeholder={emailDomain === "custom" ? "도메인 입력" : emailDomain}
+          className={`w-1/3 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 ${
+            emailDomain === "custom" ? "focus:ring-blue-400 bg-white" : "bg-gray-100 text-gray-500 placeholder:text-sm"
+          }`}
+        />
 
         {/* 도메인 선택 */}
         <select
           value={emailDomain}
           onChange={handleEmailDomainChange}
-          className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 w-1/3"
+          className="px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 w-1/3 placeholder:text-sm"
         >
           <option value="naver.com">naver.com</option>
           <option value="daum.net">daum.net</option>

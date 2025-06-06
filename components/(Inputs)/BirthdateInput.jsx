@@ -8,7 +8,7 @@ const BirthdateInput = ({ birthDate, setBirthDate }) => {
         onChange={(e) => setBirthDate(e.target.value)}
         max={new Date().toISOString().split("T")[0]}
         required
-        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
       />
     </div>
   );

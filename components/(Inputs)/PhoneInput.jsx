@@ -31,13 +31,13 @@ const PhoneInput = ({ phone, setPhone }) => {
 
   return (
     <div>
-      <label className="block mb-1 text-gray-700 font-medium">전화번호</label>
+      <label className="block mb-1 text-sm text-gray-700 font-medium">전화번호</label>
       <div className="flex gap-4"> 
         {/* 첫 번째 입력 필드는 고정된 값 010 */}
         <input
           type="text"
           value="010"
-          className="w-1/4 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
+          className="text-sm w-1/4 px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
           disabled
         />
 
@@ -51,7 +51,7 @@ const PhoneInput = ({ phone, setPhone }) => {
           name="phoneNumber2"
           onChange={(e) => handleInputChange(e, "second")}
           maxLength={4}
-          className="w-1/3 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
+          className="w-1/3 px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center placeholder:text-sm"
           placeholder="1234"
         />
 
@@ -65,7 +65,7 @@ const PhoneInput = ({ phone, setPhone }) => {
           value={thirdPart}
           onChange={(e) => handleInputChange(e, "third")}
           maxLength={4}
-          className="w-1/3 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
+          className="w-1/3 px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 text-center"
           placeholder="5678"
         />
       </div>
