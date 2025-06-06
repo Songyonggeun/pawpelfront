@@ -50,6 +50,15 @@ export default function TotalPage() {
     fetchPopularPosts();
   }, [baseUrl]);
 
+  // 첫번째 이미지 src 추출 함수
+  function extractFirstImageSrc(html) {
+    if (!html) return null;
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    const img = div.querySelector('img');
+    return img ? img.src : null;
+  }
+
   return (
     <div className="bg-white text-black min-h-screen max-w-[1100px] mx-auto px-6">
       <div className="max-w-[1100px] mx-auto pt-10 px-4">
@@ -57,41 +66,68 @@ export default function TotalPage() {
           <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
             <h2 className="text-2xl font-bold mb-2">전체글</h2>
             <div className="divide-y divide-gray-200 mt-0">
-              {posts.map((post) => (
-                <div key={post.id} className="py-6">
-                  <div className="text-sm text-gray-500 mb-1">{post.category}</div>
-                  <Link href={`/community/detail/${post.id}`}>
-                    <div className="font-semibold text-lg mb-1 hover:underline cursor-pointer">
-                      {post.title}
+              {posts.map((post) => {
+                const thumbnail = extractFirstImageSrc(post.content);
+
+                // 본문에서 이미지 태그 제거하고 텍스트만 추출
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = post.content;
+                tempDiv.querySelectorAll('img').forEach(img => img.remove());
+                const textContent = tempDiv.textContent || tempDiv.innerText || '';
+
+                return (
+                  <div key={post.id} className="py-6">
+                    {/* 카테고리 */}
+                    <div className="text-sm text-gray-500 mb-1">{post.category}</div>
+
+                    {/* 썸네일 이미지 (카테고리 아래에) */}
+                    {thumbnail && (
+                      <img
+                        src={thumbnail}
+                        alt="썸네일 이미지"
+                        className="w-40 h-28 object-cover rounded mb-3"
+                      />
+                    )}
+
+                    {/* 제목 */}
+                    <Link href={`/community/detail/${post.id}`}>
+                      <div className="font-semibold text-lg mb-1 hover:underline cursor-pointer">
+                        {post.title}
+                      </div>
+                    </Link>
+
+                    {/* 본문 텍스트 (이미지 제거 후) */}
+                    <div className="text-gray-700 mb-3 text-sm line-clamp-2">
+                      {textContent}
                     </div>
-                  </Link>
-                  <div
-                    className="text-gray-700 mb-3 text-sm line-clamp-2"
-                    dangerouslySetInnerHTML={{ __html: post.content }}
-                  />
-                  <div className="flex items-center text-xs text-gray-500">
-                    <span>{post.authorName}</span>
-                    <span className="mx-2">·</span>
-                    <span>{formatDateRelative(post.createdAt)}</span>
-                    <span className="mx-2">·</span>
-                    <span>조회수 {post.viewCount}</span>
+
+                    {/* 기타 정보 */}
+                    <div className="flex items-center text-xs text-gray-500">
+                      <span>{post.authorName}</span>
+                      <span className="mx-2">·</span>
+                      <span>{formatDateRelative(post.createdAt)}</span>
+                      <span className="mx-2">·</span>
+                      <span>조회수 {post.viewCount}</span>
                       {typeof post.commentCount === 'number' && (
-    <>
-      <span className="mx-2">·</span>
-      <span>💬 {post.commentCount}</span>
-    </>
-  )}
-  {typeof post.likeCount === 'number' && (
-    <>
-      <span className="mx-2">·</span>
-      <span>❤️ {post.likeCount}</span>
-    </>
-  )}
+                        <>
+                          <span className="mx-2">·</span>
+                          <span>💬 {post.commentCount}</span>
+                        </>
+                      )}
+                      {typeof post.likeCount === 'number' && (
+                        <>
+                          <span className="mx-2">·</span>
+                          <span>❤️ {post.likeCount}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
             </div>
 
+            {/* 페이징 */}
             <div className="mt-6 flex justify-center gap-2 items-center text-sm">
               <button
                 className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
@@ -105,9 +141,8 @@ export default function TotalPage() {
               {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
                 <button
                   key={pageNumber}
-                  className={`px-3 py-1 rounded ${
-                    pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                  }`}
+                  className={`px-3 py-1 rounded ${pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                    }`}
                   onClick={() => setPage(pageNumber)}
                 >
                   {pageNumber + 1}
@@ -151,9 +186,9 @@ function formatDateRelative(dateString) {
   const now = new Date();
 
   const diffInDays = Math.floor(
-    (new Date(now.getFullYear(), now.getMonth(), now.getDate()) - 
-     new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate())
-    ) / (1000 * 60 * 60 * 24)
+    (new Date(now.getFullYear(), now.getMonth(), now.getDate()) -
+      new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate())) /
+    (1000 * 60 * 60 * 24)
   );
 
   if (diffInDays === 0) return '오늘';
