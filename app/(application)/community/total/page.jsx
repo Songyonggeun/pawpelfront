@@ -75,6 +75,18 @@ export default function TotalPage() {
                     <span>{formatDateRelative(post.createdAt)}</span>
                     <span className="mx-2">·</span>
                     <span>조회수 {post.viewCount}</span>
+                      {typeof post.commentCount === 'number' && (
+    <>
+      <span className="mx-2">·</span>
+      <span>💬 {post.commentCount}</span>
+    </>
+  )}
+  {typeof post.likeCount === 'number' && (
+    <>
+      <span className="mx-2">·</span>
+      <span>❤️ {post.likeCount}</span>
+    </>
+  )}
                   </div>
                 </div>
               ))}
