@@ -1,6 +1,7 @@
 // import Provider from '@/components/provider';
 // import { ThemeInitializer } from '@/components/public';
 import HeaderComponent from "@/components/(application)/header.server";
+import FooterComponent from "@/components/(application)/footer"
 import { metadata as meta } from "@/setting/meta";
 import './globals.css';
 export const metadata = {
@@ -40,6 +41,7 @@ export default function RootLayout({children}){
         <body>
             <HeaderComponent/>
             {children}
+            <FooterComponent/>
         </body>
     </html>
 }
