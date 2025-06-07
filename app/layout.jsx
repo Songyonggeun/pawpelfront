@@ -55,8 +55,8 @@ export default function RootLayout({children}){
         </main>
 
         {/* 오른쪽 사이드 패널  */}
-        <div className="hidden lg:block absolute top-[110px] right-[40px] z-10 hide-below-1550">
-        <AnimalSidePanel />
+        <div className="absolute top-[110px] right-[40px] z-10 hide-below-1550">
+          <AnimalSidePanel />
         </div>
 
         <FooterComponent />
