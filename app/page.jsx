@@ -34,7 +34,7 @@ export default function LifetCommunityUI() {
 
       {/* 중앙 메뉴 */}
       <div className="flex justify-center my-6">
-        <div className="overflow-x-auto px-4">
+        <div className="overflow-x-auto px-4 max-w-[1000px] mx-auto">
           <div className="flex gap-15 min-w-max">
             <a href="/health/guide" className="cursor-pointer text-center min-w-[80px]">
               <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-3xl font-bold">
@@ -70,9 +70,10 @@ export default function LifetCommunityUI() {
         </div>
       </div>
 
+      <div className="mx-auto max-w-[1050px] border-t border-gray-200 bg-white"></div>
 
       {/* 인기글 섹션 */}
-      <section className="w-full border-t border-gray-200 bg-white">
+      <section className="w-full border-gray-200 bg-white">
         <div className="max-w-[1100px] mx-auto px-6 py-6">
           <h2 className="text-xl font-semibold flex items-center gap-2 text-gray-900">
             인기 급상승 🔥
