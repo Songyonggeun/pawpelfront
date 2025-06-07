@@ -2,6 +2,8 @@
 // import { ThemeInitializer } from '@/components/public';
 import HeaderComponent from "@/components/(application)/header.server";
 import FooterComponent from "@/components/(application)/footer"
+import AnimalSidePanel from "@/components/(Inputs)/AnimalSidePanel"
+
 import { metadata as meta } from "@/setting/meta";
 import './globals.css';
 export const metadata = {
@@ -37,15 +39,28 @@ export const metadata = {
 }
 
 export default function RootLayout({children}){
-    return <html lang={meta.locale} suppressHydrationWarning>
-        <head>
-            {/* preload 스타일 파일 명시적으로 설정 */}
-            <link rel="preload" href="/_next/static/chunks/app_globals_73c37791.css" as="style" />
-        </head>
-        <body>
-            <HeaderComponent/>
+  return (
+    <html lang={meta.locale} suppressHydrationWarning>
+      <head>
+        <link rel="preload" href="/_next/static/chunks/app_globals_73c37791.css" as="style" />
+      </head>
+      <body className="relative">
+        <HeaderComponent />
+
+        {/* 가운데 정렬 본문 */}
+        <main className="w-full flex justify-center m-0 p-0">
+          <div className="w-full">
             {children}
-            <FooterComponent/>
-        </body>
+          </div>
+        </main>
+
+        {/* 오른쪽 사이드 패널  */}
+        <div className="hidden lg:block absolute top-[110px] right-[40px] z-10 hide-below-1550">
+        <AnimalSidePanel />
+        </div>
+
+        <FooterComponent />
+      </body>
     </html>
+  );
 }

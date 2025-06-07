@@ -19,6 +19,12 @@ button:not(:disabled) {
   100% { transform: translateY(-50%); }
 }
 
+@media (max-width: 1550px) {
+  .hide-below-1550 {
+    display: none !important;
+  }
+}
+
 .animate-vertical-slide {
   animation: vertical-slide 8s linear infinite;
 }
