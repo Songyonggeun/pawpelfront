@@ -62,6 +62,13 @@ export default function AdminDashboard() {
             <h3 className="text-xl font-semibold text-green-900">게시글 관리</h3>
             <p className="text-sm mt-1 text-gray-700">게시글 수정/삭제/이동</p>
           </Link>
+          <Link
+            href="/admin/store"
+            className="flex-1 bg-yellow-100 hover:bg-yellow-200 transition p-6 rounded-xl shadow text-center min-w-[300px]"
+          >
+            <h3 className="text-xl font-semibold text-yellow-900">스토어 관리</h3>
+            <p className="text-sm mt-1 text-gray-700">상품 등록/수정/삭제</p>
+          </Link>
         </div>
       </div>
     </div>
