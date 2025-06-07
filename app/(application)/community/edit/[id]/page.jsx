@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 
 const topicSubCategories = ["홈케어", "식이관리", "행동", "영양제", "병원", "질병"];
+const qnaSubCategories = ["훈련", "미용", "먹이", "입양", "기타"];
 const visibleCount = 5;
 
 export default function EditPostPage() {
@@ -21,7 +22,6 @@ export default function EditPostPage() {
     const editorRef = useRef(null);
     const quillRef = useRef(null);
 
-    // 1. Quill 로드 및 초기화
     useEffect(() => {
         async function loadQuill() {
             if (!window.Quill) {
@@ -49,7 +49,6 @@ export default function EditPostPage() {
         loadQuill();
     }, []);
 
-    // 2. 게시글 데이터 가져오기 (초기값 세팅)
     useEffect(() => {
         async function fetchPost() {
             try {
@@ -65,11 +64,9 @@ export default function EditPostPage() {
                 setAuthorName(data.authorName);
                 setSelectedPetId(data.petId || null);
 
-                // Quill 초기 내용 세팅 (로딩 후)
                 if (quillRef.current) {
                     quillRef.current.root.innerHTML = data.content || "";
                 } else {
-                    // Quill이 아직 안 만들어졌으면 대기 후 세팅
                     const interval = setInterval(() => {
                         if (quillRef.current) {
                             quillRef.current.root.innerHTML = data.content || "";
@@ -85,7 +82,6 @@ export default function EditPostPage() {
         if (postId) fetchPost();
     }, [postId, router]);
 
-    // 3. 로그인 사용자 및 펫 리스트 가져오기
     useEffect(() => {
         async function fetchUserAndPets() {
             try {
@@ -111,11 +107,10 @@ export default function EditPostPage() {
         fetchUserAndPets();
     }, []);
 
-    // 4. 수정 제출 핸들러
     const handleUpdate = async () => {
         if (!title.trim()) return alert("제목을 입력해주세요.");
         if (!category) return alert("카테고리를 선택해주세요.");
-        if (category === "토픽" && !subCategory) return alert("서브카테고리를 선택해주세요.");
+        if ((category === "토픽" || category === "Q&A") && !subCategory) return alert("서브카테고리를 선택해주세요.");
 
         const content = quillRef.current?.root.innerHTML || "";
 
@@ -123,7 +118,7 @@ export default function EditPostPage() {
             title,
             content,
             category,
-            subCategory: category === "토픽" ? subCategory : null,
+            subCategory: (category === "토픽" || category === "Q&A") ? subCategory : null,
             petId: selectedPetId,
         };
 
@@ -150,7 +145,6 @@ export default function EditPostPage() {
         <div className="max-w-3xl mx-auto px-6 py-10 bg-white text-black">
             <h1 className="text-2xl font-bold mb-6">게시글 수정</h1>
 
-            {/* 제목 */}
             <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">제목</label>
                 <input
@@ -162,7 +156,6 @@ export default function EditPostPage() {
                 />
             </div>
 
-            {/* 카테고리 */}
             <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">카테고리</label>
                 <select
@@ -180,8 +173,7 @@ export default function EditPostPage() {
                 </select>
             </div>
 
-            {/* 서브카테고리 */}
-            {category === "토픽" && (
+            {(category === "토픽" || category === "Q&A") && (
                 <div className="mb-6">
                     <label className="block text-sm font-medium mb-2">서브카테고리</label>
                     <select
@@ -190,7 +182,7 @@ export default function EditPostPage() {
                         onChange={(e) => setSubCategory(e.target.value)}
                     >
                         <option value="">서브카테고리를 선택해주세요</option>
-                        {topicSubCategories.map((sub) => (
+                        {(category === "토픽" ? topicSubCategories : qnaSubCategories).map((sub) => (
                             <option key={sub} value={sub}>
                                 {sub}
                             </option>
@@ -199,7 +191,6 @@ export default function EditPostPage() {
                 </div>
             )}
 
-            {/* 애완동물 선택 */}
             <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">애완동물 선택 (선택사항)</label>
                 <div className="flex flex-wrap gap-3">
@@ -232,7 +223,6 @@ export default function EditPostPage() {
                 )}
             </div>
 
-            {/* Quill 에디터 */}
             <div className="mb-6">
                 <div ref={editorRef} className="bg-white" />
             </div>
@@ -250,13 +240,11 @@ export default function EditPostPage() {
     );
 }
 
-// PetCard 컴포넌트
 function PetCard({ pet, selected, onClick }) {
     return (
         <div
             onClick={onClick}
-            className={`cursor-pointer border rounded-md p-3 w-24 text-center select-none ${selected ? "border-blue-500 bg-blue-100" : "border-gray-300 hover:border-blue-400"
-                }`}
+            className={`cursor-pointer border rounded-md p-3 w-24 text-center select-none ${selected ? "border-blue-500 bg-blue-100" : "border-gray-300 hover:border-blue-400"}`}
         >
             {pet.imageUrl ? (
                 <img
@@ -274,7 +262,6 @@ function PetCard({ pet, selected, onClick }) {
     );
 }
 
-// Helper functions
 function loadScript(src) {
     return new Promise((resolve) => {
         const script = document.createElement("script");
