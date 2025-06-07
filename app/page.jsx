@@ -66,6 +66,12 @@ export default function LifetCommunityUI() {
               </div>
               <div className="mt-2 text-sm text-gray-800 font-medium">커뮤니티</div>
             </a>
+            <a href="/store" className="cursor-pointer text-center min-w-[80px]">
+              <div className="w-20 h-20 mx-auto bg-orange-100 rounded-full flex items-center justify-center text-orange-500 text-3xl font-bold">
+                🛒
+              </div>
+              <div className="mt-2 text-sm text-gray-800 font-medium">펫 스토어</div>
+            </a>
           </div>
         </div>
       </div>
