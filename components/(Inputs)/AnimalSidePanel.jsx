@@ -38,7 +38,7 @@ export default function AnimalSidePanel() {
   }, []);
 
   return (
-    <aside className="hidden lg:block w-[200px] shrink-0">
+    <aside className="w-[200px] shrink-0">
       <div className="bg-amber-50 rounded-lg p-4 shadow-none">
         <h2 className="text-m font-semibold mb-2">최근 구조된 동물</h2>
         {animals.map((animal, index) => (
