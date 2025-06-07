@@ -19,17 +19,10 @@ const WritePost = () => {
 
   const visibleCount = 5;
 
-  // 서브카테고리 옵션 (토픽 카테고리일 때만)
-  const topicSubCategories = [
-    "홈케어",
-    "식이관리",
-    "행동",
-    "영양제",
-    "병원",
-    "질병",
-  ];
+  // 서브카테고리 옵션
+  const topicSubCategories = ["홈케어", "식이관리", "행동", "영양제", "병원", "질병"];
+  const qnaSubCategories = ["훈련", "미용", "먹이", "입양", "기타"];
 
-  // 첫 번째 이미지 주소 추출 함수
   function extractFirstImageSrc(html) {
     if (!html) return null;
     const div = document.createElement('div');
@@ -60,11 +53,8 @@ const WritePost = () => {
         });
 
         const editor = editorRef.current.querySelector(".ql-editor");
-        if (editor) {
-          editor.style.minHeight = "300px";
-        }
+        if (editor) editor.style.minHeight = "300px";
 
-        // Quill 내용 변경 감지 - 썸네일 이미지 주소 추출 및 상태 저장
         quillRef.current.on('text-change', () => {
           const html = quillRef.current.root.innerHTML;
           const firstImgSrc = extractFirstImageSrc(html);
@@ -75,7 +65,6 @@ const WritePost = () => {
     loadCDNs();
   }, []);
 
-  // 로그인 사용자 정보 및 애완동물 목록 받아오기
   useEffect(() => {
     const fetchUserAndPets = async () => {
       try {
@@ -104,21 +93,11 @@ const WritePost = () => {
   }, []);
 
   const handleSaveContent = async () => {
-    if (!authorName) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-    if (!title.trim()) {
-      alert("제목을 입력해주세요.");
-      return;
-    }
-    if (!category) {
-      alert("카테고리를 선택해주세요.");
-      return;
-    }
-    if (category === "토픽" && !subCategory) {
-      alert("서브카테고리를 선택해주세요.");
-      return;
+    if (!authorName) return alert("로그인이 필요합니다.");
+    if (!title.trim()) return alert("제목을 입력해주세요.");
+    if (!category) return alert("카테고리를 선택해주세요.");
+    if ((category === "토픽" || category === "Q&A") && !subCategory) {
+      return alert("서브카테고리를 선택해주세요.");
     }
 
     const content = quillRef.current?.root.innerHTML || "";
@@ -127,23 +106,19 @@ const WritePost = () => {
       title,
       content,
       category,
-      subCategory: category === "토픽" ? subCategory : null,
+      subCategory: (category === "토픽" || category === "Q&A") ? subCategory : null,
       authorName,
-      petId: selectedPetId, // 선택한 애완동물 id 전달 (null 가능)
+      petId: selectedPetId,
     };
 
-    console.log("게시글 등록용 데이터:", postData);
-
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(postData),
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(postData),
+        credentials: "include",
+      });
+
       if (response.ok) {
         alert("게시글이 성공적으로 등록되었습니다.");
         router.push("/community/total");
@@ -159,11 +134,8 @@ const WritePost = () => {
     <div className="bg-white text-black px-6 py-10 max-w-3xl mx-auto">
       <input type="hidden" name="authorName" value={authorName || ""} />
 
-      {/* 제목 입력 */}
       <div className="mb-6">
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-          제목
-        </label>
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700">제목</label>
         <input
           type="text"
           id="title"
@@ -175,11 +147,8 @@ const WritePost = () => {
         />
       </div>
 
-      {/* 카테고리 선택 */}
       <div className="mb-6">
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-          카테고리
-        </label>
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700">카테고리</label>
         <select
           id="category"
           name="category"
@@ -197,12 +166,9 @@ const WritePost = () => {
         </select>
       </div>
 
-      {/* 서브카테고리 (토픽 선택 시) */}
-      {category === "토픽" && (
+      {(category === "토픽" || category === "Q&A") && (
         <div className="mb-6">
-          <label htmlFor="subCategory" className="block text-sm font-medium text-gray-700">
-            서브카테고리
-          </label>
+          <label htmlFor="subCategory" className="block text-sm font-medium text-gray-700">서브카테고리</label>
           <select
             id="subCategory"
             name="subCategory"
@@ -211,77 +177,44 @@ const WritePost = () => {
             className="w-full border border-gray-300 rounded px-4 py-2 mt-2"
           >
             <option value="">서브카테고리를 선택해주세요</option>
-            {topicSubCategories.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
+            {(category === "토픽" ? topicSubCategories : qnaSubCategories).map((item) => (
+              <option key={item} value={item}>{item}</option>
             ))}
           </select>
         </div>
       )}
 
-      {/* 애완동물 카드 선택 */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          애완동물 선택 (선택 사항)
-        </label>
-
+        <label className="block text-sm font-medium text-gray-700 mb-2">애완동물 선택 (선택 사항)</label>
         <div className="flex flex-wrap gap-3">
           {petList.slice(0, visibleCount).map((pet) => (
-            <PetCard
-              key={pet.id}
-              pet={pet}
-              selected={selectedPetId === pet.id}
-              onClick={() => setSelectedPetId(pet.id)}
-            />
+            <PetCard key={pet.id} pet={pet} selected={selectedPetId === pet.id} onClick={() => setSelectedPetId(pet.id)} />
           ))}
-
           {showMore &&
             petList.slice(visibleCount).map((pet) => (
-              <PetCard
-                key={pet.id}
-                pet={pet}
-                selected={selectedPetId === pet.id}
-                onClick={() => setSelectedPetId(pet.id)}
-              />
+              <PetCard key={pet.id} pet={pet} selected={selectedPetId === pet.id} onClick={() => setSelectedPetId(pet.id)} />
             ))}
         </div>
-
         {petList.length > visibleCount && (
-          <button
-            type="button"
-            onClick={() => setShowMore(!showMore)}
-            className="mt-2 text-blue-600 underline"
-          >
+          <button type="button" onClick={() => setShowMore(!showMore)} className="mt-2 text-blue-600 underline">
             {showMore ? "접기" : `+${petList.length - visibleCount} 더보기`}
           </button>
         )}
       </div>
 
-      {/* 썸네일 미리보기 */}
       {thumbnailSrc && (
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-1">썸네일 미리보기:</p>
-          <img
-            src={thumbnailSrc}
-            alt="썸네일 미리보기"
-            className="w-40 h-40 object-cover rounded border"
-          />
+          <img src={thumbnailSrc} alt="썸네일 미리보기" className="w-40 h-40 object-cover rounded border" />
         </div>
       )}
 
-      {/* Quill 에디터 영역 */}
       <div className="mb-6">
         <div ref={editorRef} className="bg-white" />
       </div>
 
-      {/* 등록 버튼 */}
       <div className="flex justify-end gap-3">
-        <button
-          type="button"
-          onClick={handleSaveContent}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
+        <button type="button" onClick={handleSaveContent} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
           등록
         </button>
       </div>
@@ -291,39 +224,26 @@ const WritePost = () => {
 
 export default WritePost;
 
-const PetCard = ({ pet, selected, onClick }) => {
-  return (
-    <div
-      onClick={onClick}
-      className={`cursor-pointer border rounded-md p-3 w-28 text-center select-none
-        ${selected ? "border-blue-500 bg-blue-100" : "border-gray-300 hover:border-blue-400"}`}
-    >
-      {pet.imageUrl ? (
-        <img
-          src={pet.imageUrl}
-          alt={pet.petName}
-          className="mx-auto mb-2 h-16 w-16 object-cover rounded-full"
-        />
-      ) : (
-        <div className="mx-auto mb-2 h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-400">
-          🐾
-        </div>
-      )}
-
-      <div className="text-sm font-medium truncate">{pet.petName}</div>
-
-      <div className="text-xs text-gray-600 mt-1">
-        {pet.petGender || "성별 정보 없음"}
+const PetCard = ({ pet, selected, onClick }) => (
+  <div
+    onClick={onClick}
+    className={`cursor-pointer border rounded-md p-3 w-28 text-center select-none
+      ${selected ? "border-blue-500 bg-blue-100" : "border-gray-300 hover:border-blue-400"}`}
+  >
+    {pet.imageUrl ? (
+      <img src={pet.imageUrl} alt={pet.petName} className="mx-auto mb-2 h-16 w-16 object-cover rounded-full" />
+    ) : (
+      <div className="mx-auto mb-2 h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-400">
+        🐾
       </div>
+    )}
+    <div className="text-sm font-medium truncate">{pet.petName}</div>
+    <div className="text-xs text-gray-600 mt-1">{pet.petGender || "성별 정보 없음"}</div>
+    <div className="text-xs text-gray-600 mt-1 truncate">{pet.petSpecies || "종 정보 없음"}</div>
+  </div>
+);
 
-      <div className="text-xs text-gray-600 mt-1 truncate">
-        {pet.petSpecies || "종 정보 없음"}
-      </div>
-    </div>
-  );
-};
-
-// 외부 스크립트, 스타일 로딩 함수
+// 스크립트/스타일 로더
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");

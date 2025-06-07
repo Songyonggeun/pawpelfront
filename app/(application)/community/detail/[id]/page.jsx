@@ -13,9 +13,12 @@ export default function PostDetailPage() {
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
   const [currentUserName, setCurrentUserName] = useState(null);
-
   const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
 
+  // Q&A 같은 서브카테고리 인기글 5개
+  const [relatedPopularPosts, setRelatedPopularPosts] = useState([]);
+
+  // 게시글 fetch
   useEffect(() => {
     if (!id) return;
 
@@ -36,6 +39,7 @@ export default function PostDetailPage() {
     fetchPost();
   }, [id]);
 
+  // 로그인 사용자 정보 fetch
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
@@ -51,6 +55,29 @@ export default function PostDetailPage() {
     };
     fetchCurrentUser();
   }, []);
+
+  // Q&A 인기글 fetch (같은 서브카테고리)
+  useEffect(() => {
+    const fetchRelatedPopularPosts = async () => {
+      if (!post || post.category !== 'Q&A' || !post.subCategory) return;
+
+      try {
+        // 인기글 API - page=0, size=5 로 5개만 요청
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/category/${post.category}/sub/${post.subCategory}?page=0&size=5`,
+          { credentials: 'include' }
+        );
+        if (!res.ok) throw new Error('인기글 불러오기 실패');
+        const data = await res.json();
+        // API가 페이지네이션 형태라면 data.content 배열을 기대
+        setRelatedPopularPosts(data.content || []);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchRelatedPopularPosts();
+  }, [post]);
 
   const handleEdit = () => {
     router.push(`/community/edit/${id}`);
@@ -227,6 +254,41 @@ export default function PostDetailPage() {
           <div className="mt-1">
             <CommentShow key={refreshCommentsFlag} postId={post.id} />
           </div>
+          {post.category === 'Q&A' && post.subCategory && (
+            (() => {
+              const filteredPosts = relatedPopularPosts.filter((relatedPost) => relatedPost.id !== post.id);
+
+              if (filteredPosts.length === 0) return null; // hidden 상태: 아무것도 렌더링하지 않음
+
+              return (
+                <div className="mt-10 pt-6">
+                  <h3 className="text-lg font-bold mb-4 text-gray-800">연관 게시글</h3>
+                  <table className="w-full text-sm text-left text-gray-700">
+                    <tbody>
+                      {filteredPosts.map((relatedPost, index) => (
+                        <tr
+                          key={relatedPost.id}
+                          className={`hover:bg-gray-50 cursor-pointer ${index !== filteredPosts.length - 1 ? 'border-b' : ''
+                            }`}
+                          onClick={() => router.push(`/community/detail/${relatedPost.id}`)}
+                        >
+                          <td className="py-2 px-3 w-1/2">
+                            <span className="font-medium text-gray-900">
+                              [{relatedPost.subCategory}] {relatedPost.title}
+                            </span>
+                          </td>
+                          <td className="py-2 px-2">{relatedPost.authorName}</td>
+                          <td className="py-2 px-2">조회 {relatedPost.viewCount}</td>
+                          <td className="py-2 px-2">좋아요 {relatedPost.likeCount}</td>
+                          <td className="py-2 px-2">{new Date(relatedPost.createdAt).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()
+          )}
         </section>
       )}
     </main>
