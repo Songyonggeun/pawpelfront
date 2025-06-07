@@ -174,7 +174,7 @@ export default function Header() {
           {showHealthCareMenu && <HealthCareMenu />}
 
           <div className="flex flex-col space-y-2 text-sm">
-            <button className="text-left p-1 rounded hover:bg-gray-100">알림</button>
+            {/* <button className="text-left p-1 rounded hover:bg-gray-100">알림</button> */}
 
             {!isLoggedIn ? (
               <button onClick={goTo('/login')} className="text-left p-1 rounded hover:bg-gray-100">
