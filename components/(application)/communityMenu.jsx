@@ -10,7 +10,6 @@ export default function CommunityMenu() {
         <li><Link href="/community/best" className="hover:underline block">BEST</Link></li>
         <li><Link href="/community/qa" className="hover:underline block">질문과답</Link></li>
         <li><Link href="/community/daily" className="hover:underline block">건강일상</Link></li>
-        <li><Link href="/community/knowhow" className="hover:underline block">노하우</Link></li>
       </ul>
 
       {/* ✅ 글쓰기 버튼*/}

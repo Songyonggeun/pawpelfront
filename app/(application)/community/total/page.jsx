@@ -128,7 +128,7 @@ export default function TotalPage() {
             </div>
 
             {/* 페이징 */}
-            <div className="mt-6 flex justify-center gap-2 items-center text-sm">
+           <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
               <button
                 className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
                 onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
