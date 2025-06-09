@@ -1,13 +1,13 @@
 @import 'tailwindcss';
 @font-face {
-    font-family: 'KakaoBigSans-ExtraBold';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2503@1.0/KakaoBigSans-ExtraBold.woff2') format('woff2');
-    font-weight: 800;
+    font-family: 'NanumSquareRound';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff') format('woff');
+    font-weight: normal;
     font-style: normal;
 }
 
 *{
-    font-family: 'KakaoBigSans-ExtraBold';
+    font-family: 'NanumSquareRound';
 }
 
 button:not(:disabled) {
