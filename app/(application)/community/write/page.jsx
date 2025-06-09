@@ -92,43 +92,53 @@ const WritePost = () => {
     fetchUserAndPets();
   }, []);
 
-  const handleSaveContent = async () => {
-    if (!authorName) return alert("로그인이 필요합니다.");
-    if (!title.trim()) return alert("제목을 입력해주세요.");
-    if (!category) return alert("카테고리를 선택해주세요.");
-    if ((category === "토픽" || category === "Q&A") && !subCategory) {
-      return alert("서브카테고리를 선택해주세요.");
-    }
+const handleSaveContent = async () => {
+  if (!authorName) return alert("로그인이 필요합니다.");
+  if (!title.trim()) return alert("제목을 입력해주세요.");
+  if (!category) return alert("카테고리를 선택해주세요.");
+  if ((category === "토픽" || category === "Q&A") && !subCategory) {
+    return alert("서브카테고리를 선택해주세요.");
+  }
 
-    const content = quillRef.current?.root.innerHTML || "";
+  const content = quillRef.current?.root.innerHTML || "";
 
-    const postData = {
-      title,
-      content,
-      category,
-      subCategory: (category === "토픽" || category === "Q&A") ? subCategory : null,
-      authorName,
-      petId: selectedPetId,
-    };
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(postData),
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        alert("게시글이 성공적으로 등록되었습니다.");
-        router.push("/community/total");
-      } else {
-        alert("게시글 등록 실패");
-      }
-    } catch (error) {
-      alert("게시글 등록 중 오류가 발생했습니다.");
-    }
+  const postData = {
+    title,
+    content,
+    category,
+    subCategory: (category === "토픽" || category === "Q&A") ? subCategory : null,
+    authorName,
+    petId: selectedPetId,
   };
+
+  try {
+    const formData = new FormData();
+    const postBlob = new Blob([JSON.stringify(postData)], {
+      type: "application/json",
+    });
+    formData.append("post", postBlob);
+
+    // 파일이 있을 경우 추가
+    // formData.append("mediaFiles", yourFile); // 여러 개일 경우 반복문 사용
+    // formData.append("videoFile", yourVideoFile);
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts`, {
+      method: "POST",
+      body: formData,
+      credentials: "include", // 로그인 쿠키 유지
+    });
+
+    if (response.ok) {
+      alert("게시글이 성공적으로 등록되었습니다.");
+      router.push("/community/total");
+    } else {
+      const error = await response.json();
+      alert(error?.error || "게시글 등록 실패");
+    }
+  } catch (error) {
+    alert("게시글 등록 중 오류가 발생했습니다.");
+  }
+};
 
   return (
     <div className="bg-white text-black px-6 py-10 max-w-3xl mx-auto">
