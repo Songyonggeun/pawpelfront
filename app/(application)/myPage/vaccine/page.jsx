@@ -120,14 +120,14 @@ export default function PetVaccineSection() {
     );
   };
   
-const handleUpdate = (petId, step, vaccinatedAt) => {
-  setEditModal({ open: true, petId, step, oldDate: vaccinatedAt });
-  setNewDate('');
-};
+  const handleUpdate = (petId, step, vaccinatedAt) => {
+    setEditModal({ open: true, petId, step, oldDate: vaccinatedAt });
+    setNewDate(vaccinatedAt); // 기존 날짜를 기본값으로
+  };
 
-const handleDelete = (petId, vaccinatedAt) => {
-  setDeleteModal({ open: true, petId, vaccinatedAt });
-};
+  const handleDelete = (petId, vaccinatedAt) => {
+    setDeleteModal({ open: true, petId, vaccinatedAt });
+  };
 
   if (loading) {
     return <div className="text-center py-10">로딩 중...</div>;
@@ -138,7 +138,7 @@ const handleDelete = (petId, vaccinatedAt) => {
 
       {/* ✅ 수정 모달 */}
       {editModal.open && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
           <div className="bg-white p-6 rounded shadow-md w-[300px]">
             <h3 className="text-lg font-semibold mb-4">접종일 수정</h3>
             <input
@@ -157,10 +157,13 @@ const handleDelete = (petId, vaccinatedAt) => {
               <button
                 className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                 onClick={async () => {
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/update?petId=${editModal.petId}&vaccinatedAt=${editModal.oldDate}&step=${editModal.step}&selectedDate=${newDate}`, {
-                    method: 'PUT',
-                    credentials: 'include'
-                  });
+                  const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/update?petId=${editModal.petId}&vaccinatedAt=${editModal.oldDate}&step=${editModal.step}&selectedDate=${newDate}`,
+                    {
+                      method: 'PUT',
+                      credentials: 'include',
+                    }
+                  );
                   if (res.ok) {
                     alert('수정 완료');
                     location.reload();
@@ -285,7 +288,7 @@ const handleDelete = (petId, vaccinatedAt) => {
                               <th className="px-3 py-2 text-center whitespace-nowrap">접종일</th>
                               <th className="px-3 py-2 text-center whitespace-nowrap">다음 예정일</th>
                               <th className="px-3 py-2 text-center whitespace-nowrap">D-Day</th>
-                              {/* <th className="px-3 py-2 text-center whitespace-nowrap">관리</th> */}
+                              <th className="px-3 py-2 text-center whitespace-nowrap">관리</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -313,7 +316,7 @@ const handleDelete = (petId, vaccinatedAt) => {
                                 }`}>
                                   {item.status === 'done' ? '완료' : item.dday}
                                 </td>
-                                {/* <td className="px-3 py-2 text-center whitespace-nowrap text-blue-600 space-x-2">
+                                <td className="px-3 py-2 text-center whitespace-nowrap text-blue-600 space-x-2">
                                   {item.status === 'done' && item.record ? (
                                     <>
                                       <span
@@ -332,7 +335,7 @@ const handleDelete = (petId, vaccinatedAt) => {
                                   ) : (
                                     <span className="text-gray-400">-</span>
                                   )}
-                                </td> */}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
