@@ -182,7 +182,7 @@ export default function CommentShow({ postId }) {
       <div
         key={comment.id}
         style={{ marginLeft: depth * 4 }}
-        className="border-l border-gray-200 pl-3 my-2 flex gap-2 items-start"
+        className="pl-3 my-2 flex gap-2 items-start"
       >
         <div className="flex-shrink-0">
           <UserIcon />

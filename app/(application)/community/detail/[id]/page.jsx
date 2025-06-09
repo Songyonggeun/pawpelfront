@@ -14,6 +14,8 @@ export default function PostDetailPage() {
   const [error, setError] = useState(null);
   const [currentUserName, setCurrentUserName] = useState(null);
   const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
+  const [prevPost, setPrevPost] = useState(null);
+  const [nextPost, setNextPost] = useState(null);
 
   // Q&A 같은 서브카테고리 인기글 5개
   const [relatedPopularPosts, setRelatedPopularPosts] = useState([]);
@@ -39,6 +41,39 @@ export default function PostDetailPage() {
     fetchPost();
   }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchPrevNextPosts = async () => {
+      try {
+        const [prevRes, nextRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${id}/previous`, { credentials: 'include' }),
+          fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${id}/next`, { credentials: 'include' }),
+        ]);
+
+        if (prevRes.ok && prevRes.status !== 204) {
+          const prevData = await prevRes.json();
+          setPrevPost(prevData);
+        } else {
+          setPrevPost(null);
+        }
+
+        if (nextRes.ok && nextRes.status !== 204) {
+          const nextData = await nextRes.json();
+          setNextPost(nextData);
+        } else {
+          setNextPost(null);
+        }
+      } catch (err) {
+        console.error('이전/다음글 불러오기 실패', err);
+        setPrevPost(null);
+        setNextPost(null);
+      }
+    };
+
+    fetchPrevNextPosts();
+  }, [id]);
+
   // 로그인 사용자 정보 fetch
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -62,14 +97,12 @@ export default function PostDetailPage() {
       if (!post || post.category !== 'Q&A' || !post.subCategory) return;
 
       try {
-        // 인기글 API - page=0, size=5 로 5개만 요청
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/category/${post.category}/sub/${post.subCategory}?page=0&size=5`,
           { credentials: 'include' }
         );
         if (!res.ok) throw new Error('인기글 불러오기 실패');
         const data = await res.json();
-        // API가 페이지네이션 형태라면 data.content 배열을 기대
         setRelatedPopularPosts(data.content || []);
       } catch (error) {
         console.error(error);
@@ -189,7 +222,7 @@ export default function PostDetailPage() {
               <div className="font-semibold text-lg truncate">{post.pet.petName}</div>
               <div className="text-sm text-gray-600">{post.pet.petGender}</div>
               <div className="text-sm text-gray-600">
-                {post.pet.petAge !== null ? `${post.pet.petAge}년생생` : '나이 정보 없음'}
+                {post.pet.petAge !== null ? `${post.pet.petAge}년생` : '나이 정보 없음'}
               </div>
             </div>
           </div>
@@ -204,27 +237,66 @@ export default function PostDetailPage() {
         />
       </div>
 
-      {/* 수정/삭제 버튼 (작성자만 표시) */}
-      {currentUserName === post.authorName && (
-        <div className="flex justify-end gap-3 mb-6">
-          <button
-            onClick={handleEdit}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          >
-            수정
-          </button>
-          <button
-            onClick={handleDelete}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-          >
-            삭제
-          </button>
-        </div>
-      )}
-
-      {/* 좋아요 + 댓글 */}
+      {/* 좋아요 + 댓글 영역 */}
       {post?.id && (
         <section className="mt-2 border-t pt-6 max-w-4xl mx-auto w-full">
+
+          {/* 이전글/다음글 및 목록/수정/삭제 버튼을 좋아요 위로 이동 */}
+          <div className="flex justify-between items-center mb-4">
+            {/* 왼쪽: 이전글/다음글 버튼 */}
+            <div>
+              {prevPost ? (
+                <button
+                  onClick={() => router.push(`/community/detail/${prevPost.id}`)}
+                  className="text-blue-600 hover:underline whitespace-nowrap mr-4"
+                >
+                  ← 이전글
+                </button>
+              ) : (
+                <span className="text-gray-400 whitespace-nowrap mr-4">← 이전글 없음</span>
+              )}
+
+              {nextPost ? (
+                <button
+                  onClick={() => router.push(`/community/detail/${nextPost.id}`)}
+                  className="text-blue-600 hover:underline whitespace-nowrap"
+                >
+                  다음글 →
+                </button>
+              ) : (
+                <span className="text-gray-400 whitespace-nowrap">다음글 없음 →</span>
+              )}
+            </div>
+
+            {/* 오른쪽: 목록 버튼 항상, 수정/삭제는 작성자만 */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => router.push('/community/total')}
+                className="px-3 py-1.5 border border-gray-500 text-gray-700 rounded hover:bg-gray-200 transition-colors duration-200"
+              >
+                목록
+              </button>
+
+              {currentUserName === post.authorName && (
+                <>
+                  <button
+                    onClick={handleEdit}
+                    className="px-3 py-1.5 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white transition-colors duration-200"
+                  >
+                    수정
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="px-3 py-1.5 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors duration-200"
+                  >
+                    삭제
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* 좋아요 */}
           <div className="flex justify-start mb-4">
             <LikeCard
               postId={post.id}
@@ -251,44 +323,42 @@ export default function PostDetailPage() {
             </div>
           )}
 
-          <div className="mt-1">
+          <div id="comments" className="mt-4">
             <CommentShow key={refreshCommentsFlag} postId={post.id} />
           </div>
-          {post.category === 'Q&A' && post.subCategory && (
-            (() => {
-              const filteredPosts = relatedPopularPosts.filter((relatedPost) => relatedPost.id !== post.id);
 
-              if (filteredPosts.length === 0) return null; // hidden 상태: 아무것도 렌더링하지 않음
+          {post.category === 'Q&A' && post.subCategory && (() => {
+            const filteredPosts = relatedPopularPosts.filter((relatedPost) => relatedPost.id !== post.id);
 
-              return (
-                <div className="mt-10 pt-6">
-                  <h3 className="text-lg font-bold mb-4 text-gray-800">연관 게시글</h3>
-                  <table className="w-full text-sm text-left text-gray-700">
-                    <tbody>
-                      {filteredPosts.map((relatedPost, index) => (
-                        <tr
-                          key={relatedPost.id}
-                          className={`hover:bg-gray-50 cursor-pointer ${index !== filteredPosts.length - 1 ? 'border-b' : ''
-                            }`}
-                          onClick={() => router.push(`/community/detail/${relatedPost.id}`)}
-                        >
-                          <td className="py-2 px-3 w-1/2">
-                            <span className="font-medium text-gray-900">
-                              [{relatedPost.subCategory}] {relatedPost.title}
-                            </span>
-                          </td>
-                          <td className="py-2 px-2">{relatedPost.authorName}</td>
-                          <td className="py-2 px-2">조회 {relatedPost.viewCount}</td>
-                          <td className="py-2 px-2">좋아요 {relatedPost.likeCount}</td>
-                          <td className="py-2 px-2">{new Date(relatedPost.createdAt).toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              );
-            })()
-          )}
+            if (filteredPosts.length === 0) return null;
+
+            return (
+              <div className="mt-10 pt-6">
+                <h3 className="text-lg font-bold mb-4 text-gray-800">연관 게시글</h3>
+                <table className="w-full text-sm text-left text-gray-700">
+                  <tbody>
+                    {filteredPosts.map((relatedPost, index) => (
+                      <tr
+                        key={relatedPost.id}
+                        className={`hover:bg-gray-50 cursor-pointer ${index !== filteredPosts.length - 1 ? 'border-b' : ''}`}
+                        onClick={() => router.push(`/community/detail/${relatedPost.id}`)}
+                      >
+                        <td className="py-2 px-3 w-1/2">
+                          <span className="font-medium text-gray-900">
+                            [{relatedPost.subCategory}] {relatedPost.title}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2">{relatedPost.authorName}</td>
+                        <td className="py-2 px-2">조회 {relatedPost.viewCount}</td>
+                        <td className="py-2 px-2">좋아요 {relatedPost.likeCount}</td>
+                        <td className="py-2 px-2">{new Date(relatedPost.createdAt).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
         </section>
       )}
     </main>

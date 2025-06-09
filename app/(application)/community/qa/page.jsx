@@ -22,14 +22,13 @@ export default function QnaPage() {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
 
-        // ✅ 정렬 적용
         const uncommentedPosts = data.content
           .filter((post) => post.commentCount === 0)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // 최신순
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         const commentedPosts = data.content
           .filter((post) => post.commentCount > 0)
-          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // 오래된 순
+          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
         setPosts([...uncommentedPosts, ...commentedPosts]);
         setTotalPages(data.totalPages || 0);
@@ -41,7 +40,6 @@ export default function QnaPage() {
     fetchQnaPosts();
   }, [page, baseUrl]);
 
-
   return (
     <div className="bg-white text-black min-h-screen max-w-[1100px] mx-auto px-6 py-10">
       <h2 className="text-2xl font-bold mb-6">질문과 답</h2>
@@ -51,37 +49,54 @@ export default function QnaPage() {
           <p className="text-center text-gray-500">게시글이 없습니다.</p>
         ) : (
           posts.map((post) => (
-            <div
-              key={post.id}
-              className={`py-6 px-4 rounded ${post.commentCount > 0 ? 'bg-gray-100' : ''}`}
-            >
+            <div key={post.id} className="py-6 px-4 rounded">
+              {post.subCategory && (
+                <div className="mb-1 flex items-center gap-2 text-sm text-gray-600">
+                  <span className="font-medium">{post.subCategory}</span>
+
+                  {post.commentCount > 0 && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                      답변작성
+                    </span>
+                  )}
+
+                  {post.comments?.some((comment) => comment.likeCount > 0) && (
+                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                      BEST
+                    </span>
+                  )}
+                </div>
+              )}
+
               <Link href={`/community/detail/${post.id}`}>
                 <div className="flex items-center justify-between hover:underline cursor-pointer">
-                  <h3 className="font-semibold text-lg">{post.title}</h3>
+                  <h3 className="font-semibold text-lg">
+                    {post.title}
+                    {typeof post.commentCount === 'number' && post.commentCount > 0 && (
+                      <span className="text-blue-600 ml-2">[{post.commentCount}]</span>
+                    )}
+                  </h3>
                 </div>
               </Link>
+
               <div
                 className="text-gray-700 mb-3 text-sm line-clamp-2"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
+
               <div className="flex flex-wrap items-center text-xs text-gray-500 gap-x-2">
                 <span>{post.authorName}</span>
                 <span className="mx-1">·</span>
                 <span>{formatDateRelative(post.createdAt)}</span>
                 <span className="mx-1">·</span>
                 <span>조회수 {post.viewCount}</span>
-                {typeof post.commentCount === 'number' && (
-                  <>
-                    <span className="mx-1">·</span>
-                    <span>💬 {post.commentCount}</span>
-                  </>
-                )}
               </div>
             </div>
           ))
         )}
       </div>
 
+      {/* 페이징 */}
       <div className="mt-6 flex justify-center gap-2 items-center text-sm">
         <button
           className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
