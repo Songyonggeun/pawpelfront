@@ -11,6 +11,14 @@ export default function TotalPage() {
 
   const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
 
+  const categoryToUrl = {
+    '토픽': '/community/topic',
+    'Q&A': '/community/qa',
+    '일상': '/community/daily',
+    'BEST': '/community/best',
+    '전체글': '/community/total',
+  };
+
   useEffect(() => {
     if (!baseUrl) return;
 
@@ -50,7 +58,6 @@ export default function TotalPage() {
     fetchPopularPosts();
   }, [baseUrl]);
 
-  // 첫번째 이미지 src 추출 함수
   function extractFirstImageSrc(html) {
     if (!html) return null;
     const div = document.createElement('div');
@@ -68,109 +75,131 @@ export default function TotalPage() {
             <div className="divide-y divide-gray-200 mt-0">
               {posts.map((post) => {
                 const thumbnail = extractFirstImageSrc(post.content);
-
-                // 본문에서 이미지 태그 제거하고 텍스트만 추출
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = post.content;
                 tempDiv.querySelectorAll('img').forEach(img => img.remove());
                 const textContent = tempDiv.textContent || tempDiv.innerText || '';
 
                 return (
-                  <div key={post.id} className="py-6">
-                    {/* 카테고리 */}
-                    <div className="text-sm text-gray-500 mb-1">{post.category}</div>
-
-                    {/* 썸네일 이미지 (카테고리 아래에) */}
-                    {thumbnail && (
-                      <img
-                        src={thumbnail}
-                        alt="썸네일 이미지"
-                        className="w-40 h-28 object-cover rounded mb-3"
-                      />
-                    )}
-
-                    {/* 제목 */}
-                    <Link href={`/community/detail/${post.id}`}>
-                      <div className="font-semibold text-lg mb-1 hover:underline cursor-pointer">
-                        {post.title}
+                  <div key={post.id} className="py-6 flex gap-4 relative">
+                    {/* 본문 콘텐츠 영역 */}
+                    <div className="flex-1 min-w-0">
+                      {/* 카테고리 */}
+                      <div>
+                        {post.category && (
+                          <Link
+                            href={categoryToUrl[post.category] || `/community/category/${encodeURIComponent(post.category)}`}
+                            className="text-sm text-blue-600 hover:underline mb-1 inline-block"
+                          >
+                            {post.category}
+                          </Link>
+                        )}
                       </div>
-                    </Link>
 
-                    {/* 본문 텍스트 (이미지 제거 후) */}
-                    <div className="text-gray-700 mb-3 text-sm line-clamp-2">
-                      {textContent}
-                    </div>
+                      {/* 제목 + 댓글 수 */}
+                      <Link href={`/community/detail/${post.id}`} className="group inline-block">
+                        <div className="font-semibold text-lg mb-1 hover:underline cursor-pointer">
+                          {post.title}
+                        </div>
+                      </Link>
+                      {typeof post.commentCount === 'number' && post.commentCount > 0 && (
+                        <Link href={`/community/detail/${post.id}#comments`}>
+                          <span className="ml-2 text-sm text-blue-600 hover:underline cursor-pointer">
+                            [{post.commentCount}]
+                          </span>
+                        </Link>
+                      )}
 
-                    {/* 기타 정보 */}
-                    <div className="flex items-center text-xs text-gray-500">
-                      <span>{post.authorName}</span>
-                      <span className="mx-2">·</span>
-                      <span>{formatDateRelative(post.createdAt)}</span>
-                      <span className="mx-2">·</span>
-                      <span>조회수 {post.viewCount}</span>
-                      {typeof post.commentCount === 'number' && (
-                        <>
-                          <span className="mx-2">·</span>
-                          <span>💬 {post.commentCount}</span>
-                        </>
+                      {/* 본문 텍스트 */}
+                      <div className="text-gray-700 mb-3 text-sm line-clamp-3 pr-40">
+                        {textContent}
+                      </div>
+
+                      {/* 썸네일 - 좋아요/댓글/조회수 정보 위 */}
+                      {thumbnail && (
+                        <div className="absolute top-0 left-40 w-40 h-28 rounded overflow-hidden">
+                          <img
+                            src={thumbnail}
+                            alt="썸네일 이미지"
+                            className="w-full h-full object-cover rounded"
+                          />
+                        </div>
                       )}
-                      {typeof post.likeCount === 'number' && (
-                        <>
-                          <span className="mx-2">·</span>
-                          <span>❤️ {post.likeCount}</span>
-                        </>
-                      )}
+
+                      {/* 기타 정보 */}
+                      <div className="flex items-center text-xs text-gray-500 flex-wrap mt-12">
+                        <span>{post.authorName}</span>
+                        <span className="mx-2">·</span>
+                        <span>{formatDateRelative(post.createdAt)}</span>
+                        <span className="mx-2">·</span>
+                        <span>조회수 {post.viewCount}</span>
+                        {typeof post.commentCount === 'number' && (
+                          <>
+                            <span className="mx-2">·</span>
+                            <span>💬 {post.commentCount}</span>
+                          </>
+                        )}
+                        {typeof post.likeCount === 'number' && (
+                          <>
+                            <span className="mx-2">·</span>
+                            <span>❤️ {post.likeCount}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
+
                 );
               })}
-
             </div>
 
             {/* 페이징 */}
-           <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
+            <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
               <button
                 className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
                 onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
                 disabled={page === 0}
-                aria-label="이전 페이지"
               >
                 &lt;
               </button>
-
               {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
                 <button
                   key={pageNumber}
-                  className={`px-3 py-1 rounded ${pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                    }`}
+                  className={`px-3 py-1 rounded ${pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
                   onClick={() => setPage(pageNumber)}
                 >
                   {pageNumber + 1}
                 </button>
               ))}
-
               <button
                 className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
                 onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
                 disabled={page === totalPages - 1}
-                aria-label="다음 페이지"
               >
                 &gt;
               </button>
             </div>
           </main>
 
+          {/* 사이드 인기글 */}
           <aside className="w-full mt-8 border-t border-gray-200 md:w-80 md:ml-8 md:border-l md:border-t-0 md:pl-8">
             <h3 className="text-lg font-bold mb-4">인기글</h3>
             <ol className="space-y-2 text-sm">
               {popularPosts.slice(0, 10).map((post, index) => (
-                <li key={post.id} className="flex items-start gap-2">
-                  <span className="text-pink-500 font-bold flex-shrink-0">{index + 1}</span>
-                  <Link href={`/community/detail/${post.id}`} className="block max-w-[250px]">
-                    <span className="block truncate whitespace-nowrap overflow-hidden hover:underline text-gray-800">
-                      {post.title}
-                    </span>
-                  </Link>
+                <li key={post.id} className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-pink-500 font-bold flex-shrink-0">{index + 1}</span>
+                    <Link href={`/community/detail/${post.id}`} className="block max-w-[250px]">
+                      <span className="block truncate whitespace-nowrap overflow-hidden hover:underline text-gray-800">
+                        {post.title}
+                      </span>
+                    </Link>
+                  </div>
+                  <div className="flex gap-3 text-xs text-gray-500 ml-[26px]">
+                    <span>💬 {post.commentCount ?? 0}</span>
+                    <span>❤️ {post.likeCount ?? 0}</span>
+                    <span>👁️ {post.viewCount ?? 0}</span>
+                  </div>
                 </li>
               ))}
             </ol>
@@ -181,6 +210,7 @@ export default function TotalPage() {
   );
 }
 
+// 날짜 표현 함수
 function formatDateRelative(dateString) {
   const createdDate = new Date(dateString);
   const now = new Date();

@@ -32,7 +32,6 @@ export default function DailyPage() {
     fetchPosts();
   }, [page, baseUrl]);
 
-  // 본문에서 첫 번째 이미지 src 추출 함수
   function extractFirstImageSrc(htmlString) {
     if (typeof window === 'undefined') return null;
     const tempDiv = document.createElement('div');
@@ -68,7 +67,6 @@ export default function DailyPage() {
           posts.map((post) => {
             const thumbnail = extractFirstImageSrc(post.content);
 
-            // 이미지 태그 제거한 텍스트만 추출
             const tempDiv = typeof window !== 'undefined' ? document.createElement('div') : null;
             let textContent = '';
             if (tempDiv) {
@@ -89,11 +87,24 @@ export default function DailyPage() {
                   />
                 )}
 
-                <Link href={`/community/detail/${post.id}`}>
-                  <div className="font-semibold text-lg mb-1 hover:underline cursor-pointer">
-                    {post.title}
-                  </div>
-                </Link>
+                <div className="flex items-center gap-2 mb-1">
+                  <Link href={`/community/detail/${post.id}`} className="group inline-block">
+                    <div className="font-semibold text-lg hover:underline cursor-pointer">
+                      {post.title}
+                    </div>
+                  </Link>
+                  {/* 댓글 수가 0보다 클 때만 표시 */}
+                  {typeof post.commentCount === 'number' && post.commentCount > 0 && (
+                    <Link href={`/community/detail/${post.id}#comments`}>
+                      <span
+                        className="text-sm text-blue-600 hover:underline cursor-pointer"
+                        aria-label="댓글 수로 이동"
+                      >
+                        [{post.commentCount}]
+                      </span>
+                    </Link>
+                  )}
+                </div>
 
                 <div className="text-gray-700 mb-3 text-sm line-clamp-2">
                   {textContent}
@@ -104,14 +115,14 @@ export default function DailyPage() {
                   <span className="mx-2">·</span>
                   <span>{formatDateRelative(post.createdAt)}</span>
                   <span className="mx-2">·</span>
-                  <span>조회수 {post.viewCount}</span>
-                  {typeof post.commentCount === 'number' && (
+                  <span>👁️ {post.viewCount}</span>
+                  {typeof post.commentCount === 'number' && post.commentCount > 0 && (
                     <>
                       <span className="mx-2">·</span>
                       <span>💬 {post.commentCount}</span>
                     </>
                   )}
-                  {typeof post.likeCount === 'number' && (
+                  {typeof post.likeCount === 'number' && post.likeCount > 0 && (
                     <>
                       <span className="mx-2">·</span>
                       <span>❤️ {post.likeCount}</span>
