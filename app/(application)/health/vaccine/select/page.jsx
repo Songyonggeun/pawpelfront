@@ -202,30 +202,30 @@ export default function VaccineForm() {
       {/* 반려동물 선택 */}
       <div className="flex gap-4 flex-wrap justify-center mb-6">
         {pets.map((pet) => (
-  <div
-    key={pet.id}
-    onClick={() => setSelectedPetId(pet.id)}
-    className={`w-32 h-48 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
-      ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
-  >
-    <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
-    <div className="text-sm font-medium">{pet.petName}</div>
+          <div
+            key={pet.id}
+            onClick={() => setSelectedPetId(pet.id)}
+            className={`w-32 h-48 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
+              ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
+          >
+            <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
+            <div className="text-sm font-medium">{pet.petName}</div>
 
-    {/* {pet.isFullyVaccinated ? (
-      <div className="text-[10px] text-green-600 font-semibold mt-1 text-center">
-        모든 백신 접종 완료 🎉
-      </div>
-    ) : pet.lastVaccine ? (
-      <div className="text-[10px] text-gray-500 text-center mt-1">
-        {pet.lastVaccine.vaccineName}<br />
-        {new Date(pet.lastVaccine.vaccinatedAt).toLocaleDateString('ko-KR')}
-      </div>
-    ) : (
-      <div className="text-[10px] text-gray-400 mt-1 text-center">접종 이력 없음</div>
-    )} */}
+            {/* {pet.isFullyVaccinated ? (
+              <div className="text-[10px] text-green-600 font-semibold mt-1 text-center">
+                모든 백신 접종 완료 🎉
+              </div>
+            ) : pet.lastVaccine ? (
+              <div className="text-[10px] text-gray-500 text-center mt-1">
+                {pet.lastVaccine.vaccineName}<br />
+                {new Date(pet.lastVaccine.vaccinatedAt).toLocaleDateString('ko-KR')}
+              </div>
+            ) : (
+              <div className="text-[10px] text-gray-400 mt-1 text-center">접종 이력 없음</div>
+            )} */}
 
-  </div>
-))}
+          </div>
+        ))}
       </div>
 
       {/* 백신 단계 선택 + 안내 버튼 */}
@@ -234,12 +234,23 @@ export default function VaccineForm() {
           <label className="block text-xs font-medium text-gray-700 text-center">
             백신 단계 선택
           </label>
+
+          {/* 안내 버튼 */}
           <button
             type="button"
             onClick={() => setShowGuide(true)}
             className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
           >
             안내
+          </button>
+
+          {/* 이전기록보기 버튼 */}
+          <button
+            type="button"
+            onClick={() => router.push('/myPage/vaccine')}
+            className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
+          >
+            이전기록보기
           </button>
         </div>
 
