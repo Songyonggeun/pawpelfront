@@ -37,7 +37,7 @@ export default function SelectPetPage() {
 
   return (
     <div className="max-w-7x3 mx-auto p-6">
-      <h1 className="text-xl font-semibold mb-6 text-center">건강검진 대상 선택</h1>
+      <h1 className="text-xl font-semibold mb-6 text-center">건강체크 대상 선택</h1>
 
       {/* <div className="flex justify-center mb-6">
         <input
@@ -69,6 +69,8 @@ export default function SelectPetPage() {
         >
           다음 단계로 →
         </button>
+        <div className="mx-auto mt-6 w-[300px] h-[200px] bg-transparent" />
+
       </div>
     </div>
   );
