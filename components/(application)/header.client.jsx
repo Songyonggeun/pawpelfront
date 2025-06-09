@@ -9,7 +9,6 @@ import { useRouter } from 'next/navigation';
 
 export default function HeaderClient({ isLoggedIn, userRoles }) {
   const router = useRouter();
-
   const [showCommunityMenu, setShowCommunityMenu] = useState(false);
   const [showHealthCareMenu, setShowHealthCareMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,8 +16,6 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
   const [mouseAtTop, setMouseAtTop] = useState(false);
-
-  // 검색어 상태
   const [searchKeyword, setSearchKeyword] = useState('');
 
   useEffect(() => setIsClient(true), []);
@@ -86,7 +83,6 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
     }
   };
 
-  // 검색 실행: 입력된 검색어가 있으면 search 페이지로 이동
   const handleSearch = () => {
     if (!searchKeyword.trim()) {
       alert('검색어를 입력해주세요.');
@@ -95,7 +91,6 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
     router.push(`/search?page=0&keyword=${encodeURIComponent(searchKeyword.trim())}`);
   };
 
-  // Enter 키 눌렀을 때 검색
   const onKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -109,30 +104,26 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
         headerVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      <div className="max-w-[1100px] mx-auto px-6 py-6 flex items-center justify-between">
+      <div className="w-4/5 mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between">
         {/* 왼쪽 로고 + 데스크탑 네비 */}
-        <div className="flex items-center">
+        <div className="flex items-center w-full md:w-auto">
           <Link href="/" className="flex items-center space-x-2 cursor-pointer">
             <span className="text-blue-500 text-2xl font-bold">✓</span>
             <span className="text-2xl font-bold text-blue-500">Pawple</span>
           </Link>
 
-          <nav className="hidden md:flex text-gray-700 text-base font-bold items-end ml-12">
-            <button onClick={toggleCommunityMenu} className="ml-0 hover:text-blue-500">
-              커뮤니티
-            </button>
-            <button onClick={toggleHealthCareMenu} className="ml-12 hover:text-blue-500">
-              건강관리
-            </button>
+          <nav className="hidden md:flex text-gray-700 text-base font-bold items-center space-x-12 ml-10">
+            <button onClick={toggleCommunityMenu} className="hover:text-blue-500">커뮤니티</button>
+            <button onClick={toggleHealthCareMenu} className="hover:text-blue-500">건강관리</button>
           </nav>
         </div>
 
-        {/* 데스크탑 오른쪽 영역: 헬스배너, 검색, 로그인 */}
-        <div className="hidden md:flex items-center space-x-6">
+        {/* 데스크탑 오른쪽: 배너, 검색, 로그인/로그아웃 */}
+        <div className="hidden md:flex items-center space-x-6 ml-auto">
           <HealthBanner isLoggedIn={isLoggedIn} className="hidden max-[1100px]:hidden" />
 
           {isClient && (
-            <div className="hidden md:flex items-center space-x-6">
+            <>
               <div className="relative">
                 <input
                   type="text"
@@ -155,35 +146,22 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 userRoles.length === 0 ? null : (
                   <div className="flex items-center space-x-3">
                     {userRoles.includes('ADMIN') ? (
-                      <Link href="/admin" className="text-sm text-gray-500 hover:text-blue-500">
-                        관리자페이지
-                      </Link>
+                      <Link href="/admin" className="text-sm text-gray-500 hover:text-blue-500">관리자페이지</Link>
                     ) : (
-                      <Link href="/myPage" className="text-sm text-gray-500 hover:text-blue-500">
-                        마이페이지
-                      </Link>
+                      <Link href="/myPage" className="text-sm text-gray-500 hover:text-blue-500">마이페이지</Link>
                     )}
-                    <button
-                      onClick={handleLogout}
-                      className="text-sm text-gray-500 hover:text-blue-500"
-                    >
-                      로그아웃
-                    </button>
+                    <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-blue-500">로그아웃</button>
                   </div>
                 )
               ) : (
-                <div className="p-1 rounded hover:bg-gray-100 text-sm">
-                  <Link href="/login" className="text-sm text-gray-500 hover:text-blue-500">
-                    로그인
-                  </Link>
-                </div>
+                <Link href="/login" className="text-sm text-gray-500 hover:text-blue-500">로그인</Link>
               )}
-            </div>
+            </>
           )}
         </div>
 
         {/* 모바일용 검색창 + 햄버거 버튼 */}
-        <div className="flex items-center space-x-2 md:hidden w-full max-w-[300px]">
+        <div className="flex md:hidden w-full mt-4 space-x-2">
           <div className="relative flex-grow">
             <input
               type="text"
@@ -227,13 +205,13 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
       </div>
 
       {showCommunityMenu && (
-        <div className="max-w-[1100px] mx-auto px-4 border-t border-gray-200 md:block hidden">
+        <div className="w-4/5 mx-auto px-4 border-t border-gray-200 md:block hidden">
           <CommunityMenu visible={showCommunityMenu} />
         </div>
       )}
 
       {showHealthCareMenu && (
-        <div className="max-w-[1100px] mx-auto px-4 border-t border-gray-200 md:block hidden">
+        <div className="w-4/5 mx-auto px-4 border-t border-gray-200 md:block hidden">
           <HealthCareMenu />
         </div>
       )}

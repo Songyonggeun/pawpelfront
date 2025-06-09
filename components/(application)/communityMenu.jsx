@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function CommunityMenu() {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between flex-wrap gap-4 text-sm text-gray-600 p-4 max-w-[1100px] mx-auto">
+    <div className="w-4/5 mx-auto flex flex-col md:flex-row md:items-center justify-between flex-wrap gap-4 text-sm text-gray-600 p-4">
       <ul className="flex flex-col md:flex-row gap-8">
         {/* <li><Link href="/community/home" className="hover:underline block">홈</Link></li> */}
         <li><Link href="/community/total" className="hover:underline block">전체글</Link></li>
@@ -12,7 +12,6 @@ export default function CommunityMenu() {
         <li><Link href="/community/daily" className="hover:underline block">건강일상</Link></li>
       </ul>
 
-      {/* ✅ 글쓰기 버튼*/}
       <div className="w-full md:w-auto">
         <Link
           href="/community/write"
@@ -21,7 +20,6 @@ export default function CommunityMenu() {
           글쓰기
         </Link>
       </div>
-
     </div>
   );
 }

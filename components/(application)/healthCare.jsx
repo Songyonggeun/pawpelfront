@@ -11,7 +11,7 @@ export default function HealthCareMenu() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
           credentials: 'include',
         });
-        if (!res.ok) return; // 비로그인 시 처리
+        if (!res.ok) return;
         const data = await res.json();
         setUserRoles(data.roles || []);
       } catch (err) {
@@ -24,7 +24,7 @@ export default function HealthCareMenu() {
   const isVetOrAdmin = userRoles.includes('VET') || userRoles.includes('ADMIN');
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between flex-wrap gap-4 text-sm text-gray-600 p-4 max-w-[1100px] mx-auto">
+    <div className="w-4/5 mx-auto flex flex-col md:flex-row md:items-center justify-between flex-wrap gap-4 text-sm text-gray-600 p-4">
       <ul className="flex flex-col md:flex-row gap-8">
         <li><a href="/health/home" className="hover:underline block">건강홈</a></li>
         <li><a href="/health/guide" className="hover:underline block">건강검진 가이드</a></li>
