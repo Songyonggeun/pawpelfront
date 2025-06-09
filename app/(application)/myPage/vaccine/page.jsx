@@ -99,9 +99,18 @@ export default function PetVaccineSection() {
     }
 
     return schedule.sort((a, b) => {
-      const aDate = a.record?.vaccinatedAt || a.nextDate;
-      const bDate = b.record?.vaccinatedAt || b.nextDate;
-      return new Date(aDate) - new Date(bDate);
+      // 1차~6차: 고정 순서 유지
+      if (a.step <= 6 && b.step <= 6) return a.step - b.step;
+
+      // 종합백신: 날짜 순 정렬
+      if (a.step > 6 && b.step > 6) {
+        const aDate = new Date(a.record?.vaccinatedAt || a.nextDate);
+        const bDate = new Date(b.record?.vaccinatedAt || b.nextDate);
+        return aDate - bDate;
+      }
+
+      // 1~6차는 종합백신보다 앞에 위치
+      return a.step - b.step;
     });
   };
 
