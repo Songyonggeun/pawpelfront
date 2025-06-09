@@ -741,31 +741,34 @@ export default function KakaoMap() {
             ? '전체 병원 목록'
             : `${selectedDistrict} 병원 목록`}
         </h3>
-        <ul className="space-y-2 text-xs text-gray-700">
-          {filteredHospitals.map((h, index) => (
-            <li key={index} className="p-1 hover:bg-gray-50 rounded">
-              🏥 <span className="font-medium">{h.name}</span>
-              <span className="ml-1 text-gray-500">({h.district})</span>
-              <br />
-              📞 {h.tel} <br />
-              📍 {h.addr} <br />
-              🔗{' '}
-              <a
-                href={h.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 hover:underline"
-              >
-                카카오맵에서 보기
-              </a>
-            </li>
-          ))}
-          {filteredHospitals.length === 0 && (
-            <li className="text-gray-500 text-xs">
-              해당 구에 등록된 병원이 없습니다.
-            </li>
-          )}
-        </ul>
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs text-gray-700">
+  {filteredHospitals.map((h, index) => (
+    <div
+      key={index}
+      className="p-2 rounded hover:bg-gray-50"
+    >
+      🏥 <span className="font-medium">{h.name}</span>
+      <span className="ml-1 text-gray-500">({h.district})</span>
+      <br />
+      📞 {h.tel} <br />
+      📍 {h.addr} <br />
+      🔗{' '}
+      <a
+        href={h.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-gray-600 hover:underline"
+      >
+        카카오맵에서 보기
+      </a>
+    </div>
+  ))}
+  {filteredHospitals.length === 0 && (
+    <div className="text-gray-500 text-xs col-span-full">
+      해당 구에 등록된 병원이 없습니다.
+    </div>
+  )}
+</div>
       </div>
       <div className="mt-10">
         <span className="text-xs space-y-10 text-gray-500">
