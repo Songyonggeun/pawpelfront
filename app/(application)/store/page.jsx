@@ -55,7 +55,7 @@ const products = [
 
 export default function PetStorePage() {
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 max-w-[1100px] mx-auto">
       <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">베스트 상품</h1>
 
       <div className="flex gap-3 mb-6 overflow-x-auto">
