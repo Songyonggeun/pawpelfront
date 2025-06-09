@@ -63,7 +63,13 @@ export default function VaccineResult() {
         </table>
       )}
 
-      <div className="mt-6 text-center">
+      <div className="mt-6 flex justify-center space-x-4">
+        <button
+          onClick={() => router.push('/health/vaccine/select')}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+        >
+          추가 등록하기
+        </button>
         <button
           onClick={() => router.push('/myPage/vaccine')}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
