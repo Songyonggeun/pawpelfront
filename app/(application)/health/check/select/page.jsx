@@ -69,7 +69,7 @@ export default function SelectPetPage() {
         >
           다음 단계로 →
         </button>
-        <div className="mx-auto mt-6 w-[300px] h-[200px] bg-transparent" />
+        <div className="mx-auto mt-6 w-[200px] h-[500px] bg-transparent" />
 
       </div>
     </div>

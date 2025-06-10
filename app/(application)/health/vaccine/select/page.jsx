@@ -281,6 +281,7 @@ export default function VaccineForm() {
           {loading ? '저장 중...' : '저장하기'}
         </button>
       </div>
+      <div className="mx-auto mt-6 w-[200px] h-[150px] bg-transparent" />
 
       {/* 모달 */}
       {showGuide && (
