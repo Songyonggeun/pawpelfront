@@ -268,7 +268,11 @@ return (
                   />
                 </div>
               </td>
-              <td className="px-3 py-2 text-center whitespace-nowrap">{product.name}</td>
+              <td className="px-3 py-2 text-center whitespace-nowrap">
+                <Link href={`/store/detail/${product.id}`} className="hover:underline">
+                  {product.name}
+                </Link>
+              </td>
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.brand}</td>
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.price?.toLocaleString()}원</td>
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.originalPrice?.toLocaleString()}원</td>
