@@ -79,13 +79,16 @@ export default function StoreAdminPage() {
               <tr key={product.id} className="border-t border-gray-200">
                 <td className="px-3 py-2 text-center whitespace-nowrap">{product.id}</td>
                 <td className="px-3 py-2 text-center whitespace-nowrap">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-16 h-16 object-cover rounded"
-                    onError={(e) => { e.currentTarget.src = '/default-product.png'; }}
-                  />
+                  <div className="flex justify-center items-center w-full h-full">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded"
+                      onError={(e) => { e.currentTarget.src = '/images/default-product.png'; }}
+                    />
+                  </div>
                 </td>
+
                 <td className="px-3 py-2 text-center whitespace-nowrap">{product.name}</td>
                 <td className="px-3 py-2 text-center whitespace-nowrap">{product.brand}</td>
                 <td className="px-3 py-2 text-center whitespace-nowrap">{product.rating?.toFixed(1) ?? '-'}</td>
