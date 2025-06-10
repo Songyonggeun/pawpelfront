@@ -25,8 +25,29 @@ export default function PostDetailPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 20;
 
-  const totalPages = Math.ceil(allPosts.length / pageSize);
-  const pagedPosts = allPosts.slice(
+  //검색창
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState("title");
+  const [filteredPosts, setFilteredPosts] = useState(allPosts);
+
+  const handleSearch = () => {
+    const query = searchQuery.toLowerCase();
+    const filtered = allPosts.filter((post) => {
+      const value =
+        searchType === "title"
+          ? post.title
+          : searchType === "content"
+          ? post.content
+          : post.authorName;
+
+      return value?.toLowerCase().includes(query);
+    });
+    setFilteredPosts(filtered);
+    setCurrentPage(0); // 검색 시 첫 페이지부터
+  };
+
+  const totalPages = Math.ceil(filteredPosts.length / pageSize);
+  const pagedPosts = filteredPosts.slice(
     currentPage * pageSize,
     (currentPage + 1) * pageSize
   );
@@ -135,6 +156,10 @@ export default function PostDetailPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
+  //검색
+  useEffect(() => {
+    setFilteredPosts(allPosts);
+  }, [allPosts]);
 
   /* ---------- 수정 / 삭제 ---------- */
   const handleEdit = () => router.push(`/community/edit/${id}`);
@@ -486,6 +511,37 @@ export default function PostDetailPage() {
               disabled={currentPage === totalPages - 1}
             >
               &gt;
+            </button>
+          </div>
+
+          {/* 검색창 */}
+          <div className="mt-6 mb-4 flex justify-center items-center gap-2">
+            <select
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-2 text-sm"
+            >
+              <option value="title">제목</option>
+              <option value="content">내용</option>
+              <option value="authorName">작성자</option>
+            </select>
+
+            <input
+              type="text"
+              placeholder="검색어를 입력하세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSearch();
+              }}
+              className="w-full max-w-sm border border-gray-300 rounded px-4 py-2 text-sm"
+            />
+
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+            >
+              검색
             </button>
           </div>
         </div>

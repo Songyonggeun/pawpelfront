@@ -1,238 +1,314 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
-const subCategories = [
-  "홈케어",
-  "식이관리",
-  "병원",
-  "영양제",
-  "행동",
-  "질병"
-];
-
+const subCategories = ["홈케어", "식이관리", "병원", "영양제", "행동", "질병"];
 const category = "토픽";
 
 export default function TopicPage() {
   const [posts, setPosts] = useState([]);
+  const [popularPosts, setPopularPosts] = useState([]);
+  const [totalElements, setTotalElements] = useState(0);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-  const [selectedSubCategory, setSelectedSubCategory] = useState('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
 
   const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
+
+  // 날짜가 1일 이내면 "new" 배지 표시
+  const isNewPost = (createdAt) => {
+    const postDate = new Date(createdAt);
+    const currentDate = new Date();
+    const diffInTime = currentDate - postDate;
+    const diffInDays = diffInTime / (1000 * 3600 * 24);
+    return diffInDays <= 1;
+  };
+
+  const formatDateRelative = (dateString) => {
+    const createdDate = new Date(dateString);
+    const now = new Date();
+
+    const diffInDays = Math.floor(
+      (new Date(now.getFullYear(), now.getMonth(), now.getDate()) -
+        new Date(
+          createdDate.getFullYear(),
+          createdDate.getMonth(),
+          createdDate.getDate()
+        )) /
+      (1000 * 60 * 60 * 24)
+    );
+
+    if (diffInDays === 0) return "오늘";
+    if (diffInDays === 1) return "어제";
+    if (diffInDays < 7) return `${diffInDays}일 전`;
+    return createdDate.toLocaleDateString();
+  };
+
+  function extractFirstImageSrc(html) {
+    if (!html) return null;
+    if (typeof window === "undefined") return null;
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    const img = div.querySelector("img");
+    return img ? img.src : null;
+  }
 
   useEffect(() => {
     if (!baseUrl) return;
 
     const fetchPosts = async () => {
       try {
-        let url = '';
+        let url = "";
         if (selectedSubCategory) {
-          url = `${baseUrl}/posts/category/${encodeURIComponent(category)}/sub/${encodeURIComponent(selectedSubCategory)}?page=${page}&size=10`;
+          url = `${baseUrl}/posts/category/${encodeURIComponent(
+            category
+          )}/sub/${encodeURIComponent(selectedSubCategory)}?page=${page}&size=10`;
         } else {
-          url = `${baseUrl}/posts/category/${encodeURIComponent(category)}?page=${page}&size=10`;
+          url = `${baseUrl}/posts/category/${encodeURIComponent(
+            category
+          )}?page=${page}&size=10`;
         }
 
-        const response = await fetch(url, { credentials: 'include' });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const response = await fetch(url, {
+          credentials: "include",
+        });
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
 
         const data = await response.json();
         setPosts(data.content || []);
         setTotalPages(data.totalPages || 0);
         setTotalElements(data.totalElements || 0);
       } catch (error) {
-        console.error('토픽 게시글 불러오기 실패:', error);
+        console.error("토픽 게시글 불러오기 실패:", error);
       }
     };
 
     fetchPosts();
-  }, [page, baseUrl, selectedSubCategory]);
+  }, [page, selectedSubCategory, baseUrl]);
 
-  const handleSubCategoryClick = (subCat) => {
-    setSelectedSubCategory(subCat);
-    setPage(0);
+  useEffect(() => {
+    if (!baseUrl) return;
+
+    const fetchPopularPosts = async () => {
+      try {
+        const response = await fetch(
+          `${baseUrl}/posts/popular/views?page=0&size=10`,
+          {
+            credentials: "include",
+          }
+        );
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        setPopularPosts(data.content || []);
+      } catch (error) {
+        console.error("인기글 불러오기 실패:", error);
+      }
+    };
+
+    fetchPopularPosts();
+  }, [baseUrl]);
+
+  // 게시글 읽음 처리 API 호출
+  const markPostAsRead = async (postId) => {
+    try {
+      const response = await fetch(`${baseUrl}/posts/${postId}/mark-as-read`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      // 읽음 상태 즉시 반영
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId ? { ...post, isRead: true } : post
+        )
+      );
+    } catch (error) {
+      console.error("읽음 상태 업데이트 실패:", error);
+    }
   };
 
-  // 본문에서 첫 번째 이미지 src 추출 함수
-  function extractFirstImageSrc(htmlString) {
-    if (typeof window === 'undefined') return null;
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlString;
-    const img = tempDiv.querySelector('img');
-    return img ? img.src : null;
-  }
-
-  // 날짜 포맷 함수 (TotalPage와 동일)
-  function formatDateRelative(dateString) {
-    const createdDate = new Date(dateString);
-    const now = new Date();
-
-    const diffInDays = Math.floor(
-      (new Date(now.getFullYear(), now.getMonth(), now.getDate()) -
-        new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate())
-      ) / (1000 * 60 * 60 * 24)
-    );
-
-    if (diffInDays === 0) return '오늘';
-    if (diffInDays === 1) return '어제';
-    if (diffInDays < 7) return `${diffInDays}일 전`;
-    return createdDate.toLocaleDateString();
-  }
+  // 서브카테고리 버튼 컴포넌트
+  const SubCategoryButton = ({ label, selected, onClick }) => (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2 rounded-xl shadow-sm transition duration-200 cursor-pointer ${selected
+        ? "bg-blue-500 text-white shadow-md"
+        : "bg-white text-gray-800 hover:bg-blue-100 hover:shadow-md"
+        }`}
+      type="button"
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
       <div className="max-w-[1300px] mx-auto pt-10 px-4">
-
-        {/* 제목 및 서브카테고리 버튼 영역 */}
-        <div>
-          <div className="mb-6 flex flex-wrap gap-3 items-center">
-            <h2 style={{ fontSize: '18px' }} className="font-bold">
+        <div className="flex flex-col md:flex-row gap-8 overflow-visible">
+          {/* 메인 콘텐츠 */}
+          <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
+            <h2 style={{ fontSize: "18px" }} className="font-bold mb-4">
               토픽 게시글 ({totalElements}건)
             </h2>
-          </div>
-          {/* 서브카테고리 버튼 */}
-          <div className="flex flex-wrap gap-3 ml-6 mb-10">
-            <button
-              onClick={() => {
-                setSelectedSubCategory('');
-                setPage(0);
-              }}
-              className={`px-4 py-2 rounded-xl shadow-sm transition duration-200 cursor-pointer
-                ${selectedSubCategory === ''
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-white text-gray-800 hover:bg-blue-100 hover:shadow-md'}
-              `}
-            >
-              전체보기
-            </button>
 
-            {subCategories.map((subCat) => (
-              <button
-                key={subCat}
-                onClick={() => handleSubCategoryClick(subCat)}
-                className={`px-4 py-2 rounded-xl shadow-sm transition duration-200 cursor-pointer
-                  ${selectedSubCategory === subCat
-                    ? 'bg-blue-500 text-white shadow-md'
-                    : 'bg-white text-gray-800 hover:bg-blue-100 hover:shadow-md'}
-                `}
-              >
-                {subCat}
-              </button>
-            ))}
-          </div>
-        </div>
+            {/* 서브카테고리 필터 */}
+            <div className="mb-6 flex flex-wrap gap-3">
+              <SubCategoryButton
+                label="전체보기"
+                selected={selectedSubCategory === ""}
+                onClick={() => {
+                  setSelectedSubCategory("");
+                  setPage(0);
+                }}
+              />
+              {subCategories.map((subCat) => (
+                <SubCategoryButton
+                  key={subCat}
+                  label={subCat}
+                  selected={selectedSubCategory === subCat}
+                  onClick={() => {
+                    setSelectedSubCategory(subCat);
+                    setPage(0);
+                  }}
+                />
+              ))}
+            </div>
 
-        {/* 게시글 리스트 */}
-        <div className="divide-y divide-gray-200">
-          {posts.length === 0 ? (
-            <p className="text-center text-gray-500 py-20">게시글이 없습니다.</p>
-          ) : (
-            posts.map((post) => {
-              const thumbnail = extractFirstImageSrc(post.content);
-
-              const tempDiv = typeof window !== 'undefined' ? document.createElement('div') : null;
-              let textContent = '';
-              if (tempDiv) {
+            <div className="divide-y divide-gray-200 mt-0">
+              {posts.map((post) => {
+                const thumbnail = extractFirstImageSrc(post.content);
+                const tempDiv = document.createElement("div");
                 tempDiv.innerHTML = post.content;
-                tempDiv.querySelectorAll('img').forEach(img => img.remove());
-                textContent = tempDiv.textContent || tempDiv.innerText || '';
-              }
+                tempDiv.querySelectorAll("img").forEach((img) => img.remove());
+                const textContent = tempDiv.textContent || tempDiv.innerText || "";
 
-              return (
-                <div
-                  key={post.id}
-                  onClick={() => window.location.href = `/community/detail/${post.id}`}
-                  className="pl-4 py-6 flex gap-4 relative rounded-md transition-colors duration-200 hover:bg-gray-50 cursor-pointer"
-                >
-                  <div className="flex-1 min-w-0">
-                    {/* 카테고리 및 서브카테고리 */}
-                    <div className="mb-4 text-sm text-gray-600 font-bold">
-                      {`토픽${selectedSubCategory ? ` > ${selectedSubCategory}` : ''}`}
-                    </div>
-
-                    {/* 제목 */}
-                    <div
-                      className={`cursor-pointer hover:underline text-lg font-semibold
-                        ${post.isRead ? 'text-gray-500 font-normal' : 'text-black font-bold'}
-                      `}
-                    >
-                      {post.title}
-                    </div>
-
-                    {/* 본문 텍스트 */}
-                    <div className="text-gray-900 mb-3 mt-2 text-sm line-clamp-3 pr-30">
-                      {textContent}
-                    </div>
-
-                    {/* 썸네일 */}
+                return (
+                  <div
+                    key={post.id}
+                    onClick={() => {
+                      markPostAsRead(post.id);
+                      window.location.href = `/community/detail/${post.id}`;
+                    }}
+                    className="relative py-4 pr-48 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+                  >
+                    {/* 썸네일 (오른쪽 상단 고정) */}
                     {thumbnail && (
-                      <div className="absolute top-8 right-7 w-40 h-28 rounded overflow-hidden">
+                      <div className="absolute top-2 right-4 w-32 h-20 rounded-md overflow-hidden border border-gray-200">
                         <img
                           src={thumbnail}
-                          alt="썸네일 이미지"
-                          className="w-full h-full object-cover rounded"
+                          alt="썸네일"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                     )}
 
-                    {/* 기타 정보 */}
-                    <div className="flex items-center text-xs text-gray-500 flex-wrap mt-4">
+                    {/* 제목 줄 */}
+                    <div className="flex items-center gap-2 mb-1">
+                      {post.category && (
+                        <Link
+                          href={`/community/topic`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-sm text-gray-600 font-semibold hover:underline"
+                        >
+                          [{selectedSubCategory || category}]
+                        </Link>
+                      )}
+
+                      <div
+                        className={`text-sm md:text-base flex-1 truncate ${post.isRead
+                          ? "text-gray-500 font-normal"
+                          : "text-black font-bold"
+                          }`}
+                      >
+                        {post.title}
+                        {/* 댓글수 + NEW 뱃지 */}
+                        {post.commentCount > 0 && (
+                          <>
+                            <span className="ml-1 text-red-500 text-sm font-semibold">
+                              ({post.commentCount})
+                            </span>
+                            {isNewPost(post.createdAt) && (
+                              <span className="ml-1 bg-blue-400 text-white text-[10px] font-semibold px-1 rounded-sm">
+                                NEW
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 작성자, 날짜, 조회수 등 메타정보 */}
+                    <div className="text-xs text-gray-500 flex gap-2 whitespace-nowrap">
                       <span>{post.authorName}</span>
-                      <span className="mx-2">·</span>
                       <span>{formatDateRelative(post.createdAt)}</span>
-                      <span className="mx-2">·</span>
-                      <span>조회수 {post.viewCount}</span>
-                      {typeof post.commentCount === 'number' && post.commentCount > 0 && (
-                        <>
-                          <span className="mx-2">·</span>
-                          <span>💬 {post.commentCount}</span>
-                        </>
-                      )}
-                      {typeof post.likeCount === 'number' && post.likeCount > 0 && (
-                        <>
-                          <span className="mx-2">·</span>
-                          <span>❤️ {post.likeCount}</span>
-                        </>
-                      )}
+                      <span>조회 {post.viewCount}</span>
+                    </div>
+
+                    {/* 본문 요약 (이미지 제외 텍스트) */}
+                    <div className="line-clamp-2 text-xs mt-1 text-gray-600">
+                      {textContent.trim()}
                     </div>
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                );
+              })}
+            </div>
 
-        {/* 페이징 */}
-        <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
-          <button
-            className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
-            onClick={() => setPage(prev => Math.max(prev - 1, 0))}
-            disabled={page === 0}
-            aria-label="이전 페이지"
-          >
-            &lt;
-          </button>
+            {/* 페이징 */}
+            <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
+              <button
+                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                disabled={page === 0}
+              >
+                &lt;
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  className={`px-3 py-1 rounded ${pageNumber === page ? "bg-blue-500 text-white" : "bg-gray-200"
+                    }`}
+                  onClick={() => setPage(pageNumber)}
+                >
+                  {pageNumber + 1}
+                </button>
+              ))}
+              <button
+                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
+                disabled={page === totalPages - 1}
+              >
+                &gt;
+              </button>
+            </div>
+          </main>
 
-          {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
-            <button
-              key={pageNumber}
-              className={`px-3 py-1 rounded ${pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-              onClick={() => setPage(pageNumber)}
-            >
-              {pageNumber + 1}
-            </button>
-          ))}
-
-          <button
-            className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
-            onClick={() => setPage(prev => Math.min(prev + 1, totalPages - 1))}
-            disabled={page === totalPages - 1}
-            aria-label="다음 페이지"
-          >
-            &gt;
-          </button>
+          {/* 인기글 사이드바 */}
+          <aside className="sticky top-[110px] h-fit">
+            <h3 className="text-base font-semibold text-gray-800 mb-3">🔥 인기글</h3>
+            <ol className="space-y-1 text-sm text-gray-800">
+              {popularPosts.slice(0, 10).map((post, index) => (
+                <li key={post.id} className="flex items-center justify-between hover:bg-gray-100 px-2 py-1 rounded">
+                  <Link href={`/community/detail/${post.id}`} className="flex-1 truncate group">
+                    <span className="text-gray-400 mr-1 text-xs">
+                      [{post.category || "기타"}]
+                    </span>
+                    <span className="group-hover:underline font-medium text-gray-900">
+                      {post.title}
+                    </span>
+                  </Link>
+                  {post.commentCount > 0 && (
+                    <span className="ml-2 text-red-500 text-xs font-semibold">
+                      ({post.commentCount})
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </aside>
         </div>
       </div>
     </div>

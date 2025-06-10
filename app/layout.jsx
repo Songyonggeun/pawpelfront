@@ -50,7 +50,7 @@ export default function RootLayout({ children }) {
 
        
         <main className="w-full flex justify-center m-0 p-0 flex-1">
-          <div className="w-full">
+           <div className="w-full min-h-[500px]">
             {children}
           </div>
         </main>
