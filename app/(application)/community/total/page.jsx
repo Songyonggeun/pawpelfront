@@ -122,82 +122,83 @@ export default function TotalPage() {
                             전체글 ({totalElements}건)
                         </h2>
                         <div className="divide-y divide-gray-200 mt-0">
-{posts.map((post) => {
-  const thumbnail = extractFirstImageSrc(post.content);
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = post.content;
-  tempDiv.querySelectorAll("img").forEach((img) => img.remove());
-  const textContent = tempDiv.textContent || tempDiv.innerText || "";
+                            {posts.map((post) => {
+                                const thumbnail = extractFirstImageSrc(post.content);
+                                const tempDiv = document.createElement("div");
+                                tempDiv.innerHTML = post.content;
+                                tempDiv.querySelectorAll("img").forEach((img) => img.remove());
+                                const textContent = tempDiv.textContent || tempDiv.innerText || "";
 
-  return (
-    <div
-      key={post.id}
-      onClick={() => {
-        markPostAsRead(post.id);
-        window.location.href = `/community/detail/${post.id}`;
-      }}
-      className="relative py-4 pr-48 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
-    >
-      {/* 썸네일 (오른쪽 상단 고정) */}
-      {thumbnail && (
-        <div className="absolute top-2 right-4 w-32 h-20 rounded-md overflow-hidden border border-gray-200">
-          <img
-            src={thumbnail}
-            alt="썸네일"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
+                                return (
+                                    <div
+                                        key={post.id}
+                                        onClick={() => {
+                                            markPostAsRead(post.id);
+                                            window.location.href = `/community/detail/${post.id}`;
+                                        }}
+                                        className="relative py-4 pr-48 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+                                    >
+                                        {/* 썸네일 (오른쪽 상단 고정) */}
+                                        {thumbnail && (
+                                            <div className="absolute top-2 right-4 w-32 h-20 rounded-md overflow-hidden border border-gray-200">
+                                                <img
+                                                    src={thumbnail}
+                                                    alt="썸네일"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        )}
 
-      {/* 제목 줄 */}
-      <div className="flex items-center gap-2 mb-1">
-        {post.category && (
-          <Link
-            href={categoryToUrl[post.category] || `/community/category/${encodeURIComponent(post.category)}`}
-            onClick={(e) => e.stopPropagation()}
-            className="text-sm text-gray-600 font-semibold hover:underline"
-          >
-            [{post.category}]
-          </Link>
-        )}
+                                        {/* 제목 줄 */}
+                                        <div className="flex items-center gap-2 mb-1">
+                                            {post.category && (
+                                                <Link
+                                                    href={categoryToUrl[post.category] || `/community/category/${encodeURIComponent(post.category)}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="text-sm text-gray-600 font-semibold hover:underline"
+                                                >
+                                                    [{post.category}]
+                                                </Link>
+                                            )}
 
-        <div
-          className={`text-sm md:text-base flex-1 truncate ${post.isRead ? "text-gray-500 font-normal" : "text-black font-bold"
-            }`}
-        >
-          {post.title}
-          {/* 댓글수 + NEW 뱃지 */}
-          {post.commentCount > 0 && (
-            <>
-              <span className="ml-1 text-red-500 text-sm font-semibold">
-                ({post.commentCount})
-              </span>
-              {isNewPost(post.createdAt) && (
-                <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-full px-2 py-0.5 animate-pulse">
-                  NEW
-                </span>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+                                            <div
+                                                className={`text-sm md:text-base flex-1 truncate ${post.isRead ? "text-gray-500 font-normal" : "text-black font-bold"
+                                                    }`}
+                                            >
+                                                {post.title}
+                                                {/* 댓글수 + NEW 뱃지 */}
+                                                {post.commentCount > 0 && (
+                                                    <>
+                                                        <span className="ml-1 text-red-500 text-sm font-semibold">
+                                                            ({post.commentCount})
+                                                        </span>
+                                                        {isNewPost(post.createdAt) && (
+                                                            <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-sm px-2 py-0.5 animate-pulse relative -top-[2px]">
+                                                                NEW
+                                                            </span>
 
-      {/* 본문 요약 */}
-      <div className="text-sm text-gray-700 line-clamp-2">
-        {textContent}
-      </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
 
-      {/* 작성자 / 날짜 / 기타 */}
-      <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-2">
-        <span>{post.authorName}</span>
-        <span>· {formatDateRelative(post.createdAt)}</span>
-        <span>· 조회수 {post.viewCount}</span>
-        {post.commentCount > 0 && <span>· 💬 {post.commentCount}</span>}
-        {post.likeCount > 0 && <span>· ❤️ {post.likeCount}</span>}
-      </div>
-    </div>
-  );
-})}
+                                        {/* 본문 요약 */}
+                                        <div className="text-sm text-gray-700 line-clamp-2">
+                                            {textContent}
+                                        </div>
+
+                                        {/* 작성자 / 날짜 / 기타 */}
+                                        <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-2">
+                                            <span>{post.authorName}</span>
+                                            <span>· {formatDateRelative(post.createdAt)}</span>
+                                            <span>· 조회수 {post.viewCount}</span>
+                                            {post.commentCount > 0 && <span>· 💬 {post.commentCount}</span>}
+                                            {post.likeCount > 0 && <span>· ❤️ {post.likeCount}</span>}
+                                        </div>
+                                    </div>
+                                );
+                            })}
 
 
 

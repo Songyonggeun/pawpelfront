@@ -140,9 +140,8 @@ export default function DailyPage() {
                       )}
 
                       <div
-                        className={`text-sm md:text-base flex-1 truncate ${
-                          post.isRead ? "text-gray-500 font-normal" : "text-black font-bold"
-                        }`}
+                        className={`text-sm md:text-base flex-1 truncate ${post.isRead ? "text-gray-500 font-normal" : "text-black font-bold"
+                          }`}
                       >
                         {post.title}
                         {post.commentCount > 0 && (
@@ -151,7 +150,7 @@ export default function DailyPage() {
                               ({post.commentCount})
                             </span>
                             {isNewPost(post.createdAt) && (
-                              <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-full px-2 py-0.5 animate-pulse">
+                              <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-sm px-2 py-0.5 animate-pulse relative -top-[2px]">
                                 NEW
                               </span>
                             )}
@@ -185,9 +184,8 @@ export default function DailyPage() {
               {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
                 <button
                   key={pageNumber}
-                  className={`px-3 py-1 rounded ${
-                    pageNumber === page ? "bg-blue-500 text-white" : "bg-gray-200"
-                  }`}
+                  className={`px-3 py-1 rounded ${pageNumber === page ? "bg-blue-500 text-white" : "bg-gray-200"
+                    }`}
                   onClick={() => setPage(pageNumber)}
                 >
                   {pageNumber + 1}
@@ -244,7 +242,7 @@ function formatDateRelative(dateString) {
   const diffInDays = Math.floor(
     (new Date(now.getFullYear(), now.getMonth(), now.getDate()) -
       new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate())) /
-      (1000 * 60 * 60 * 24)
+    (1000 * 60 * 60 * 24)
   );
 
   if (diffInDays === 0) return "오늘";

@@ -232,7 +232,7 @@ export default function TopicPage() {
                               ({post.commentCount})
                             </span>
                             {isNewPost(post.createdAt) && (
-                              <span className="ml-1 bg-blue-400 text-white text-[10px] font-semibold px-1 rounded-sm">
+                              <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-sm px-2 py-0.5 animate-pulse relative -top-[2px]">
                                 NEW
                               </span>
                             )}

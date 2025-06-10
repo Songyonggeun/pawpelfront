@@ -189,7 +189,7 @@ export default function QnaPage() {
 
                         {/* NEW 뱃지는 댓글과 별개로 항상 새 글이면 표시 */}
                         {isNewPost(post.createdAt) && (
-                          <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-full px-2 py-0.5 animate-pulse">
+                          <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-sm px-2 py-0.5 animate-pulse relative -top-[2px]">
                             NEW
                           </span>
                         )}
