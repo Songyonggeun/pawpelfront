@@ -111,10 +111,13 @@ export default function TotalPage() {
                 const textContent = tempDiv.textContent || tempDiv.innerText || '';
 
                 return (
-                  <div key={post.id} className="py-6 flex gap-4 relative">
+                  <div
+                    key={post.id}
+                    className="py-6 flex gap-4 relative hover:bg-gray-100 rounded-md transition-colors duration-200"
+                  >
                     <div className="flex-1 min-w-0">
                       {/* 카테고리 */}
-                     <div className="mb-1">
+                      <div className="mb-1">
                         {post.category && (
                           <Link
                             href={categoryToUrl[post.category] || `/community/category/${encodeURIComponent(post.category)}`}
