@@ -16,6 +16,7 @@ export default function PostDetailPage() {
   const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
   const [prevPost, setPrevPost] = useState(null);
   const [nextPost, setNextPost] = useState(null);
+  const [allPosts, setAllPosts] = useState([]);
 
   // Q&A 같은 서브카테고리 인기글 5개
   const [relatedPopularPosts, setRelatedPopularPosts] = useState([]);
@@ -111,6 +112,25 @@ export default function PostDetailPage() {
 
     fetchRelatedPopularPosts();
   }, [post]);
+
+  
+
+  // 모든 게시글 목록 fetch (댓글과 연관 게시글 아래에 표시할 전체 게시글)
+  useEffect(() => {
+    const fetchAllPosts = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts?page=0&size=100`, { credentials: 'include' });
+        if (!res.ok) throw new Error('전체 게시글 불러오기 실패');
+        const data = await res.json();
+        setAllPosts(data.content || []);
+      } catch (error) {
+        console.error(error);
+        setAllPosts([]);
+      }
+    };
+
+    fetchAllPosts();
+  }, []);
 
   const handleEdit = () => {
     router.push(`/community/edit/${id}`);
@@ -359,6 +379,39 @@ export default function PostDetailPage() {
               </div>
             );
           })()}
+          {/* 전체 게시글 목록 - 현재 글은 bold 처리 */}
+          <div className="mt-10 pt-6">
+            <h3 className="text-lg font-bold mb-4 text-gray-800">전체 게시글 목록</h3>
+            <table className="w-full text-sm text-left text-gray-700">
+              <tbody>
+                {allPosts.map((item, idx) => (
+                  <tr
+                    key={item.id}
+                    className={`hover:bg-gray-50 cursor-pointer ${idx !== allPosts.length - 1 ? 'border-b' : ''}`}
+                    onClick={() => {
+                      if (item.id !== post.id) {
+                        router.push(`/community/detail/${item.id}`);
+                      }
+                    }}
+                  >
+                    <td className="py-2 px-3 w-1/2">
+                      {item.id === post.id ? (
+                        <strong>[{item.category}{item.subCategory ? ` > ${item.subCategory}` : ''}] {item.title}</strong>
+                      ) : (
+                        <>
+                          [{item.category}{item.subCategory ? ` > ${item.subCategory}` : ''}] {item.title}
+                        </>
+                      )}
+                    </td>
+                    <td className="py-2 px-2">{item.authorName}</td>
+                    <td className="py-2 px-2">조회 {item.viewCount}</td>
+                    <td className="py-2 px-2">좋아요 {item.likeCount}</td>
+                    <td className="py-2 px-2">{new Date(item.createdAt).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
     </main>
