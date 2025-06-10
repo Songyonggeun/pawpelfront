@@ -19,6 +19,15 @@ export default function TotalPage() {
     '전체글': '/community/total',
   };
 
+  // 날짜가 1일 이내면 "new" 배지 표시
+  const isNewPost = (createdAt) => {
+    const postDate = new Date(createdAt);
+    const currentDate = new Date();
+    const diffInTime = currentDate - postDate;
+    const diffInDays = diffInTime / (1000 * 3600 * 24);
+    return diffInDays <= 1;
+  };
+
   useEffect(() => {
     if (!baseUrl) return;
 
@@ -58,6 +67,27 @@ export default function TotalPage() {
     fetchPopularPosts();
   }, [baseUrl]);
 
+  // 게시글 읽음 처리 API 호출
+  const markPostAsRead = async (postId) => {
+    try {
+      const response = await fetch(`${baseUrl}/posts/${postId}/mark-as-read`, {
+        method: 'PATCH',
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      console.log('게시글이 읽은 상태로 업데이트되었습니다.');
+
+      // 읽음 상태 즉시 반영을 위해 로컬 상태 업데이트
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId ? { ...post, isRead: true } : post
+        )
+      );
+    } catch (error) {
+      console.error('게시글을 읽은 상태로 업데이트하는 데 실패했습니다:', error);
+    }
+  };
+
   function extractFirstImageSrc(html) {
     if (!html) return null;
     const div = document.createElement('div');
@@ -82,26 +112,39 @@ export default function TotalPage() {
 
                 return (
                   <div key={post.id} className="py-6 flex gap-4 relative">
-                    {/* 본문 콘텐츠 영역 */}
                     <div className="flex-1 min-w-0">
                       {/* 카테고리 */}
-                      <div>
+                     <div className="mb-1">
                         {post.category && (
                           <Link
                             href={categoryToUrl[post.category] || `/community/category/${encodeURIComponent(post.category)}`}
-                            className="text-sm text-blue-600 hover:underline mb-1 inline-block"
+                            className="text-sm text-blue-600 hover:underline mr-2"
                           >
                             {post.category}
                           </Link>
                         )}
+                        {post.isNew && (
+                          <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full font-semibold animate-steady-scale">
+                            New
+                          </span>
+                        )}
                       </div>
 
                       {/* 제목 + 댓글 수 */}
-                      <Link href={`/community/detail/${post.id}`} className="group inline-block">
-                        <div className="font-semibold text-lg mb-1 hover:underline cursor-pointer">
+                      <Link
+                        href={`/community/detail/${post.id}`}
+                        className="group inline-block"
+                        onClick={() => markPostAsRead(post.id)}
+                      >
+                        <div
+                          className={`mb-1 cursor-pointer hover:underline text-lg
+                          ${post.isRead ? 'text-gray-500 font-normal' : 'text-black font-semibold'}`}
+                        >
                           {post.title}
                         </div>
                       </Link>
+
+                      {/* 댓글 수 링크 */}
                       {typeof post.commentCount === 'number' && post.commentCount > 0 && (
                         <Link href={`/community/detail/${post.id}#comments`}>
                           <span className="ml-2 text-sm text-blue-600 hover:underline cursor-pointer">
@@ -115,7 +158,7 @@ export default function TotalPage() {
                         {textContent}
                       </div>
 
-                      {/* 썸네일 - 좋아요/댓글/조회수 정보 위 */}
+                      {/* 썸네일 */}
                       {thumbnail && (
                         <div className="absolute top-0 left-40 w-40 h-28 rounded overflow-hidden">
                           <img
@@ -148,7 +191,6 @@ export default function TotalPage() {
                       </div>
                     </div>
                   </div>
-
                 );
               })}
             </div>
@@ -221,8 +263,13 @@ function formatDateRelative(dateString) {
     (1000 * 60 * 60 * 24)
   );
 
-  if (diffInDays === 0) return '오늘';
-  if (diffInDays < 7) return `${diffInDays}일 전`;
-  if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}주 전`;
-  return `${Math.floor(diffInDays / 30)}달 전`;
+  if (diffInDays === 0) {
+    return '오늘';
+  } else if (diffInDays === 1) {
+    return '어제';
+  } else if (diffInDays < 7) {
+    return `${diffInDays}일 전`;
+  } else {
+    return createdDate.toLocaleDateString();
+  }
 }

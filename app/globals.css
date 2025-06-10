@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+
 @font-face {
     font-family: 'NanumSquareRound';
     src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumSquareRound.woff') format('woff');
@@ -42,4 +43,20 @@ button:not(:disabled) {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+@keyframes steady-scale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.03);
+    
+  }
+}
+
+.animate-steady-scale {
+  animation: steady-scale 1.4s linear infinite;
+  display: inline-block; /* transform이 인라인 요소에는 안 먹힐 수 있으니 */
+  transform-origin: center; /* 크기 변화 기준 */
 }
