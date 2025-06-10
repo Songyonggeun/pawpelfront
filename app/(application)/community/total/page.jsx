@@ -122,115 +122,85 @@ export default function TotalPage() {
                             전체글 ({totalElements}건)
                         </h2>
                         <div className="divide-y divide-gray-200 mt-0">
-                            {posts.map((post) => {
-                                const thumbnail = extractFirstImageSrc(
-                                    post.content
-                                );
-                                const tempDiv = document.createElement("div");
-                                tempDiv.innerHTML = post.content;
-                                tempDiv
-                                    .querySelectorAll("img")
-                                    .forEach((img) => img.remove());
-                                const textContent =
-                                    tempDiv.textContent ||
-                                    tempDiv.innerText ||
-                                    "";
+{posts.map((post) => {
+  const thumbnail = extractFirstImageSrc(post.content);
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = post.content;
+  tempDiv.querySelectorAll("img").forEach((img) => img.remove());
+  const textContent = tempDiv.textContent || tempDiv.innerText || "";
 
-                                return (
-                                    <div
-                                        key={post.id}
-                                        onClick={() => {
-                                            markPostAsRead(post.id);
-                                            window.location.href = `/community/detail/${post.id}`;
-                                        }}
-                                        className="pl-4 py-6 flex gap-4 relative rounded-md transition-colors duration-200 hover:bg-gray-50 cursor-pointer"
-                                    >
-                                        <div className="flex-1 min-w-0">
-                                            {/* ✅ 카테고리 링크는 따로 유지 */}
-                                            <div className="mb-4">
-                                                {post.category && (
-                                                    <Link
-                                                        href={
-                                                            categoryToUrl[post.category] ||
-                                                            `/community/category/${encodeURIComponent(post.category)}`
-                                                        }
-                                                        onClick={(e) => e.stopPropagation()} // ✅ 카드 클릭 방지
-                                                        className="text-sm text-gray-600 hover:underline mr-2 font-bold"
-                                                    >
-                                                        전체&nbsp;&gt;&nbsp;{post.category}
-                                                    </Link>
-                                                )}
-                                                {post.isNew && (
-                                                    <span className="text-sm text-white bg-blue-500 px-2 py-0.5 rounded-full font-bold animate-scale-in-out">
-                                                        NEW
-                                                    </span>
-                                                )}
-                                            </div>
+  return (
+    <div
+      key={post.id}
+      onClick={() => {
+        markPostAsRead(post.id);
+        window.location.href = `/community/detail/${post.id}`;
+      }}
+      className="relative py-4 pr-48 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+    >
+      {/* 썸네일 (오른쪽 상단 고정) */}
+      {thumbnail && (
+        <div className="absolute top-2 right-4 w-32 h-20 rounded-md overflow-hidden border border-gray-200">
+          <img
+            src={thumbnail}
+            alt="썸네일"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
 
-                                            <div className="flex items-baseline">
-                                                <div
-                                                    className={`cursor-pointer hover:underline text-l
-      ${post.isRead ? "text-gray-500 font-normal" : "text-black font-bold"}`}
-                                                >
-                                                    {post.title}
-                                                </div>
+      {/* 제목 줄 */}
+      <div className="flex items-center gap-2 mb-1">
+        {post.category && (
+          <Link
+            href={categoryToUrl[post.category] || `/community/category/${encodeURIComponent(post.category)}`}
+            onClick={(e) => e.stopPropagation()}
+            className="text-sm text-gray-600 font-semibold hover:underline"
+          >
+            [{post.category}]
+          </Link>
+        )}
 
-                                                {/* 댓글 수 (있을 때만) */}
-                                                {typeof post.commentCount === "number" && post.commentCount > 0 && (
-                                                    <Link href={`/community/detail/${post.id}#comments`}>
-                                                        <span className="ml-2 text-l text-red-600 hover:underline cursor-pointer font-bold">
-                                                            ({post.commentCount})
-                                                        </span>
-                                                    </Link>
-                                                )}
-                                            </div>
+        <div
+          className={`text-sm md:text-base flex-1 truncate ${post.isRead ? "text-gray-500 font-normal" : "text-black font-bold"
+            }`}
+        >
+          {post.title}
+          {/* 댓글수 + NEW 뱃지 */}
+          {post.commentCount > 0 && (
+            <>
+              <span className="ml-1 text-red-500 text-sm font-semibold">
+                ({post.commentCount})
+              </span>
+              {isNewPost(post.createdAt) && (
+                <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-full px-2 py-0.5 animate-pulse">
+                  NEW
+                </span>
+              )}
+            </>
+          )}
+        </div>
+      </div>
 
-                                            {/* 본문 텍스트 */}
-                                            <div className="text-gray-900 mb-3 mt-2 text-sm line-clamp-3 pr-30">
-                                                {(() => {
-                                                    const tempDiv = document.createElement("div");
-                                                    tempDiv.innerHTML = post.content;
-                                                    tempDiv.querySelectorAll("img").forEach((img) => img.remove());
-                                                    return tempDiv.textContent || tempDiv.innerText || "";
-                                                })()}
-                                            </div>
+      {/* 본문 요약 */}
+      <div className="text-sm text-gray-700 line-clamp-2">
+        {textContent}
+      </div>
 
-                                            {/* 썸네일 */}
-                                            {extractFirstImageSrc(post.content) && (
-                                                <div className="absolute top-8 right-7 w-40 h-28 rounded overflow-hidden">
-                                                    <img
-                                                        src={extractFirstImageSrc(post.content)}
-                                                        alt="썸네일 이미지"
-                                                        className="w-full h-full object-cover rounded"
-                                                    />
-                                                </div>
-                                            )}
+      {/* 작성자 / 날짜 / 기타 */}
+      <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-2">
+        <span>{post.authorName}</span>
+        <span>· {formatDateRelative(post.createdAt)}</span>
+        <span>· 조회수 {post.viewCount}</span>
+        {post.commentCount > 0 && <span>· 💬 {post.commentCount}</span>}
+        {post.likeCount > 0 && <span>· ❤️ {post.likeCount}</span>}
+      </div>
+    </div>
+  );
+})}
 
-                                            {/* 기타 정보 */}
-                                            <div className="flex items-center text-xs text-gray-500 flex-wrap mt-4">
-                                                <span>{post.authorName}</span>
-                                                <span className="mx-2">·</span>
-                                                <span>{formatDateRelative(post.createdAt)}</span>
-                                                <span className="mx-2">·</span>
-                                                <span>조회수 {post.viewCount}</span>
-                                                {post.commentCount > 0 && (
-                                                    <>
-                                                        <span className="mx-2">·</span>
-                                                        <span>💬 {post.commentCount}</span>
-                                                    </>
-                                                )}
-                                                {post.likeCount > 0 && (
-                                                    <>
-                                                        <span className="mx-2">·</span>
-                                                        <span>❤️ {post.likeCount}</span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                );
-                            })}
+
                         </div>
 
                         {/* 페이징 */}
