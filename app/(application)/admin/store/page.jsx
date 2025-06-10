@@ -39,7 +39,8 @@ export default function StoreAdminPage() {
 
   const calculatedPrice = () => {
     const price = parseInt(newProduct.originalPrice || '0', 10);
-    return Math.round(price * (1 - newProduct.discount / 100));
+    const discounted = price * (1 - newProduct.discount / 100);
+    return Math.floor(discounted / 100) * 100;
   };
 
   const handleCreate = async () => {
@@ -171,91 +172,131 @@ return (
       </button>
     </div>
 
-    {showModal && (
-      <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-white shadow-lg rounded p-6 w-[90%] max-w-md">
-        <h2 className="text-lg font-bold mb-4">{isEdit ? '상품 수정' : '상품 추가'}</h2>
+{showModal && (
+  <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-white shadow-lg rounded p-6 w-[90%] max-w-md">
+    <h2 className="text-lg font-bold mb-4">{isEdit ? '상품 수정' : '상품 추가'}</h2>
 
-        <div className="space-y-3">
-          <select
-            value={newProduct.category}
-            onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-            className="w-full border p-2 rounded"
-          >
-            <option value="">카테고리 선택</option>
-            <option value="사료">사료</option>
-            <option value="간식">간식</option>
-            <option value="영양제">영양제</option>
-            <option value="용품">용품</option>
-          </select>
-          <input
-            type="text"
-            placeholder="브랜드"
-            value={newProduct.brand}
-            onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="text"
-            placeholder="상품명"
-            value={newProduct.name}
-            onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="text"
-            placeholder="태그"
-            value={tagString}
-            onChange={(e) => setTagString(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
-          <input
-            type="number"
-            placeholder="원가"
-            value={newProduct.originalPrice}
-            onChange={(e) => setNewProduct({ ...newProduct, originalPrice: e.target.value })}
-            className="w-full border p-2 rounded"
-          />
-          <select
-            value={newProduct.discount}
-            onChange={(e) => setNewProduct({ ...newProduct, discount: parseInt(e.target.value) })}
-            className="w-full border p-2 rounded"
-          >
-            {[0, 5, 10, 15, 20, 25, 30, 40, 50].map((val) => (
-              <option key={val} value={val}>{val}% 할인</option>
-            ))}
-          </select>
-          <input
-            type="text"
-            value={`${calculatedPrice()} 원`}
-            readOnly
-            className="w-full border p-2 rounded bg-gray-100 text-gray-500"
-            title="자동 계산된 할인가"
-          />
-          <input
-            type="number"
-            placeholder="개수"
-            value={newProduct.quantity}
-            onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        <div className="flex justify-end mt-4 space-x-2">
-          <button
-            onClick={handleCreate}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            저장
-          </button>
-          <button
-            onClick={() => setShowModal(false)}
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-          >
-            취소
-          </button>
-        </div>
+    <div className="space-y-4">
+      {/* 카테고리 */}
+      <div className="flex items-center">
+        <label className="w-24 text-sm font-medium">카테고리</label>
+        <select
+          value={newProduct.category}
+          onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+          className="flex-1 p-2 border border-gray-300 rounded"
+        >
+          <option value="">카테고리 선택</option>
+          <option value="사료">사료</option>
+          <option value="간식">간식</option>
+          <option value="영양제">영양제</option>
+          <option value="용품">용품</option>
+        </select>
       </div>
-    )}
+
+      {/* 브랜드 */}
+      <div className="flex items-center">
+        <label className="w-24 text-sm font-medium">브랜드</label>
+        <input
+          type="text"
+          value={newProduct.brand}
+          onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
+          className="flex-1 p-2 border border-gray-300 rounded"
+        />
+      </div>
+
+      {/* 상품명 */}
+      <div className="flex items-center">
+        <label className="w-24 text-sm font-medium">상품명</label>
+        <input
+          type="text"
+          value={newProduct.name}
+          onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+          className="flex-1 p-2 border border-gray-300 rounded"
+        />
+      </div>
+
+      {/* 태그 */}
+      <div className="flex items-center">
+        <label className="w-24 text-sm font-medium">태그</label>
+        <input
+          type="text"
+          value={tagString}
+          onChange={(e) => setTagString(e.target.value)}
+          className="flex-1 p-2 border border-gray-300 rounded"
+          placeholder="쉼표로 구분"
+        />
+      </div>
+
+      {/* 원가 */}
+      <div className="flex items-center">
+        <label className="w-24 text-sm font-medium">원가</label>
+        <input
+          type="number"
+          value={newProduct.originalPrice}
+          onChange={(e) => setNewProduct({ ...newProduct, originalPrice: e.target.value })}
+          className="flex-1 p-2 border border-gray-300 rounded"
+          placeholder="예: 10000"
+        />
+      </div>
+
+      {/* 할인율 */}
+      <div className="flex items-center">
+        <label className="w-24 text-sm font-medium">할인율</label>
+        <input
+          type="number"
+          min={0}
+          max={100}
+          value={newProduct.discount}
+          onChange={(e) =>
+            setNewProduct({ ...newProduct, discount: parseInt(e.target.value) || 0 })
+          }
+          className="flex-1 p-2 border border-gray-300 rounded"
+          placeholder="예: 10"
+        />
+      </div>
+
+      {/* 할인가 */}
+      <div className="flex items-center">
+        <label className="w-24 text-sm font-medium">할인가</label>
+        <input
+          type="text"
+          value={`${calculatedPrice()} 원`}
+          readOnly
+          className="flex-1 p-2 border border-gray-300 rounded bg-gray-100 text-gray-500"
+        />
+      </div>
+
+      {/* 개수 */}
+      <div className="flex items-center">
+        <label className="w-24 text-sm font-medium">개수</label>
+        <input
+          type="number"
+          value={newProduct.quantity}
+          onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+          className="flex-1 p-2 border border-gray-300 rounded"
+        />
+      </div>
+    </div>
+
+    {/* 버튼 */}
+    <div className="flex justify-end mt-6 space-x-2">
+      <button
+        onClick={handleCreate}
+        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      >
+        저장
+      </button>
+      <button
+        onClick={() => setShowModal(false)}
+        className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+      >
+        취소
+      </button>
+    </div>
+  </div>
+)}
+
+
 
     <table className="w-full text-xs table-auto border-collapse border border-gray-300">
       <thead>

@@ -7,6 +7,9 @@ import Link from "next/link";
 export default function PetStorePage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("전체");
+
+  const categories = ["전체", "영양제", "사료", "간식", "용품"];
 
   const fetchProducts = async () => {
     try {
@@ -24,26 +27,37 @@ export default function PetStorePage() {
     fetchProducts();
   }, []);
 
+  // 현재 선택된 카테고리에 따른 필터링
+  const filteredProducts = selectedCategory === "전체"
+    ? products
+    : products.filter((product) => product.category === selectedCategory);
+
   return (
     <div className="p-4 md:p-8 max-w-[1100px] mx-auto">
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">베스트 상품</h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">전체 상품</h1>
 
+      {/* 카테고리 탭 */}
       <div className="flex gap-3 mb-6 overflow-x-auto">
-        {["전체", "영양제", "사료", "간식", "용품"].map((cat) => (
+        {categories.map((cat) => (
           <button
             key={cat}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium hover:bg-blue-100 hover:text-blue-600"
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 rounded-full text-sm font-medium 
+              ${selectedCategory === cat 
+                ? "bg-blue-100 text-blue-600" 
+                : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-600"}`}
           >
             {cat}
           </button>
         ))}
       </div>
 
+      {/* 상품 목록 */}
       {loading ? (
         <p>로딩 중...</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <Card key={product.id} className="rounded-xl overflow-hidden shadow-sm hover:shadow-md">
               <div className="relative bg-white p-4">
                 <Link href={`/store/detail/${product.id}`}>
@@ -71,12 +85,14 @@ export default function PetStorePage() {
                   <span className="text-blue-600 font-bold mr-2">{product.discount}%</span>
                   <span className="text-lg font-bold text-gray-900">{product.price.toLocaleString()}원</span>
                 </div>
-                <div className="text-xs text-gray-400 line-through">{product.originalPrice.toLocaleString()}원</div>
+                <div className="text-xs text-gray-400 line-through">
+                  {product.originalPrice.toLocaleString()}원
+                </div>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {product.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border"
+                      className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-md"
                     >
                       {tag}
                     </span>
@@ -84,12 +100,11 @@ export default function PetStorePage() {
                 </div>
               </CardContent>
             </Card>
-
           ))}
         </div>
       )}
+
       <div className="mx-auto mt-6 w-[200px] h-[100px] bg-transparent" />
     </div>
-    
   );
 }
