@@ -7,10 +7,13 @@ import CommentInput from "@/components/(Inputs)/commentInput";
 import CommentShow from "@/components/(application)/commentShow";
 import LikeCard from "@/components/(application)/postLike";
 import PopularPostsSidebar from "@/components/(application)/PopularPostsSidebar";
+import CommunityMenu from "@/components/(application)/communityMenu"
 
 export default function PostDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+
+  
 
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
@@ -202,6 +205,7 @@ export default function PostDetailPage() {
           <span>{post.category}</span>
           {post.subCategory && (
             <>
+            <CommunityMenu category={post.category} />
               <span className="mx-2 text-gray-400">{">"}</span>
               <span>{post.subCategory}</span>
             </>

@@ -23,6 +23,19 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   useEffect(() => setIsClient(true), []);
 
   useEffect(() => {
+    if (pathname.startsWith("/community")) {
+      setShowCommunityMenu(true);
+      setShowHealthCareMenu(false);
+    } else if (pathname.startsWith("/health")) {
+      setShowHealthCareMenu(true);
+      setShowCommunityMenu(false);
+    } else {
+      setShowCommunityMenu(false);
+      setShowHealthCareMenu(false);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       if (currentScrollY < 50) {

@@ -1,10 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function CommunityMenu() {
   const pathname = usePathname();
 
-  const isActive = (path) => pathname === path;
+  const isActive = (href) => pathname === href || pathname.startsWith(href + '/');
 
   return (
     <div className="w-4/5 mx-auto flex flex-col md:flex-row md:items-center justify-between flex-wrap gap-4 text-sm text-gray-600 p-4">
@@ -12,7 +14,9 @@ export default function CommunityMenu() {
         <li>
           <Link
             href="/community/total"
-            className={`hover:underline block ${isActive('/community/total') ? 'text-black font-bold' : ''}`}
+            className={`hover:underline block ${
+              isActive('/community/total') ? 'text-black font-bold' : ''
+            }`}
           >
             전체글
           </Link>
@@ -20,7 +24,9 @@ export default function CommunityMenu() {
         <li>
           <Link
             href="/community/topic"
-            className={`hover:underline block ${isActive('/community/topic') ? 'text-black font-bold' : ''}`}
+            className={`hover:underline block ${
+              isActive('/community/topic') ? 'text-black font-bold' : ''
+            }`}
           >
             건강토픽
           </Link>
@@ -28,7 +34,9 @@ export default function CommunityMenu() {
         <li>
           <Link
             href="/community/best"
-            className={`hover:underline block ${isActive('/community/best') ? 'text-black font-bold' : ''}`}
+            className={`hover:underline block ${
+              isActive('/community/best') ? 'text-black font-bold' : ''
+            }`}
           >
             BEST
           </Link>
@@ -36,7 +44,9 @@ export default function CommunityMenu() {
         <li>
           <Link
             href="/community/qa"
-            className={`hover:underline block ${isActive('/community/qa') ? 'text-black font-bold' : ''}`}
+            className={`hover:underline block ${
+              isActive('/community/qa') ? 'text-black font-bold' : ''
+            }`}
           >
             질문과답
           </Link>
@@ -44,7 +54,9 @@ export default function CommunityMenu() {
         <li>
           <Link
             href="/community/daily"
-            className={`hover:underline block ${isActive('/community/daily') ? 'text-black font-bold' : ''}`}
+            className={`hover:underline block ${
+              isActive('/community/daily') ? 'text-black font-bold' : ''
+            }`}
           >
             건강일상
           </Link>
