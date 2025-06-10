@@ -17,6 +17,7 @@ export default function StoreAdminPage() {
     image: '',
     tags: [],
     category: '',
+    quantity: '', 
   });
 
   useEffect(() => {
@@ -64,29 +65,46 @@ export default function StoreAdminPage() {
       tags,
       image,
       category: newProduct.category,
+      quantity: isNaN(parseInt(newProduct.quantity)) ? 0 : parseInt(newProduct.quantity, 10),
       rating: 0,
       reviews: 0,
     };
 
-    // 수정 시 기존 값을 유지하도록 처리
     if (isEdit) {
       const prev = products.find(p => p.id === editingProductId);
       baseProduct = {
-        name: newProduct.name || prev.name,
-        brand: newProduct.brand || prev.brand,
-        originalPrice: newProduct.originalPrice ? parseInt(newProduct.originalPrice) : prev.originalPrice,
-        discount: newProduct.discount ?? prev.discount,
-        price: newProduct.originalPrice
-          ? Math.round(parseInt(newProduct.originalPrice) * (1 - (newProduct.discount ?? prev.discount) / 100))
-          : prev.price,
-        tags: tags ?? prev.tags,
-        image: image || prev.image,
-        category: newProduct.category || prev.category,
-        rating: prev.rating,
-        reviews: prev.reviews,
+        ...prev,
+        ...baseProduct, // 기존값 유지 + 새값 덮어쓰기
       };
     }
-  }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products${isEdit ? `/${editingProductId}` : ''}`, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(baseProduct),
+      });
+
+      if (!res.ok) throw new Error('저장 실패');
+
+      const saved = await res.json();
+
+      if (isEdit) {
+        setProducts(products.map(p => p.id === editingProductId ? saved : p));
+      } else {
+        setProducts([saved, ...products]);
+      }
+
+      setShowModal(false);
+      alert('저장되었습니다.');
+    } catch (err) {
+      console.error(err);
+      alert('저장 중 오류가 발생했습니다.');
+    }
+  };
 
 
   const handleEdit = (product) => {
@@ -98,6 +116,8 @@ export default function StoreAdminPage() {
       image: product.image,
       tags: product.tags ?? [],
       category: product.category ?? '',
+      quantity: product.quantity?.toString() ?? '',
+      
     });
     setTagString((product.tags ?? []).join(','));
     setEditingProductId(product.id);
@@ -139,6 +159,7 @@ return (
             image: '',
             tags: [],
             category: '',
+            quantity: '',
           });
           setIsEdit(false);
           setEditingProductId(null);
@@ -210,6 +231,13 @@ return (
             className="w-full border p-2 rounded bg-gray-100 text-gray-500"
             title="자동 계산된 할인가"
           />
+          <input
+            type="number"
+            placeholder="개수"
+            value={newProduct.quantity}
+            onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+            className="w-full border p-2 rounded"
+          />
         </div>
 
         <div className="flex justify-end mt-4 space-x-2">
@@ -240,6 +268,7 @@ return (
           <th className="px-3 py-2 text-center whitespace-nowrap">가격</th>
           <th className="px-3 py-2 text-center whitespace-nowrap">원가</th>
           <th className="px-3 py-2 text-center whitespace-nowrap">할인</th>
+          <th className="px-3 py-2 text-center whitespace-nowrap">개수</th>
           <th className="px-3 py-2 text-center whitespace-nowrap">태그</th>
           <th className="px-3 py-2 text-center whitespace-nowrap">평점</th>
           <th className="px-3 py-2 text-center whitespace-nowrap">리뷰 수</th>
@@ -277,6 +306,7 @@ return (
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.price?.toLocaleString()}원</td>
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.originalPrice?.toLocaleString()}원</td>
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.discount}%</td>
+              <td className="px-3 py-2 text-center whitespace-nowrap">{product.quantity ?? 0}</td>
               <td className="px-3 py-2 text-center whitespace-nowrap">
                 {(product.tags ?? []).map((tag) => (
                   <span key={tag} className="inline-block bg-gray-100 border border-gray-300 text-xs px-2 py-0.5 rounded mr-1">
