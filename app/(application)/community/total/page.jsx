@@ -97,11 +97,11 @@ export default function TotalPage() {
   }
 
   return (
-    <div className="bg-white text-black min-h-screen max-w-[1100px] mx-auto px-6">
-      <div className="max-w-[1100px] mx-auto pt-10 px-4">
+    <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
+      <div className="max-w-[1300px] mx-auto pt-10 px-4">
         <div className="flex flex-col md:flex-row gap-8 overflow-hidden">
           <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
-            <h2 className="text-2xl font-bold mb-2">전체글</h2>
+            <h2 className="text-3xl font-bold mb-2">전체글</h2>
             <div className="divide-y divide-gray-200 mt-0">
               {posts.map((post) => {
                 const thumbnail = extractFirstImageSrc(post.content);
@@ -127,7 +127,7 @@ export default function TotalPage() {
                           </Link>
                         )}
                         {post.isNew && (
-                          <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full font-semibold animate-steady-scale">
+                          <span className="text-xs text-white-100 bg-blue-600 px-2 py-0.5 rounded-full font-semibold animate-steady-scale">
                             New
                           </span>
                         )}
@@ -140,7 +140,7 @@ export default function TotalPage() {
                         onClick={() => markPostAsRead(post.id)}
                       >
                         <div
-                          className={`mb-1 cursor-pointer hover:underline text-lg
+                          className={`mb-1 cursor-pointer hover:underline text-2xl
                           ${post.isRead ? 'text-gray-500 font-normal' : 'text-black font-semibold'}`}
                         >
                           {post.title}
@@ -160,10 +160,9 @@ export default function TotalPage() {
                       <div className="text-gray-700 mb-3 text-sm line-clamp-3 pr-40">
                         {textContent}
                       </div>
-
                       {/* 썸네일 */}
                       {thumbnail && (
-                        <div className="absolute top-0 left-40 w-40 h-28 rounded overflow-hidden">
+                        <div className="absolute top-8 right-60  w-40 h-28 rounded overflow-hidden">
                           <img
                             src={thumbnail}
                             alt="썸네일 이미지"
@@ -227,7 +226,7 @@ export default function TotalPage() {
           </main>
 
           {/* 사이드 인기글 */}
-          <aside className="w-full mt-8 border-t border-gray-200 md:w-80 md:ml-8 md:border-l md:border-t-0 md:pl-8">
+          <aside className="w-full mt-8 md:w-80 md:ml-8 md:pl-8">
             <h3 className="text-lg font-bold mb-4">인기글</h3>
             <ol className="space-y-2 text-sm">
               {popularPosts.slice(0, 10).map((post, index) => (
