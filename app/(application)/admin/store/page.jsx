@@ -14,7 +14,10 @@ export default function StoreAdminPage() {
         if (!res.ok) throw new Error('상품 데이터를 불러오는데 실패했습니다.');
         return res.json();
       })
-      .then(setProducts)
+      .then(data => {
+        const sorted = Array.isArray(data) ? data.sort((a, b) => b.id - a.id) : [];
+        setProducts(sorted);
+      })
       .catch(err => {
         console.error(err);
       });
@@ -39,61 +42,65 @@ export default function StoreAdminPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="flex-1 overflow-x-auto p-6">
       <h1 className="text-2xl font-bold mb-6">상품 관리</h1>
 
-      <div className="mb-4">
+      <div className="mb-4 flex justify-end">
         <Link href="/admin/store/new" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
           + 상품 등록
         </Link>
       </div>
 
-      <div className="overflow-auto">
-        <table className="w-full text-left border-collapse border border-gray-200">
-          <thead className="bg-gray-100">
+      <table className="w-full text-xs table-auto border-collapse border border-gray-300">
+        <thead>
+          <tr className="bg-gray-300 border-b border-gray-200">
+            <th className="px-3 py-2 text-center whitespace-nowrap">ID</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">이미지</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">상품명</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">브랜드</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">평점</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">리뷰 수</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">가격</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">원가</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">할인</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">태그</th>
+            <th className="px-3 py-2 text-center whitespace-nowrap">관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.length === 0 ? (
             <tr>
-              <th className="p-3 border">ID</th>
-              <th className="p-3 border">이미지</th>
-              <th className="p-3 border">상품명</th>
-              <th className="p-3 border">브랜드</th>
-              <th className="p-3 border">평점</th>
-              <th className="p-3 border">리뷰 수</th>
-              <th className="p-3 border">가격</th>
-              <th className="p-3 border">원가</th>
-              <th className="p-3 border">할인</th>
-              <th className="p-3 border">태그</th>
-              <th className="p-3 border">관리</th>
+              <td colSpan="11" className="text-center p-6 text-gray-500">
+                상품이 없습니다.
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {products.length === 0 && (
-              <tr>
-                <td colSpan="11" className="text-center p-6 text-gray-500">
-                  상품이 없습니다.
+          ) : (
+            products.map((product) => (
+              <tr key={product.id} className="border-t border-gray-200">
+                <td className="px-3 py-2 text-center whitespace-nowrap">{product.id}</td>
+                <td className="px-3 py-2 text-center whitespace-nowrap">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-16 h-16 object-cover rounded"
+                    onError={(e) => { e.currentTarget.src = '/default-product.png'; }}
+                  />
                 </td>
-              </tr>
-            )}
-            {products.map((product) => (
-              <tr key={product.id} className="border-t">
-                <td className="p-3 border">{product.id}</td>
-                <td className="p-3 border">
-                  <img src={product.image} alt={product.name} className="w-16 h-16 object-cover" />
-                </td>
-                <td className="p-3 border">{product.name}</td>
-                <td className="p-3 border">{product.brand}</td>
-                <td className="p-3 border">{product.rating?.toFixed(1) ?? '-'}</td>
-                <td className="p-3 border">{product.reviews ?? 0}</td>
-                <td className="p-3 border">{product.price?.toLocaleString()}원</td>
-                <td className="p-3 border">{product.originalPrice?.toLocaleString()}원</td>
-                <td className="p-3 border">{product.discount}%</td>
-                <td className="p-3 border">
+                <td className="px-3 py-2 text-center whitespace-nowrap">{product.name}</td>
+                <td className="px-3 py-2 text-center whitespace-nowrap">{product.brand}</td>
+                <td className="px-3 py-2 text-center whitespace-nowrap">{product.rating?.toFixed(1) ?? '-'}</td>
+                <td className="px-3 py-2 text-center whitespace-nowrap">{product.reviews ?? 0}</td>
+                <td className="px-3 py-2 text-center whitespace-nowrap">{product.price?.toLocaleString()}원</td>
+                <td className="px-3 py-2 text-center whitespace-nowrap">{product.originalPrice?.toLocaleString()}원</td>
+                <td className="px-3 py-2 text-center whitespace-nowrap">{product.discount}%</td>
+                <td className="px-3 py-2 text-center whitespace-nowrap">
                   {(product.tags ?? []).map((tag) => (
-                    <span key={tag} className="inline-block bg-gray-100 border text-sm px-2 py-0.5 rounded mr-1">
+                    <span key={tag} className="inline-block bg-gray-100 border border-gray-300 text-xs px-2 py-0.5 rounded mr-1">
                       {tag}
                     </span>
                   ))}
                 </td>
-                <td className="p-3 border space-x-2">
+                <td className="px-3 py-2 text-center whitespace-nowrap space-x-2">
                   <Link href={`/admin/store/edit/${product.id}`} className="text-blue-600 hover:underline">
                     수정
                   </Link>
@@ -105,10 +112,10 @@ export default function StoreAdminPage() {
                   </button>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
