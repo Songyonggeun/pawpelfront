@@ -115,6 +115,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
           <nav className="hidden md:flex text-gray-700 text-base font-bold items-center space-x-12 ml-10">
             <button onClick={toggleCommunityMenu} className="hover:text-blue-500">커뮤니티</button>
             <button onClick={toggleHealthCareMenu} className="hover:text-blue-500">건강관리</button>
+            <Link href="/store" className="hover:text-blue-500">스토어</Link>
           </nav>
         </div>
 
@@ -233,6 +234,8 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
             건강관리
           </button>
           {showHealthCareMenu && <HealthCareMenu />}
+          
+          <Link href="/store" className="hover:text-blue-500">스토어</Link>
 
           <div className="flex flex-col space-y-2 text-sm">
             {!isLoggedIn ? (
