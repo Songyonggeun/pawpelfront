@@ -127,7 +127,7 @@ export default function TotalPage() {
                           </Link>
                         )}
                         {post.isNew && (
-                          <span className="text-xs text-white bg-yellow-600 px-2 py-0.5 rounded-full font-semibold animate-steady-scale">
+                          <span className="text-xs text-white bg-yellow-400 px-2 py-0.5 rounded-full font-semibold animate-steady-scale">
                             New
                           </span>
                         )}
