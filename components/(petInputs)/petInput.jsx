@@ -52,6 +52,7 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
       [name]: value
     }));
   };
+  
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -59,6 +60,7 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
       setImagePreview(URL.createObjectURL(file));
     }
   };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -165,16 +167,16 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
                 <label className="block mb-1 text-gray-700 font-medium">성별</label>
                 <div className="flex justify-between space-x-4">
                   <label htmlFor="male" className="w-1/2 flex justify-center">
-                    <input type="radio" id="male" name="petGender" value="MALE"
-                      checked={selectedGender === 'MALE'}
-                      onChange={() => handleGenderChange('MALE')} className="hidden" />
-                    <MaleIcon color={selectedGender === 'MALE' ? '#2563eb' : '#000'} />
+                    <input type="radio" id="male" name="petGender" value="male"
+                      checked={selectedGender === 'male'}
+                      onChange={() => handleGenderChange('male')} className="hidden" />
+                    <MaleIcon color={selectedGender === 'male' ? '#2563eb' : '#000'} />
                   </label>
                   <label htmlFor="female" className="w-1/2 flex justify-center">
-                    <input type="radio" id="female" name="petGender" value="FEMALE"
-                      checked={selectedGender === 'FEMALE'}
-                      onChange={() => handleGenderChange('FEMALE')} className="hidden" />
-                    <FemaleIcon color={selectedGender === 'FEMALE' ? 'pink' : '#000'} />
+                    <input type="radio" id="female" name="petGender" value="female"
+                      checked={selectedGender === 'female'}
+                      onChange={() => handleGenderChange('female')} className="hidden" />
+                    <FemaleIcon color={selectedGender === 'female' ? 'pink' : '#000'} />
                   </label>
                 </div>
               </div>
@@ -283,14 +285,58 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
               </div>
 
               {/* 버튼 */}
-              <div className="flex justify-end space-x-2">
-                <button type="button" onClick={closeModal} className="px-4 py-2 text-gray-500">
-                  취소
-                </button>
-                <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-                  {isEdit ? '수정' : '등록'}
-                </button>
+              <div className="flex justify-between items-center">
+                {isEdit && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const confirmDelete = confirm("정말로 이 반려동물을 삭제하시겠습니까?");
+                      if (!confirmDelete) return;
+
+                      try {
+                        const response = await fetch(
+                          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/pet/delete/${pet.id}`,
+                          {
+                            method: 'DELETE',
+                            credentials: 'include',
+                          }
+                        );
+                        if (response.ok) {
+                          alert("반려동물이 삭제되었습니다.");
+                          closeModal();
+                          window.location.reload(); // 혹은 router.refresh()
+                        } else {
+                          const data = await response.json();
+                          alert(`삭제 실패: ${data.message || '서버 오류'}`);
+                        }
+                      } catch (error) {
+                        console.error("삭제 오류:", error);
+                        alert("서버 오류가 발생했습니다.");
+                      }
+                    }}
+                    className="px-3 py-2 text-sm text-red-500 hover:underline"
+                  >
+                    {/* 삭제 */}
+                  </button>
+                )}
+                
+                <div className="flex space-x-2">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                  >
+                    {isEdit ? '수정' : '등록'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 py-2 text-gray-500"
+                  >
+                    취소
+                  </button>
+                </div>
               </div>
+
             </form>
           </div>
         </div>

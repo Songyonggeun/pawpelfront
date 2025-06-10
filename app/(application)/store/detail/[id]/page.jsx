@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 export default function ProductDetailPage() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
-  const [quantity, setQuantity] = useState(1); // ✅ 수량 상태
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (!id) return;
@@ -32,7 +32,7 @@ export default function ProductDetailPage() {
 
   if (!product) return <div className="p-6">로딩 중...</div>;
 
-  const totalPrice = product.price * quantity; // ✅ 총 가격 계산
+  const totalPrice = product.price * quantity; 
 
   return (
     <div className="max-w-[1100px] mx-auto p-8 flex flex-col lg:flex-row">
@@ -54,7 +54,7 @@ export default function ProductDetailPage() {
 
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span>⭐ {product.rating || 0}</span>
-          <span>리뷰 {product.reviews || 0}</span>
+          <span class="text-gray-600">({product.reviews || 0})</span>
         </div>
 
         <div className="text-sm text-gray-400">

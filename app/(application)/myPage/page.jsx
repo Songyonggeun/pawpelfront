@@ -179,24 +179,39 @@ export default function MyPage() {
           </div>
 
           <div className="flex gap-4 flex-wrap">
-            {pets.map((pet, index) => (
+          {pets.map((pet, index) => {
+            const species = pet.petType?.toLowerCase() || '';
+            const isCat = species.includes('cat') || species.includes('고양이') || species.includes('냥');
+            const defaultImage = isCat ? '/images/cat.jpeg' : '/images/dog.jpeg';
+            const isDefaultImage = !pet.imageUrl;
+
+            return (
               <div
                 key={pet.id ?? `${pet.petName}-${index}`}
                 onClick={() => setEditPet(pet)}
                 className="w-32 h-40 border border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white shadow-sm cursor-pointer hover:bg-gray-100"
               >
-                {pet.imageUrl ? (
+                <div className="w-24 h-24 rounded-full overflow-hidden bg-white flex items-center justify-center">
                   <img
-                    src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
+                    src={
+                      pet.imageUrl
+                        ? `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`
+                        : defaultImage
+                    }
                     alt={pet.petName}
-                    className="w-20 h-20 rounded-full object-cover mb-2"
+                    className={`w-full h-full ${
+                      isDefaultImage
+                        ? isCat
+                          ? 'object-contain p-[10px] filter grayscale brightness-110 opacity-60'
+                          : 'object-contain p-1 filter grayscale brightness-110 opacity-60'
+                        : 'object-cover'
+                    }`}
                   />
-                ) : (
-                  <div className="w-20 h-20 bg-gray-200 rounded-full mb-2" />
-                )}
-                <div className="text-sm font-medium">{pet.petName}</div>
+                </div>
+                <div className="text-sm font-medium mt-2">{pet.petName}</div>
               </div>
-            ))}
+            );
+          })}
           </div>
         </section>
 
