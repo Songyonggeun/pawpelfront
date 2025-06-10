@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function TotalPage() {
     const [posts, setPosts] = useState([]);
     const [popularPosts, setPopularPosts] = useState([]);
+    const [totalElements, setTotalElements] = useState(0);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
 
@@ -33,22 +34,16 @@ export default function TotalPage() {
 
         const fetchPosts = async () => {
             try {
-                const response = await fetch(
-                    `${baseUrl}/posts?page=${page}&size=10`,
-                    {
-                        credentials: "include",
-                    }
-                );
-                if (!response.ok)
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                const response = await fetch(`${baseUrl}/posts?page=${page}&size=10`, {
+                    credentials: "include",
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                // isNew 필드 동적 계산해서 붙이기
-                const postsWithNew = (data.content || []).map(post => ({
-                    ...post,
-                    isNew: isNewPost(post.createdAt),
-                }));
-                setPosts(postsWithNew);
+
+                // 게시글 리스트와 totalPages, totalElements 업데이트
+                setPosts(data.content || []);
                 setTotalPages(data.totalPages || 0);
+                setTotalElements(data.totalElements || 0);  // 총 게시글 수 반영
             } catch (error) {
                 console.error("게시글 불러오기 실패:", error);
             }
@@ -123,7 +118,9 @@ export default function TotalPage() {
                 <div className="flex flex-col md:flex-row gap-8 overflow-visible">
                     {/* 메인 콘텐츠 */}
                     <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
-                        <h2 className="text-2xl font-bold mb-4">전체글</h2>
+                        <h2 style={{ fontSize: '18px' }} className="font-bold mb-4">
+                            전체글 ({totalElements}건)
+                        </h2>
                         <div className="divide-y divide-gray-200 mt-0">
                             {posts.map((post) => {
                                 const thumbnail = extractFirstImageSrc(
@@ -142,24 +139,25 @@ export default function TotalPage() {
                                 return (
                                     <div
                                         key={post.id}
-                                        className="pl-4 py-6 flex gap-4 relative hover:bg-gray-100 rounded-md transition-colors duration-200"
+                                        onClick={() => {
+                                            markPostAsRead(post.id);
+                                            window.location.href = `/community/detail/${post.id}`;
+                                        }}
+                                        className="pl-4 py-6 flex gap-4 relative rounded-md transition-colors duration-200 hover:bg-gray-50 cursor-pointer"
                                     >
                                         <div className="flex-1 min-w-0">
-                                            {/* 카테고리 */}
+                                            {/* ✅ 카테고리 링크는 따로 유지 */}
                                             <div className="mb-4">
                                                 {post.category && (
                                                     <Link
                                                         href={
-                                                            categoryToUrl[
-                                                            post.category
-                                                            ] ||
-                                                            `/community/category/${encodeURIComponent(
-                                                                post.category
-                                                            )}`
+                                                            categoryToUrl[post.category] ||
+                                                            `/community/category/${encodeURIComponent(post.category)}`
                                                         }
-                                                        className="text-sm text-blue-800 hover:underline mr-2 font-bold"
+                                                        onClick={(e) => e.stopPropagation()} // ✅ 카드 클릭 방지
+                                                        className="text-sm text-gray-600 hover:underline mr-2 font-bold"
                                                     >
-                                                        {post.category}
+                                                        전체&nbsp;&gt;&nbsp;{post.category}
                                                     </Link>
                                                 )}
                                                 {post.isNew && (
@@ -169,48 +167,39 @@ export default function TotalPage() {
                                                 )}
                                             </div>
 
-                                            {/* 제목 + 댓글 수 */}
-                                            <Link
-                                                href={`/community/detail/${post.id}`}
-                                                className="group inline-block"
-                                                onClick={() =>
-                                                    markPostAsRead(post.id)
-                                                }
-                                            >
+                                            <div className="flex items-baseline">
                                                 <div
-                                                    className={`mb-1 cursor-pointer hover:underline text-l
-                          ${post.isRead
-                                                            ? "text-gray-500 font-normal"
-                                                            : "text-black font-bold"
-                                                        }`}
+                                                    className={`cursor-pointer hover:underline text-l
+      ${post.isRead ? "text-gray-500 font-normal" : "text-black font-bold"}`}
                                                 >
                                                     {post.title}
                                                 </div>
-                                            </Link>
 
-                                            {/* 댓글 수 링크 */}
-                                            {typeof post.commentCount ===
-                                                "number" &&
-                                                post.commentCount > 0 && (
-                                                    <Link
-                                                        href={`/community/detail/${post.id}#comments`}
-                                                    >
-                                                        <span className="ml-2 text-l text-red-600  hover:underline cursor-pointer font-bold">
-                                                            ({post.commentCount}
-                                                            )
+                                                {/* 댓글 수 (있을 때만) */}
+                                                {typeof post.commentCount === "number" && post.commentCount > 0 && (
+                                                    <Link href={`/community/detail/${post.id}#comments`}>
+                                                        <span className="ml-2 text-l text-red-600 hover:underline cursor-pointer font-bold">
+                                                            ({post.commentCount})
                                                         </span>
                                                     </Link>
                                                 )}
+                                            </div>
 
                                             {/* 본문 텍스트 */}
-                                            <div className="text-gray-900 mb-3 text-sm line-clamp-3 pr-30">
-                                                {textContent}
+                                            <div className="text-gray-900 mb-3 mt-2 text-sm line-clamp-3 pr-30">
+                                                {(() => {
+                                                    const tempDiv = document.createElement("div");
+                                                    tempDiv.innerHTML = post.content;
+                                                    tempDiv.querySelectorAll("img").forEach((img) => img.remove());
+                                                    return tempDiv.textContent || tempDiv.innerText || "";
+                                                })()}
                                             </div>
+
                                             {/* 썸네일 */}
-                                            {thumbnail && (
-                                                <div className="absolute top-8 right-7  w-40 h-28 rounded overflow-hidden">
+                                            {extractFirstImageSrc(post.content) && (
+                                                <div className="absolute top-8 right-7 w-40 h-28 rounded overflow-hidden">
                                                     <img
-                                                        src={thumbnail}
+                                                        src={extractFirstImageSrc(post.content)}
                                                         alt="썸네일 이미지"
                                                         className="w-full h-full object-cover rounded"
                                                     />
@@ -221,41 +210,25 @@ export default function TotalPage() {
                                             <div className="flex items-center text-xs text-gray-500 flex-wrap mt-4">
                                                 <span>{post.authorName}</span>
                                                 <span className="mx-2">·</span>
-                                                <span>
-                                                    {formatDateRelative(
-                                                        post.createdAt
-                                                    )}
-                                                </span>
+                                                <span>{formatDateRelative(post.createdAt)}</span>
                                                 <span className="mx-2">·</span>
-                                                <span>
-                                                    조회수 {post.viewCount}
-                                                </span>
-                                                {typeof post.commentCount ===
-                                                    "number" && (
-                                                        <>
-                                                            <span className="mx-2">
-                                                                ·
-                                                            </span>
-                                                            <span>
-                                                                💬{" "}
-                                                                {post.commentCount}
-                                                            </span>
-                                                        </>
-                                                    )}
-                                                {typeof post.likeCount ===
-                                                    "number" && (
-                                                        <>
-                                                            <span className="mx-2">
-                                                                ·
-                                                            </span>
-                                                            <span>
-                                                                ❤️ {post.likeCount}
-                                                            </span>
-                                                        </>
-                                                    )}
+                                                <span>조회수 {post.viewCount}</span>
+                                                {post.commentCount > 0 && (
+                                                    <>
+                                                        <span className="mx-2">·</span>
+                                                        <span>💬 {post.commentCount}</span>
+                                                    </>
+                                                )}
+                                                {post.likeCount > 0 && (
+                                                    <>
+                                                        <span className="mx-2">·</span>
+                                                        <span>❤️ {post.likeCount}</span>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
+
                                 );
                             })}
                         </div>
@@ -278,8 +251,8 @@ export default function TotalPage() {
                                 <button
                                     key={pageNumber}
                                     className={`px-3 py-1 rounded ${pageNumber === page
-                                            ? "bg-blue-500 text-white"
-                                            : "bg-gray-200"
+                                        ? "bg-blue-500 text-white"
+                                        : "bg-gray-200"
                                         }`}
                                     onClick={() => setPage(pageNumber)}
                                 >
@@ -326,8 +299,8 @@ export default function TotalPage() {
                         </aside>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 
