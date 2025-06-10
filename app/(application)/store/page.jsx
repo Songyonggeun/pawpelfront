@@ -46,18 +46,22 @@ export default function PetStorePage() {
           {products.map((product) => (
             <Card key={product.id} className="rounded-xl overflow-hidden shadow-sm hover:shadow-md">
               <div className="relative bg-white p-4">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-48 object-cover"
-                />
+                <Link href={`/store/detail/${product.id}`}>
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover cursor-pointer"
+                  />
+                </Link>
                 <span className="absolute top-2 right-2 text-gray-400 text-xl">♡</span>
               </div>
               <CardContent className="p-4">
                 <div className="text-sm text-gray-500">{product.brand}</div>
-                <div className="text-sm font-medium text-gray-800 line-clamp-2 h-10 leading-tight mt-1">
-                  {product.name}
-                </div>
+                <Link href={`/store/detail/${product.id}`}>
+                  <div className="text-sm font-medium text-gray-800 line-clamp-2 h-10 leading-tight mt-1 hover:underline cursor-pointer">
+                    {product.name}
+                  </div>
+                </Link>
                 <div className="text-xs text-yellow-500 mt-1">
                   ⭐
                   <span>{product.rating}</span>
@@ -80,9 +84,12 @@ export default function PetStorePage() {
                 </div>
               </CardContent>
             </Card>
+
           ))}
         </div>
       )}
+      <div className="mx-auto mt-6 w-[200px] h-[100px] bg-transparent" />
     </div>
+    
   );
 }
