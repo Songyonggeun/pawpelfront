@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import CommunityMenu from '@/components/(application)/communityMenu';
-import HealthCareMenu from '@/components/(application)/healthCare';
-import HealthBanner from '@/components/(application)/healthBanner';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef } from "react";
+import CommunityMenu from "@/components/(application)/communityMenu";
+import HealthCareMenu from "@/components/(application)/healthCare";
+import HealthBanner from "@/components/(application)/healthBanner";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export default function HeaderClient({ isLoggedIn, userRoles }) {
   const router = useRouter();
@@ -16,7 +17,8 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
   const [mouseAtTop, setMouseAtTop] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const pathname = usePathname();
 
   useEffect(() => setIsClient(true), []);
 
@@ -32,8 +34,8 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
       }
       lastScrollY.current = currentScrollY;
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -48,8 +50,8 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
         }
       }
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   const toggleCommunityMenu = () => {
@@ -73,26 +75,28 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   const handleLogout = async () => {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/logout`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
       });
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (err) {
-      console.error('로그아웃 실패:', err);
-      alert('로그아웃 중 오류가 발생했습니다.');
+      console.error("로그아웃 실패:", err);
+      alert("로그아웃 중 오류가 발생했습니다.");
     }
   };
 
   const handleSearch = () => {
     if (!searchKeyword.trim()) {
-      alert('검색어를 입력해주세요.');
+      alert("검색어를 입력해주세요.");
       return;
     }
-    router.push(`/search?page=0&keyword=${encodeURIComponent(searchKeyword.trim())}`);
+    router.push(
+      `/search?page=0&keyword=${encodeURIComponent(searchKeyword.trim())}`
+    );
   };
 
   const onKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleSearch();
     }
@@ -101,7 +105,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   return (
     <header
       className={`w-full z-50 sticky top-0 bg-white shadow-sm transition-transform duration-300 ${
-        headerVisible ? 'translate-y-0' : '-translate-y-full'
+        headerVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
       <div className="w-4/5 mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between">
@@ -113,15 +117,47 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
           </Link>
 
           <nav className="hidden md:flex text-gray-700 text-base font-bold items-center space-x-12 ml-10">
-            <button onClick={toggleCommunityMenu} className="hover:text-blue-500">커뮤니티</button>
-            <button onClick={toggleHealthCareMenu} className="hover:text-blue-500">건강관리</button>
-            <Link href="/store" className="hover:text-blue-500">스토어</Link>
+            <button
+              onClick={toggleCommunityMenu}
+              className={`${
+                pathname.startsWith("/community")
+                  ? "text-black font-bold"
+                  : "hover:text-blue-500"
+              }`}
+            >
+              커뮤니티
+            </button>
+
+            <button
+              onClick={toggleHealthCareMenu}
+              className={`${
+                pathname.startsWith("/health")
+                  ? "text-black font-bold"
+                  : "hover:text-blue-500"
+              }`}
+            >
+              건강관리
+            </button>
+
+            <Link
+              href="/store"
+              className={`${
+                pathname === "/store"
+                  ? "text-black font-bold"
+                  : "hover:text-blue-500"
+              }`}
+            >
+              스토어
+            </Link>
           </nav>
         </div>
 
         {/* 데스크탑 오른쪽: 배너, 검색, 로그인/로그아웃 */}
         <div className="hidden md:flex items-center space-x-6 ml-auto">
-          <HealthBanner isLoggedIn={isLoggedIn} className="hidden max-[1100px]:hidden" />
+          <HealthBanner
+            isLoggedIn={isLoggedIn}
+            className="hidden max-[1100px]:hidden"
+          />
 
           {isClient && (
             <>
@@ -142,22 +178,47 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                   🔍
                 </button>
               </div>
-              
-              <Link href="/store/cart" className="text-sm text-gray-500 hover:text-blue-500">장바구니</Link>
-              
+
+              <Link
+                href="/store/cart"
+                className="text-sm text-gray-500 hover:text-black"
+              >
+                장바구니
+              </Link>
+
               {isLoggedIn ? (
                 userRoles.length === 0 ? null : (
                   <div className="flex items-center space-x-3">
-                    {userRoles.includes('ADMIN') ? (
-                      <Link href="/admin" className="text-sm text-gray-500 hover:text-blue-500">관리자페이지</Link>
+                    {userRoles.includes("ADMIN") ? (
+                      <Link
+                        href="/admin"
+                        className="text-sm text-gray-500 hover:text-black"
+                      >
+                        관리자페이지
+                      </Link>
                     ) : (
-                      <Link href="/myPage" className="text-sm text-gray-500 hover:text-blue-500">마이페이지</Link>
+                      <Link
+                        href="/myPage"
+                        className="text-sm text-gray-500 hover:text-black"
+                      >
+                        마이페이지
+                      </Link>
                     )}
-                    <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-blue-500">로그아웃</button>
+                    <button
+                      onClick={handleLogout}
+                      className="text-sm text-gray-500 hover:text-black"
+                    >
+                      로그아웃
+                    </button>
                   </div>
                 )
               ) : (
-                <Link href="/login" className="text-sm text-gray-500 hover:text-blue-500">로그인</Link>
+                <Link
+                  href="/login"
+                  className="text-sm text-gray-500 hover:text-black"
+                >
+                  로그인
+                </Link>
               )}
             </>
           )}
@@ -236,17 +297,22 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
             건강관리
           </button>
           {showHealthCareMenu && <HealthCareMenu />}
-          
-          <Link href="/store" className="hover:text-blue-500">스토어</Link>
+
+          <Link href="/store" className="hover:text-blue-500">
+            스토어
+          </Link>
 
           <div className="flex flex-col space-y-2 text-sm">
             {!isLoggedIn ? (
-              <Link href="/login" className="text-left p-1 rounded hover:bg-gray-100 text-gray-600">
+              <Link
+                href="/login"
+                className="text-left p-1 rounded hover:bg-gray-100 text-gray-600"
+              >
                 로그인
               </Link>
             ) : userRoles.length === 0 ? null : (
               <>
-                {userRoles.includes('ADMIN') ? (
+                {userRoles.includes("ADMIN") ? (
                   <Link
                     href="/admin"
                     className="text-left p-1 rounded hover:bg-gray-100 text-gray-600"
