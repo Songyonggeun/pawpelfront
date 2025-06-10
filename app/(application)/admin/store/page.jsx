@@ -5,9 +5,21 @@ import Link from 'next/link';
 
 export default function StoreAdminPage() {
   const [products, setProducts] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [editingProductId, setEditingProductId] = useState(null);
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    brand: '',
+    originalPrice: '',
+    discount: 0,
+    image: '',
+    tags: [],
+    category: '',
+  });
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/products`, {
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products`, {
       credentials: 'include',
     })
       .then(res => {
@@ -23,32 +35,203 @@ export default function StoreAdminPage() {
       });
   }, []);
 
+  const calculatedPrice = () => {
+    const price = parseInt(newProduct.originalPrice || '0', 10);
+    return Math.round(price * (1 - newProduct.discount / 100));
+  };
+
+  const handleCreate = async () => {
+    const { name, brand, originalPrice, discount, category } = newProduct;
+    if (!name || !brand || !originalPrice || !category) {
+      alert('모든 필드를 입력해주세요.');
+      return;
+    }
+
+    const image = newProduct.image?.trim()
+      ? newProduct.image.trim()
+      : '/images/default-product.png';
+
+    const tags = Array.isArray(newProduct.tags) && newProduct.tags.length > 0
+      ? newProduct.tags
+      : null;
+
+    const body = JSON.stringify({
+      name,
+      brand,
+      originalPrice: parseInt(originalPrice),
+      discount,
+      price: calculatedPrice(),
+      tags,
+      image,
+      category,
+      rating: 0,
+      reviews: 0,
+    });
+
+    const url = isEdit
+      ? `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/${editingProductId}`
+      : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products`;
+
+    const method = isEdit ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body,
+      });
+
+      if (!res.ok) throw new Error(isEdit ? '수정 실패' : '저장 실패');
+      const updated = await res.json();
+
+      // 목록 갱신
+      const updatedList = isEdit
+        ? products.map(p => (p.id === editingProductId ? updated : p))
+        : [updated, ...products];
+
+      setProducts(updatedList);
+      setShowModal(false);
+      setIsEdit(false);
+      setEditingProductId(null);
+      setNewProduct({ name: '', brand: '', originalPrice: '', discount: 0, image: '', tags: [], category: '' });
+      alert(isEdit ? '수정되었습니다.' : '저장되었습니다.');
+    } catch (err) {
+      console.error(err);
+      alert(isEdit ? '상품 수정 중 오류가 발생했습니다.' : '상품 저장 중 오류가 발생했습니다.');
+    }
+  };
+
+
+  const handleEdit = (product) => {
+    setNewProduct({
+      name: product.name,
+      brand: product.brand,
+      originalPrice: product.originalPrice.toString(),
+      discount: product.discount,
+      image: product.image,
+      tags: product.tags ?? [],
+      category: product.category ?? '',
+    });
+    setEditingProductId(product.id);
+    setIsEdit(true);
+    setShowModal(true);
+  };
+
   const handleDelete = async (id) => {
     const confirmed = window.confirm('정말 이 상품을 삭제하시겠습니까?');
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/product/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
 
       if (!res.ok) throw new Error('삭제 실패');
-      setProducts(products.filter((p) => p.id !== id));
+
+      setProducts(products.filter((p) => p.id !== id)); // 목록에서 제거
+      alert('상품이 삭제되었습니다.');
     } catch (err) {
       console.error(err);
-      alert('삭제 중 오류가 발생했습니다.');
+      alert('상품 삭제 중 오류가 발생했습니다.');
     }
   };
 
   return (
     <div className="flex-1 overflow-x-auto p-6">
       <h1 className="text-2xl font-bold mb-6">상품 관리</h1>
+      {showModal && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-white shadow-lg rounded p-6 w-[90%] max-w-md">
+          <h2 className="text-lg font-bold mb-4">상품 추가</h2>
 
+          <div className="space-y-3">
+            <select
+              value={newProduct.category}
+              onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+              className="w-full border p-2 rounded"
+            >
+              <option value="">카테고리 선택</option>
+              <option value="사료">사료</option>
+              <option value="간식">간식</option>
+              <option value="영양제">영양제</option>
+              <option value="용품">용품</option>
+            </select>
+            <input
+              type="text"
+              placeholder="상품명"
+              value={newProduct.name}
+              onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+              className="w-full border p-2 rounded"
+            />
+            <input
+              type="text"
+              placeholder="브랜드"
+              value={newProduct.brand}
+              onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
+              className="w-full border p-2 rounded"
+            />
+            <input
+              type="number"
+              placeholder="원가"
+              value={newProduct.originalPrice}
+              onChange={(e) => setNewProduct({ ...newProduct, originalPrice: e.target.value })}
+              className="w-full border p-2 rounded"
+            />
+            <select
+              value={newProduct.discount}
+              onChange={(e) => setNewProduct({ ...newProduct, discount: parseInt(e.target.value) })}
+              className="w-full border p-2 rounded"
+            >
+              {[0, 5, 10, 15, 20, 25, 30, 40, 50].map((val) => (
+                <option key={val} value={val}>{val}% 할인</option>
+              ))}
+            </select>
+            <input
+              type="text"
+              value={`${calculatedPrice()} 원`}
+              readOnly
+              className="w-full border p-2 rounded bg-gray-100 text-gray-500"
+              title="자동 계산된 할인가"
+            />
+          </div>
+
+          <div className="flex justify-end mt-4 space-x-2">
+            <button
+              onClick={handleCreate}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              저장
+            </button>
+            <button
+              onClick={() => setShowModal(false)}
+              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      )}
       <div className="mb-4 flex justify-end">
-        <Link href="/admin/store/new" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          + 상품 등록
-        </Link>
+        <button
+          onClick={() => {
+            setNewProduct({
+              name: '',
+              brand: '',
+              originalPrice: '',
+              discount: 0,
+              image: '',
+              tags: [],
+              category: '',
+            });
+            setIsEdit(false);
+            setEditingProductId(null);
+            setShowModal(true);
+          }}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          + 상품 추가
+        </button>
       </div>
 
       <table className="w-full text-xs table-auto border-collapse border border-gray-300">
@@ -88,7 +271,6 @@ export default function StoreAdminPage() {
                     />
                   </div>
                 </td>
-
                 <td className="px-3 py-2 text-center whitespace-nowrap">{product.name}</td>
                 <td className="px-3 py-2 text-center whitespace-nowrap">{product.brand}</td>
                 <td className="px-3 py-2 text-center whitespace-nowrap">{product.rating?.toFixed(1) ?? '-'}</td>
@@ -104,9 +286,12 @@ export default function StoreAdminPage() {
                   ))}
                 </td>
                 <td className="px-3 py-2 text-center whitespace-nowrap space-x-2">
-                  <Link href={`/admin/store/edit/${product.id}`} className="text-blue-600 hover:underline">
+                  <button
+                    onClick={() => handleEdit(product)}
+                    className="text-blue-600 hover:underline"
+                  >
                     수정
-                  </Link>
+                  </button>
                   <button
                     onClick={() => handleDelete(product.id)}
                     className="text-red-600 hover:underline"
