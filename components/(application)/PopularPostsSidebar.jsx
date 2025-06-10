@@ -13,8 +13,8 @@ export default function PopularPostsSidebar() {
     const fetchPopular = async () => {
       try {
         const res = await fetch(
-          `${baseUrl}/posts/popular/views?page=0&size=10`,
-          { credentials: 'include' },
+          `${baseUrl}/posts/popular/views?page=0&size=15`,
+          { credentials: 'include' }
         );
         if (!res.ok) throw new Error();
         const data = await res.json();
@@ -28,22 +28,30 @@ export default function PopularPostsSidebar() {
   }, [baseUrl]);
 
   return (
-    <aside className="sticky top-[110px] h-fit">
-      <h3 className="text-base font-semibold text-gray-800 mb-3">🔥 인기글</h3>
+    <aside className="fixed top-[160px] right-[15vw] w-[260px] bg-white/90 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-base font-semibold text-gray-800">🔥 인기글</h3>
+        <Link
+          href="/community/best"
+          className="text-xs text-black hover:underline"
+        >
+          더보기
+        </Link>
+      </div>
       <ol className="space-y-1 text-sm text-gray-800">
-        {popularPosts.slice(0, 10).map((p) => (
+        {popularPosts.slice(0, 15).map((p) => (
           <li
             key={p.id}
-            className="flex items-center justify-between hover:bg-gray-100 px-2 py-1 rounded"
+            className="flex items-center justify-between px-2 py-1 hover:bg-gray-100"
           >
             <Link
               href={`/community/detail/${p.id}`}
-              className="flex-1 truncate group"
+              className="flex-1 truncate"
             >
               <span className="text-gray-400 mr-1 text-xs">
                 [{p.category || '기타'}]
               </span>
-              <span className="group-hover:underline font-medium text-gray-900">
+              <span className="hover:underline font-medium text-gray-900">
                 {p.title}
               </span>
             </Link>
