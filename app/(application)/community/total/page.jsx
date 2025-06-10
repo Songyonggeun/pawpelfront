@@ -42,7 +42,12 @@ export default function TotalPage() {
                 if (!response.ok)
                     throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                setPosts(data.content || []);
+                // isNew 필드 동적 계산해서 붙이기
+                const postsWithNew = (data.content || []).map(post => ({
+                    ...post,
+                    isNew: isNewPost(post.createdAt),
+                }));
+                setPosts(postsWithNew);
                 setTotalPages(data.totalPages || 0);
             } catch (error) {
                 console.error("게시글 불러오기 실패:", error);
@@ -114,7 +119,9 @@ export default function TotalPage() {
     return (
         <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
             <div className="max-w-[1300px] mx-auto pt-10 px-4">
-                <div className="flex flex-col md:flex-row gap-8 overflow-hidden">
+                {/* flex 컨테이너: main + aside */}
+                <div className="flex flex-col md:flex-row gap-8 overflow-visible">
+                    {/* 메인 콘텐츠 */}
                     <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
                         <h2 className="text-2xl font-bold mb-4">전체글</h2>
                         <div className="divide-y divide-gray-200 mt-0">
@@ -135,7 +142,8 @@ export default function TotalPage() {
                                 return (
                                     <div
                                         key={post.id}
-                                        className="pl-4 py-6 flex gap-4 relative hover:bg-gray-100 rounded-md transition-colors duration-200">
+                                        className="pl-4 py-6 flex gap-4 relative hover:bg-gray-100 rounded-md transition-colors duration-200"
+                                    >
                                         <div className="flex-1 min-w-0">
                                             {/* 카테고리 */}
                                             <div className="mb-4">
@@ -143,19 +151,20 @@ export default function TotalPage() {
                                                     <Link
                                                         href={
                                                             categoryToUrl[
-                                                                post.category
+                                                            post.category
                                                             ] ||
                                                             `/community/category/${encodeURIComponent(
                                                                 post.category
                                                             )}`
                                                         }
-                                                        className="text-sm text-blue-800 hover:underline mr-2 font-bold">
+                                                        className="text-sm text-blue-800 hover:underline mr-2 font-bold"
+                                                    >
                                                         {post.category}
                                                     </Link>
                                                 )}
                                                 {post.isNew && (
-                                                    <span className="text-sm text-white bg-red-600 px-2 py-0.5 rounded-full font-bold">
-                                                        New
+                                                    <span className="text-sm text-white bg-blue-500 px-2 py-0.5 rounded-full font-bold animate-scale-in-out">
+                                                        NEW
                                                     </span>
                                                 )}
                                             </div>
@@ -166,14 +175,15 @@ export default function TotalPage() {
                                                 className="group inline-block"
                                                 onClick={() =>
                                                     markPostAsRead(post.id)
-                                                }>
+                                                }
+                                            >
                                                 <div
                                                     className={`mb-1 cursor-pointer hover:underline text-l
-                          ${
-                              post.isRead
-                                  ? "text-gray-500 font-normal"
-                                  : "text-black font-bold"
-                          }`}>
+                          ${post.isRead
+                                                            ? "text-gray-500 font-normal"
+                                                            : "text-black font-bold"
+                                                        }`}
+                                                >
                                                     {post.title}
                                                 </div>
                                             </Link>
@@ -183,8 +193,9 @@ export default function TotalPage() {
                                                 "number" &&
                                                 post.commentCount > 0 && (
                                                     <Link
-                                                        href={`/community/detail/${post.id}#comments`}>
-                                                        <span className="ml-2 text-l text-orange-600  hover:underline cursor-pointer font-bold">
+                                                        href={`/community/detail/${post.id}#comments`}
+                                                    >
+                                                        <span className="ml-2 text-l text-red-600  hover:underline cursor-pointer font-bold">
                                                             ({post.commentCount}
                                                             )
                                                         </span>
@@ -221,27 +232,27 @@ export default function TotalPage() {
                                                 </span>
                                                 {typeof post.commentCount ===
                                                     "number" && (
-                                                    <>
-                                                        <span className="mx-2">
-                                                            ·
-                                                        </span>
-                                                        <span>
-                                                            💬{" "}
-                                                            {post.commentCount}
-                                                        </span>
-                                                    </>
-                                                )}
+                                                        <>
+                                                            <span className="mx-2">
+                                                                ·
+                                                            </span>
+                                                            <span>
+                                                                💬{" "}
+                                                                {post.commentCount}
+                                                            </span>
+                                                        </>
+                                                    )}
                                                 {typeof post.likeCount ===
                                                     "number" && (
-                                                    <>
-                                                        <span className="mx-2">
-                                                            ·
-                                                        </span>
-                                                        <span>
-                                                            ❤️ {post.likeCount}
-                                                        </span>
-                                                    </>
-                                                )}
+                                                        <>
+                                                            <span className="mx-2">
+                                                                ·
+                                                            </span>
+                                                            <span>
+                                                                ❤️ {post.likeCount}
+                                                            </span>
+                                                        </>
+                                                    )}
                                             </div>
                                         </div>
                                     </div>
@@ -256,7 +267,8 @@ export default function TotalPage() {
                                 onClick={() =>
                                     setPage((prev) => Math.max(prev - 1, 0))
                                 }
-                                disabled={page === 0}>
+                                disabled={page === 0}
+                            >
                                 &lt;
                             </button>
                             {Array.from(
@@ -265,12 +277,12 @@ export default function TotalPage() {
                             ).map((pageNumber) => (
                                 <button
                                     key={pageNumber}
-                                    className={`px-3 py-1 rounded ${
-                                        pageNumber === page
+                                    className={`px-3 py-1 rounded ${pageNumber === page
                                             ? "bg-blue-500 text-white"
                                             : "bg-gray-200"
-                                    }`}
-                                    onClick={() => setPage(pageNumber)}>
+                                        }`}
+                                    onClick={() => setPage(pageNumber)}
+                                >
                                     {pageNumber + 1}
                                 </button>
                             ))}
@@ -281,41 +293,38 @@ export default function TotalPage() {
                                         Math.min(prev + 1, totalPages - 1)
                                     )
                                 }
-                                disabled={page === totalPages - 1}>
+                                disabled={page === totalPages - 1}
+                            >
                                 &gt;
                             </button>
                         </div>
                     </main>
 
-                    {/* 사이드 인기글 */}
-                    <aside className="w-full mt-8 md:w-80 md:ml-8 md:pl-8">
-                        <h3 className="text-lg font-bold mb-4">인기글</h3>
-                        <ol className="space-y-2 text-sm">
-                            {popularPosts.slice(0, 10).map((post, index) => (
-                                <li
-                                    key={post.id}
-                                    className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-pink-500 font-bold flex-shrink-0">
-                                            {index + 1}
-                                        </span>
-                                        <Link
-                                            href={`/community/detail/${post.id}`}
-                                            className="block max-w-[250px]">
-                                            <span className="block truncate whitespace-nowrap overflow-hidden hover:underline text-gray-800">
+                    {/* 인기글 사이드바 */}
+                    <div className="hidden md:block md:w-[260px] md:pl-2">
+                        <aside className="sticky top-[110px] h-fit">
+                            <h3 className="text-base font-semibold text-gray-800 mb-3">🔥 인기글</h3>
+                            <ol className="space-y-1 text-sm text-gray-800">
+                                {popularPosts.slice(0, 10).map((post, index) => (
+                                    <li key={post.id} className="flex items-center justify-between hover:bg-gray-100 px-2 py-1 rounded">
+                                        <Link href={`/community/detail/${post.id}`} className="flex-1 truncate group">
+                                            <span className="text-gray-400 mr-1 text-xs">
+                                                [{post.category || "기타"}]
+                                            </span>
+                                            <span className="group-hover:underline font-medium text-gray-900">
                                                 {post.title}
                                             </span>
                                         </Link>
-                                    </div>
-                                    <div className="flex gap-3 text-xs text-gray-500 ml-[26px]">
-                                        <span>💬 {post.commentCount ?? 0}</span>
-                                        <span>❤️ {post.likeCount ?? 0}</span>
-                                        <span>👁️ {post.viewCount ?? 0}</span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ol>
-                    </aside>
+                                        {post.commentCount > 0 && (
+                                            <span className="ml-2 text-red-500 text-xs font-semibold">
+                                                ({post.commentCount})
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ol>
+                        </aside>
+                    </div>
                 </div>
             </div>
         </div>
@@ -334,7 +343,7 @@ function formatDateRelative(dateString) {
                 createdDate.getMonth(),
                 createdDate.getDate()
             )) /
-            (1000 * 60 * 60 * 24)
+        (1000 * 60 * 60 * 24)
     );
 
     if (diffInDays === 0) {

@@ -45,18 +45,17 @@ button:not(:disabled) {
   overflow: hidden;
 }
 
-@keyframes steady-scale {
+@keyframes scale-in-out {
   0%, 100% {
-    transform: scale(1);
+    transform: scale(0.75);
   }
   50% {
-    transform: scale(1.03);
-    
+    transform: scale(0.7);
   }
 }
 
-.animate-steady-scale {
-  animation: steady-scale 1.4s linear infinite;
-  display: inline-block; /* transform이 인라인 요소에는 안 먹힐 수 있으니 */
-  transform-origin: center; /* 크기 변화 기준 */
+.animate-scale-in-out {
+  animation: scale-in-out 1.5s ease-in-out infinite;
+  display: inline-block;
+  transform-origin: center;
 }
