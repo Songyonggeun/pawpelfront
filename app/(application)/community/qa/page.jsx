@@ -10,6 +10,10 @@ export default function QnaPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
+  // 인기글 페이징 상태
+  const [popularPage, setPopularPage] = useState(0);
+  const [popularTotalPages, setPopularTotalPages] = useState(0);
+
   const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
 
   // 날짜가 1일 이내면 "new" 배지 표시
@@ -54,7 +58,7 @@ export default function QnaPage() {
     const fetchPopularPosts = async () => {
       try {
         const response = await fetch(
-          `${baseUrl}/posts/popular/views?page=0&size=10`,
+          `${baseUrl}/posts/popular/views?page=${popularPage}&size=10`,
           {
             credentials: "include",
           }
@@ -63,13 +67,14 @@ export default function QnaPage() {
           throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setPopularPosts(data.content || []);
+        setPopularTotalPages(data.totalPages || 0);
       } catch (error) {
         console.error("인기글 불러오기 실패:", error);
       }
     };
 
     fetchPopularPosts();
-  }, [baseUrl]);
+  }, [baseUrl, popularPage]);
 
   // 본문에서 첫 번째 이미지 src 추출
   function extractFirstImageSrc(html) {
@@ -101,7 +106,7 @@ export default function QnaPage() {
           createdDate.getMonth(),
           createdDate.getDate()
         )) /
-      (1000 * 60 * 60 * 24)
+        (1000 * 60 * 60 * 24)
     );
 
     if (diffInDays === 0) {
@@ -194,7 +199,6 @@ export default function QnaPage() {
                           </span>
                         )}
                       </div>
-
                     </div>
 
                     {/* 본문 요약 */}
@@ -215,7 +219,7 @@ export default function QnaPage() {
               })}
             </div>
 
-            {/* 페이징 */}
+            {/* 메인 페이징 */}
             <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
               <button
                 className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
@@ -227,8 +231,9 @@ export default function QnaPage() {
               {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
                 <button
                   key={pageNumber}
-                  className={`px-3 py-1 rounded ${pageNumber === page ? "bg-blue-500 text-white" : "bg-gray-200"
-                    }`}
+                  className={`px-3 py-1 rounded ${
+                    pageNumber === page ? "bg-blue-500 text-white" : "bg-gray-200"
+                  }`}
                   onClick={() => setPage(pageNumber)}
                 >
                   {pageNumber + 1}
@@ -245,26 +250,25 @@ export default function QnaPage() {
           </main>
 
           {/* 인기글 사이드바 */}
-          <div className="hidden md:block md:w-[260px] md:pl-2">
-            <aside className="sticky top-[110px] h-fit">
-              <h3 className="text-base font-semibold text-gray-800 mb-3">🔥 인기 Q&A</h3>
-              <ol className="space-y-1 text-sm text-gray-800">
-                {popularPosts.slice(0, 10).map((post) => (
+          <div className="hidden md:block md:w-[260px] md:pl-4">
+            <aside className="sticky top-[110px] h-fit bg-white border rounded-md p-4 shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">🔥 인기 Q&A</h3>
+
+              <ol className="space-y-1 text-sm text-gray-800 mb-4">
+                {popularPosts.map((post) => (
                   <li
                     key={post.id}
-                    className="flex items-center justify-between hover:bg-gray-100 px-2 py-1 rounded"
+                    className="flex items-center justify-between hover:bg-gray-100 px-2 py-1 rounded cursor-pointer"
+                    onClick={() => window.location.href = `/community/detail/${post.id}`}
                   >
-                    <Link
-                      href={`/community/detail/${post.id}`}
-                      className="flex-1 truncate group"
-                    >
+                    <span className="flex-1 truncate group">
                       <span className="text-gray-400 mr-1 text-xs">
                         [{post.category || "기타"}]
                       </span>
                       <span className="group-hover:underline font-medium text-gray-900">
                         {post.title}
                       </span>
-                    </Link>
+                    </span>
                     {post.commentCount > 0 && (
                       <span className="ml-2 text-red-500 text-xs font-semibold">
                         ({post.commentCount})
@@ -273,6 +277,37 @@ export default function QnaPage() {
                   </li>
                 ))}
               </ol>
+
+              {/* 인기글 페이징 */}
+              <div className="flex justify-center gap-2 text-sm">
+                <button
+                  className="px-2 py-1 rounded bg-gray-200 disabled:opacity-50"
+                  onClick={() => setPopularPage((p) => Math.max(p - 1, 0))}
+                  disabled={popularPage === 0}
+                >
+                  &lt;
+                </button>
+                {Array.from({ length: popularTotalPages }, (_, i) => i).map((num) => (
+                  <button
+                    key={num}
+                    className={`px-3 py-1 rounded ${
+                      num === popularPage ? "bg-blue-500 text-white" : "bg-gray-200"
+                    }`}
+                    onClick={() => setPopularPage(num)}
+                  >
+                    {num + 1}
+                  </button>
+                ))}
+                <button
+                  className="px-2 py-1 rounded bg-gray-200 disabled:opacity-50"
+                  onClick={() =>
+                    setPopularPage((p) => Math.min(p + 1, popularTotalPages - 1))
+                  }
+                  disabled={popularPage === popularTotalPages - 1}
+                >
+                  &gt;
+                </button>
+              </div>
             </aside>
           </div>
         </div>
