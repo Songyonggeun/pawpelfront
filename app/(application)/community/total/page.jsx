@@ -113,8 +113,9 @@ export default function TotalPage() {
                 return (
                   <div
                     key={post.id}
-                    className="py-6 flex gap-4 relative hover:bg-gray-100 rounded-md transition-colors duration-200"
+                    className="py-6 flex justify-between items-start gap-4 hover:bg-gray-100 rounded-md transition-colors duration-200"
                   >
+                    {/* 왼쪽 텍스트 영역 */}
                     <div className="flex-1 min-w-0">
                       {/* 카테고리 */}
                       <div className="mb-1">
@@ -133,7 +134,7 @@ export default function TotalPage() {
                         )}
                       </div>
 
-                      {/* 제목 + 댓글 수 */}
+                      {/* 제목 */}
                       <Link
                         href={`/community/detail/${post.id}`}
                         className="group inline-block"
@@ -141,13 +142,13 @@ export default function TotalPage() {
                       >
                         <div
                           className={`mb-1 cursor-pointer hover:underline text-lg
-                          ${post.isRead ? 'text-gray-500 font-normal' : 'text-black font-semibold'}`}
+                            ${post.isRead ? 'text-gray-500 font-normal' : 'text-black font-semibold'}`}
                         >
                           {post.title}
                         </div>
                       </Link>
 
-                      {/* 댓글 수 링크 */}
+                      {/* 댓글 수 */}
                       {typeof post.commentCount === 'number' && post.commentCount > 0 && (
                         <Link href={`/community/detail/${post.id}#comments`}>
                           <span className="ml-2 text-sm text-blue-600 hover:underline cursor-pointer">
@@ -156,24 +157,13 @@ export default function TotalPage() {
                         </Link>
                       )}
 
-                      {/* 본문 텍스트 */}
-                      <div className="text-gray-700 mb-3 text-sm line-clamp-3 pr-40">
+                      {/* 본문 요약 */}
+                      <div className="text-gray-700 mb-3 text-sm line-clamp-3">
                         {textContent}
                       </div>
 
-                      {/* 썸네일 */}
-                      {thumbnail && (
-                        <div className="absolute top-0 left-40 w-40 h-28 rounded overflow-hidden">
-                          <img
-                            src={thumbnail}
-                            alt="썸네일 이미지"
-                            className="w-full h-full object-cover rounded"
-                          />
-                        </div>
-                      )}
-
                       {/* 기타 정보 */}
-                      <div className="flex items-center text-xs text-gray-500 flex-wrap mt-12">
+                      <div className="flex items-center text-xs text-gray-500 flex-wrap mt-2">
                         <span>{post.authorName}</span>
                         <span className="mx-2">·</span>
                         <span>{formatDateRelative(post.createdAt)}</span>
@@ -193,36 +183,20 @@ export default function TotalPage() {
                         )}
                       </div>
                     </div>
+
+                    {/* 오른쪽 썸네일 영역 */}
+                    {thumbnail && (
+                      <div className="w-40 h-28 flex-shrink-0 rounded overflow-hidden">
+                        <img
+                          src={thumbnail}
+                          alt="썸네일 이미지"
+                          className="w-full h-full object-cover rounded"
+                        />
+                      </div>
+                    )}
                   </div>
                 );
               })}
-            </div>
-
-            {/* 페이징 */}
-            <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
-              <button
-                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
-                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                disabled={page === 0}
-              >
-                &lt;
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
-                <button
-                  key={pageNumber}
-                  className={`px-3 py-1 rounded ${pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                  onClick={() => setPage(pageNumber)}
-                >
-                  {pageNumber + 1}
-                </button>
-              ))}
-              <button
-                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
-                disabled={page === totalPages - 1}
-              >
-                &gt;
-              </button>
             </div>
           </main>
 
