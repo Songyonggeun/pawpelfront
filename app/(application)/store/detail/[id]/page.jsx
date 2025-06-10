@@ -40,6 +40,29 @@ export default function ProductDetailPage() {
 
   const totalPrice = product.price * quantity; 
 
+  const addToCart = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // 세션 유지 위해 꼭 필요
+        body: JSON.stringify({
+          ...product,
+          quantity,
+        }),
+      });
+
+      if (!response.ok) throw new Error('장바구니 추가 실패');
+
+      alert('장바구니에 담았습니다!');
+    } catch (err) {
+      console.error(err);
+      alert('장바구니 담기 실패');
+    }
+  };
+
   return (
     <div className="max-w-[1100px] mx-auto p-8 flex flex-col lg:flex-row">
       {/* 이미지 영역 */}
@@ -113,7 +136,10 @@ export default function ProductDetailPage() {
 
         {/* 버튼 영역 */}
         <div className="flex gap-2 pt-4">
-          <button className="flex-1 bg-gray-200 hover:bg-gray-300 text-sm py-2 rounded">
+          <button
+            onClick={addToCart}
+            className="flex-1 bg-gray-200 hover:bg-gray-300 text-sm py-2 rounded"
+          >
             🛒 장바구니
           </button>
           <button className="flex-1 bg-black hover:bg-gray-800 text-white text-sm py-2 rounded">

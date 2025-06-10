@@ -142,7 +142,9 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                   🔍
                 </button>
               </div>
-
+              
+              <Link href="/store/cart" className="text-sm text-gray-500 hover:text-blue-500">장바구니</Link>
+              
               {isLoggedIn ? (
                 userRoles.length === 0 ? null : (
                   <div className="flex items-center space-x-3">
