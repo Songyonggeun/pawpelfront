@@ -102,6 +102,13 @@ const handleSaveContent = async () => {
 
   const content = quillRef.current?.root.innerHTML || "";
 
+  // 본문 내용이 비어있거나 <p><br></p> 등 빈 내용일 경우 체크
+  const plainText = quillRef.current?.getText().trim() || "";
+  if (!plainText) return alert("본문 내용을 입력해주세요.");
+
+  // 또는 아래처럼 HTML 태그만 있으면 비어있는지 체크 가능
+  // if (!content || content === "<p><br></p>") return alert("본문 내용을 입력해주세요.");
+
   const postData = {
     title,
     content,
@@ -118,14 +125,10 @@ const handleSaveContent = async () => {
     });
     formData.append("post", postBlob);
 
-    // 파일이 있을 경우 추가
-    // formData.append("mediaFiles", yourFile); // 여러 개일 경우 반복문 사용
-    // formData.append("videoFile", yourVideoFile);
-
     const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts`, {
       method: "POST",
       body: formData,
-      credentials: "include", // 로그인 쿠키 유지
+      credentials: "include",
     });
 
     if (response.ok) {
