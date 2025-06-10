@@ -104,10 +104,7 @@ export default function PetHealthSection() {
                         <table className="w-full text-xs table-auto border-collapse">
                           <thead>
                             <tr className="bg-gray-50 border-b border-gray-200">
-                              <th className="px-3 py-2 text-center whitespace-nowrap">검진일자</th>
-                              <th className="px-3 py-2 text-center whitespace-nowrap">점수</th>
-                              <th className="px-3 py-2 text-center whitespace-nowrap">결과</th>
-                              <th className="px-3 py-2 text-center whitespace-nowrap">주의 항목</th>
+                              <th className="px-3 py-2 text-center whitespace-nowrap">검진일자</th><th className="px-3 py-2 text-center whitespace-nowrap">점수</th><th className="px-3 py-2 text-center whitespace-nowrap">결과</th><th className="px-3 py-2 text-center whitespace-nowrap">주의 항목</th><th className="px-3 py-2 text-center whitespace-nowrap">삭제</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -124,6 +121,25 @@ export default function PetHealthSection() {
                                 </td>
                                 <td className="text-center whitespace-normal break-words">
                                   {record.warnings?.join(', ') || '없음'}
+                                </td>
+                                <td className="text-center text-red-500 cursor-pointer hover:underline whitespace-nowrap"
+                                    onClick={async () => {
+                                      const confirmed = confirm('정말 삭제하시겠습니까?');
+                                      if (!confirmed) return;
+
+                                      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/health/delete/${record.id}`, {
+                                        method: 'DELETE',
+                                        credentials: 'include',
+                                      });
+
+                                      if (res.ok) {
+                                        alert('삭제되었습니다.');
+                                        location.reload(); // 또는 상태 갱신
+                                      } else {
+                                        alert('삭제에 실패했습니다.');
+                                      }
+                                    }}>
+                                  삭제
                                 </td>
                               </tr>
                             ))}
