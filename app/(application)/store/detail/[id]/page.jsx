@@ -30,6 +30,12 @@ export default function ProductDetailPage() {
       });
   }, [id]);
 
+  useEffect(() => {
+    if (product && quantity > product.quantity) {
+      setQuantity(product.quantity);
+    }
+  }, [product]);
+
   if (!product) return <div className="p-6">로딩 중...</div>;
 
   const totalPrice = product.price * quantity; 
@@ -54,7 +60,7 @@ export default function ProductDetailPage() {
 
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span>⭐ {product.rating || 0}</span>
-          <span class="text-gray-600">({product.reviews || 0})</span>
+          <span className="text-gray-600">({product.reviews || 0})</span>
         </div>
 
         <div className="text-sm text-gray-400">
@@ -87,12 +93,16 @@ export default function ProductDetailPage() {
                 </button>
                 <span className="w-10 h-8 flex items-center justify-center">{quantity}</span>
                 <button
-                onClick={() => setQuantity((prev) => prev + 1)}
-                className="px-3 py-1 text-gray-600 hover:bg-gray-100"
+                  onClick={() => setQuantity((prev) => Math.min(prev + 1, product.quantity))}
+                  className="px-3 py-1 text-gray-600 hover:bg-gray-100"
                 >
-                +
+                  +
                 </button>
+                
             </div>
+            <p className="text-xs text-gray-500">
+              재고: {product.quantity}개
+            </p>
         </div>
 
 
