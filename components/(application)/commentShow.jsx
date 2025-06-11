@@ -370,12 +370,12 @@ export default function CommentShow({ postId }) {
             </>
           ) : (
             <>
-<p className="text-sm">
-  {parentUser && !comment.content.includes(`@${parentUser}`) && (
-    <span className="text-gray-400">@{parentUser} </span>
-  )}
-  {highlightMentions(comment.content)}
-</p>
+              <p className="text-sm">
+                {parentUser && !comment.content.includes(`@${parentUser}`) && (
+                  <span className="text-gray-400">@{parentUser} </span>
+                )}
+                {highlightMentions(comment.content)}
+              </p>
 
               <div className="mt-1 flex gap-2 text-sm">
                 <button
