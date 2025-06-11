@@ -14,7 +14,7 @@ export default function StoreAdminPage() {
     brand: '',
     originalPrice: '',
     discount: 0,
-    image: '',
+    image: null,
     tags: [],
     category: '',
     quantity: '', 
@@ -49,50 +49,42 @@ export default function StoreAdminPage() {
       return;
     }
 
-    const image = newProduct.image?.trim()
-      ? newProduct.image.trim()
-      : '/images/default-product.png';
-
     const tags = tagString.trim()
       ? tagString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
       : null;
 
-    let baseProduct = {
+    const baseProduct = {
       name: newProduct.name,
       brand: newProduct.brand,
-      originalPrice: parseInt(newProduct.originalPrice),
+      originalPrice: parseInt(newProduct.originalPrice, 10),
       discount: newProduct.discount,
       price: calculatedPrice(),
       tags,
-      image,
       category: newProduct.category,
       quantity: isNaN(parseInt(newProduct.quantity)) ? 0 : parseInt(newProduct.quantity, 10),
       rating: 0,
       reviews: 0,
     };
 
-    if (isEdit) {
-      const prev = products.find(p => p.id === editingProductId);
-      baseProduct = {
-        ...prev,
-        ...baseProduct, // 기존값 유지 + 새값 덮어쓰기
-      };
+    const formData = new FormData();
+    formData.append("data", new Blob([JSON.stringify(baseProduct)], { type: "application/json" }));
+    if (newProduct.image) {
+      formData.append("image", newProduct.image);
     }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products${isEdit ? `/${editingProductId}` : ''}`, {
-        method: isEdit ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(baseProduct),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products${isEdit ? `/${editingProductId}` : ''}`,
+        {
+          method: isEdit ? 'PUT' : 'POST',
+          credentials: 'include',
+          body: formData,
+        }
+      );
 
       if (!res.ok) throw new Error('저장 실패');
 
       const saved = await res.json();
-
       if (isEdit) {
         setProducts(products.map(p => p.id === editingProductId ? saved : p));
       } else {
@@ -276,7 +268,19 @@ return (
           className="flex-1 p-2 border border-gray-300 rounded"
         />
       </div>
+      
+      {/* 이미지 파일 업로드 */}
+      <div className="flex items-center">
+        <label className="w-24 text-sm font-medium">이미지</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setNewProduct({ ...newProduct, image: e.target.files?.[0] || null })}
+          className="flex-1 p-2 border border-gray-300 rounded"
+        />
+      </div>
     </div>
+
 
     {/* 버튼 */}
     <div className="flex justify-end mt-6 space-x-2">
@@ -328,16 +332,22 @@ return (
             <tr key={product.id} className="border-t border-gray-200">
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.id}</td>
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.category}</td>
-              <td className="px-3 py-2 text-center whitespace-nowrap">
-                <div className="flex justify-center items-center w-full h-full">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-16 h-16 object-cover rounded"
-                    onError={(e) => { e.currentTarget.src = '/images/product/default-product.png'; }}
-                  />
-                </div>
-              </td>
+<td className="px-3 py-2 text-center whitespace-nowrap">
+  <div className="flex justify-center items-center w-full h-full">
+    <img
+      src={
+        product.image?.startsWith('/images/product/') 
+          ? product.image 
+          : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${product.image}` 
+      }
+      alt={product.name}
+      className="w-16 h-16 object-cover rounded"
+      onError={(e) => {
+        e.currentTarget.src = '/images/product/default-product.png';
+      }}
+    />
+  </div>
+</td>
               <td className="px-3 py-2 text-center whitespace-nowrap">
                 <Link href={`/store/detail/${product.id}`} className="hover:underline">
                   {product.name}

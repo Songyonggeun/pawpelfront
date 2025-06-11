@@ -61,11 +61,18 @@ export default function PetStorePage() {
             <Card key={product.id} className="rounded-xl overflow-hidden shadow-sm hover:shadow-md">
               <div className="relative bg-white p-4">
                 <Link href={`/store/detail/${product.id}`}>
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-48 object-cover cursor-pointer"
-                  />
+                <img
+                  src={
+                    product.image?.startsWith('/images/')
+                      ? product.image // 정적 이미지 (public 폴더)
+                      : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${product.image}` // 업로드 이미지
+                  }
+                  alt={product.name}
+                  className="w-full h-48 object-cover cursor-pointer"
+                  onError={(e) => {
+                    e.currentTarget.src = '/images/product/default-product.png';
+                  }}
+                />
                 </Link>
                 <span className="absolute top-2 right-2 text-gray-400 text-xl">♡</span>
               </div>

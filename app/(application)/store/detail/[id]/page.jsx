@@ -69,9 +69,18 @@ export default function ProductDetailPage() {
       <div className="w-full lg:w-1/2 flex justify-center">
         <div className="border border-gray-200 rounded-lg p-4">
           <img
-            src={product.image || '/images/default-product.png'}
+            src={
+              product.image?.startsWith('/images/')
+                ? product.image
+                : product.image
+                ? `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${product.image}`
+                : '/images/product/default-product.png'
+            }
             alt={product.name}
             className="w-[400px] h-[400px] object-cover rounded-md"
+            onError={(e) => {
+              e.currentTarget.src = '/images/product/default-product.png';
+            }}
           />
         </div>
       </div>
