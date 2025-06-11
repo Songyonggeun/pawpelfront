@@ -7,13 +7,12 @@ import CommentInput from "@/components/(Inputs)/commentInput";
 import CommentShow from "@/components/(application)/commentShow";
 import LikeCard from "@/components/(application)/postLike";
 import PopularPostsSidebar from "@/components/(application)/PopularPostsSidebar";
-import CommunityMenu from "@/components/(application)/communityMenu"
+import CommunityMenu from "@/components/(application)/communityMenu";
+import Link from "next/link";
 
 export default function PostDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-
-  
 
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
@@ -167,7 +166,6 @@ export default function PostDetailPage() {
   /* ---------- 수정 / 삭제 ---------- */
   const handleEdit = () => router.push(`/community/edit/${id}`);
   const handleDelete = async () => {
-    
     if (!confirm("정말로 삭제하시겠습니까?")) return;
     try {
       const res = await fetch(
@@ -206,42 +204,53 @@ export default function PostDetailPage() {
           <span>{post.category}</span>
           {post.subCategory && (
             <>
-            <CommunityMenu category={post.category} />
+              <CommunityMenu category={post.category} />
               <span className="mx-2 text-gray-400">{">"}</span>
               <span>{post.subCategory}</span>
             </>
           )}
         </div>
-
         <h1 className="text-2xl sm:text-2xl font-bold border-b border-gray-300 pb-3 mb-4">
           {post.title}
         </h1>
 
+        
         {/* 작성자 + 펫 정보 */}
         <div className="flex justify-between text-sm text-gray-600 mb-4">
           <div className="flex items-center gap-3">
             {post.pet && (
-              <div className="flex items-center gap-2">
+              <Link
+                href={`/profile/${post.authorId}`}
+                className="flex items-center gap-2"
+              >
                 {post.authorThumbnailUrl || post.authorImageUrl ? (
                   <img
                     src={
-                      (post.authorThumbnailUrl || post.authorImageUrl).startsWith("/images/profile/")
-                        ? post.authorThumbnailUrl || post.authorImageUrl // 프론트 public에서 가져옴
-                        : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                      (
+                        post.authorThumbnailUrl || post.authorImageUrl
+                      ).startsWith("/images/profile/")
+                        ? post.authorThumbnailUrl || post.authorImageUrl
+                        : `${
+                            process.env.NEXT_PUBLIC_SPRING_SERVER_URL
+                          }/uploads${
                             post.authorThumbnailUrl || post.authorImageUrl
-                          }` 
+                          }`
                     }
                     alt={post.authorName}
-                    className="w-8 h-8 rounded-full object-cover border border-gray-300"
+                    className="w-8 h-8 rounded-full object-cover border border-gray-300 cursor-pointer"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300 text-gray-400">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300 text-gray-400 cursor-pointer">
                     🐾
                   </div>
                 )}
-              </div>
+              </Link>
             )}
-            <span className="font-medium">{post.authorName}</span>
+            <Link href={`/profile/${post.authorId}`}>
+              <span className="font-medium hover:underline cursor-pointer">
+                {post.authorName}
+              </span>
+            </Link>
           </div>
           <div className="flex flex-wrap items-center gap-x-2 text-right">
             <span>조회수 {post.viewCount || 0}</span>
@@ -254,7 +263,6 @@ export default function PostDetailPage() {
             </span>
           </div>
         </div>
-
         {/* 펫 카드 */}
         {post.pet && (
           <div className="mt-10 border border-gray-300 rounded-md p-3 shadow-sm bg-gray-50 mb-6 w-full max-w-[300px]">
@@ -262,8 +270,10 @@ export default function PostDetailPage() {
               {post.pet?.thumbnailUrl || post.pet?.imageUrl ? (
                 <img
                   src={
-                    (post.pet.thumbnailUrl || post.pet.imageUrl).startsWith("/images/profile/")
-                      ? post.pet.thumbnailUrl || post.pet.imageUrl 
+                    (post.pet.thumbnailUrl || post.pet.imageUrl).startsWith(
+                      "/images/profile/"
+                    )
+                      ? post.pet.thumbnailUrl || post.pet.imageUrl
                       : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
                           post.pet.thumbnailUrl || post.pet.imageUrl
                         }`
@@ -281,23 +291,32 @@ export default function PostDetailPage() {
                   {post.pet.petName}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {post.pet.petType === "dog" ? "강아지" : post.pet.petType === "cat" ? "고양이" : "반려동물"}{" "}
-                  / {post.pet.petGender === "female" ? "여아" : post.pet.petGender === "male" ? "남아" : "성별 정보 없음"}
+                  {post.pet.petType === "dog"
+                    ? "강아지"
+                    : post.pet.petType === "cat"
+                    ? "고양이"
+                    : "반려동물"}{" "}
+                  /{" "}
+                  {post.pet.petGender === "female"
+                    ? "여아"
+                    : post.pet.petGender === "male"
+                    ? "남아"
+                    : "성별 정보 없음"}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {post.pet.petAge !== null ? `${post.pet.petAge}년생` : "나이 정보 없음"}
+                  {post.pet.petAge !== null
+                    ? `${post.pet.petAge}년생`
+                    : "나이 정보 없음"}
                 </div>
               </div>
             </div>
           </div>
         )}
-
         {/* 본문 */}
         <article
           className="prose prose-lg max-w-none mb-10"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
-
         {/* 이전/다음글/목록/수정/삭제 */}
         <div className="mt-70 border-t border-gray-300 divide-y divide-gray-200 text-sm text-gray-800">
           {/* 이전글 */}
@@ -342,26 +361,25 @@ export default function PostDetailPage() {
             >
               목록으로
             </button>
-{currentUserName?.trim().toLowerCase() === post.authorName?.trim().toLowerCase() && (
-  <>
-    <button
-      onClick={handleEdit}
-      className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white"
-    >
-      수정
-    </button>
-    <button
-      onClick={handleDelete}
-      className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white"
-    >
-      삭제
-    </button>
-  </>
-)}
-
+            {currentUserName?.trim().toLowerCase() ===
+              post.authorName?.trim().toLowerCase() && (
+              <>
+                <button
+                  onClick={handleEdit}
+                  className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white"
+                >
+                  삭제
+                </button>
+              </>
+            )}
           </div>
         </div>
-
         {/* 좋아요 */}
         <LikeCard
           postId={post.id}
@@ -371,7 +389,6 @@ export default function PostDetailPage() {
             setPost((p) => ({ ...p, likeCount: cnt, isLiked: liked }))
           }
         />
-
         {/* 댓글 */}
         <section className="mt-10">
           <h2 className="text-lg font-semibold mb-4">댓글</h2>
@@ -383,7 +400,6 @@ export default function PostDetailPage() {
           )}
           <CommentShow key={refreshCommentsFlag} postId={post.id} />
         </section>
-
         {/* 연관 Q&A 게시글 */}
         {post.category === "Q&A" &&
           post.subCategory &&
@@ -421,7 +437,6 @@ export default function PostDetailPage() {
               </div>
             );
           })()}
-
         <div className="mt-10">
           <h3 className="text-lg font-bold mb-4 text-gray-800">
             전체 게시글 목록
