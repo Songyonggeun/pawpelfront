@@ -7,67 +7,130 @@ export default function OrderListPage() {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    // 로그인 유저 불러오기
     const fetchUser = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/me`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
           credentials: 'include',
         });
-        if (!res.ok) throw new Error(`HTTP 상태 코드: ${res.status}`);
+        if (!res.ok) throw new Error('유저 정보 요청 실패');
         const data = await res.json();
         setUser(data);
       } catch (err) {
-        console.error('❗ 유저 요청 실패:', err);
+        console.error(err);
       }
     };
-
     fetchUser();
   }, []);
 
   useEffect(() => {
     if (!user) return;
 
-    const fetchOrders = async () => {
+    const fetchOrdersWithProducts = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/order?userId=${user.id}`, {
           credentials: 'include',
         });
-        const data = await res.json();
-        setOrders(data);
+        const rawOrders = await res.json();
+
+        // 각 주문의 각 상품을 fetch해서 추가 정보 붙이기
+        const enhancedOrders = await Promise.all(
+          rawOrders.map(async (order) => {
+            const itemsWithProduct = await Promise.all(
+              order.items.map(async (item) => {
+                try {
+                  const productRes = await fetch(
+                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/${item.productId}`,
+                    { credentials: 'include' }
+                  );
+                  const product = await productRes.json();
+                  return { ...item, product };
+                } catch (e) {
+                  console.error('❗ 상품 정보 불러오기 실패:', item.productId);
+                  return { ...item, product: null };
+                }
+              })
+            );
+
+            return { ...order, items: itemsWithProduct };
+          })
+        );
+
+        setOrders(enhancedOrders);
       } catch (err) {
         console.error('❗ 주문 불러오기 실패:', err);
       }
     };
 
-    fetchOrders();
+    fetchOrdersWithProducts();
   }, [user]);
 
-  if (!user) return <div className="p-6">로그인 정보를 확인 중입니다...</div>;
-  if (!orders.length) return <div className="p-6">주문 내역이 없습니다.</div>;
+  if (!user) return <div className="p-6 text-center">로그인 정보를 확인 중입니다...</div>;
+  if (!orders.length) return <div className="p-6 text-center">주문 내역이 없습니다.</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">🧾 내 주문 내역</h1>
-      <ul className="space-y-6">
-        {orders.map((order, idx) => (
-          <li key={idx} className="border rounded-lg p-4 shadow-sm">
-            <div className="flex justify-between mb-2">
-              <span className="font-semibold">주문번호: {idx + 1}</span>
-              <span className="text-sm text-gray-500">{order.status}</span>
-            </div>
-            <p className="mb-2 text-sm text-gray-600">
-              총 결제 금액: <strong>{order.totalAmount.toLocaleString()}원</strong>
-            </p>
-            <ul className="pl-4 text-sm text-gray-700 list-disc">
-              {order.items.map((item, i) => (
-                <li key={i}>
-                  {item.productName} - {item.quantity}개 ({item.price.toLocaleString()}원)
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
+      <table className="w-full text-sm border-collapse">
+        <thead>
+          <tr className="bg-gray-100 text-center">
+            <th className="border px-2 py-2">주문번호</th>
+            <th className="border px-2 py-2">상품 이미지</th>
+            <th className="border px-2 py-2">상품명</th>
+            <th className="border px-2 py-2">수량</th>
+            <th className="border px-2 py-2">상품 총액</th>
+            <th className="border px-2 py-2">총 결제 금액</th>
+            <th className="border px-2 py-2">결제 상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders.map((order, orderIdx) =>
+            order.items.map((item, itemIdx) => {
+              const product = item.product;
+              const imageUrl =
+                product?.image?.startsWith('/images/')
+                  ? product.image
+                  : product?.image
+                  ? `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${product.image}`
+                  : '/images/product/default-product.png';
+
+              return (
+                <tr key={`${orderIdx}-${itemIdx}`} className="text-center">
+                  {itemIdx === 0 && (
+                    <td rowSpan={order.items.length} className="border px-2 py-2 font-medium bg-gray-50">
+                      {order.orderId || `#${orderIdx + 1}`}
+                    </td>
+                  )}
+                  <td className="border px-2 py-2">
+                    <img
+                      src={imageUrl}
+                      alt={product?.name || '상품'}
+                      className="w-16 h-16 object-cover mx-auto rounded"
+                      onError={(e) => {
+                        e.currentTarget.src = '/images/product/default-product.png';
+                      }}
+                    />
+                  </td>
+                  <td className="border px-2 py-2">{product?.name || item.productName}</td>
+                  <td className="border px-2 py-2">{item.quantity}</td>
+                  <td className="border px-2 py-2">
+                    {(item.quantity * (product?.price || item.price)).toLocaleString()}원
+                  </td>
+                  {itemIdx === 0 && (
+                    <>
+                      <td rowSpan={order.items.length} className="border px-2 py-2 font-bold text-black bg-gray-50">
+                        {order.totalAmount.toLocaleString()}원
+                      </td>
+                      <td rowSpan={order.items.length} className="border px-2 py-2 text-gray-600 bg-gray-50">
+                        {order.status}
+                      </td>
+                    </>
+                  )}
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

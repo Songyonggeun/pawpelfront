@@ -12,21 +12,23 @@ export default function CartPage() {
     fetchCart();
   }, []);
 
-  const fetchCart = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart`, {
-        credentials: 'include',
-      });
-      const data = await res.json();
-      setCart(data);
-      setSelectedItems(new Set(data.map(item => item.id)));
-    } catch (err) {
-      console.error("장바구니 불러오기 실패:", err);
-      alert("장바구니 정보를 불러오는 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchCart = async () => {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart`, {
+      credentials: 'include',
+    });
+    const data = await res.json();
+    console.log("✅ 불러온 장바구니 데이터:", data); // 로그 추가
+    setCart(data);
+    setSelectedItems(new Set(data.map(item => item.id)));
+  } catch (err) {
+    console.error("장바구니 불러오기 실패:", err);
+    alert("장바구니 정보를 불러오는 중 오류가 발생했습니다.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 🧾 결제 함수: 단일 항목
   const handleItemPayment = (item) => {
@@ -119,9 +121,12 @@ export default function CartPage() {
   const totalPrice = totalProductPrice + deliveryFee;
 
   const updateQuantity = (id, newQty) => {
-    setCart(prev => prev.map(item =>
-      item.id === id ? { ...item, quantity: newQty } : item
-    ));
+    if (newQty < 1) return; // 수량 1 미만 방지
+    setCart(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, quantity: newQty } : item
+      )
+    );
   };
 
   if (loading) return <div className="p-6">로딩 중...</div>;
@@ -179,7 +184,7 @@ export default function CartPage() {
                   </span>
                 </div>
                 <p className="text-lg font-bold text-black">
-                  {item.price.toLocaleString()}원
+                  {item.price.toLocaleString()}원 x {item.quantity ?? 1}
                 </p>
               </div>
               <div className="flex items-center gap-2">

@@ -12,6 +12,7 @@ export default function ProductDetailPage() {
   const [showCartModal, setShowCartModal] = useState(false);
   const [user, setUser] = useState(null);
 
+  // 상품 정보 불러오기
   useEffect(() => {
     if (!id) return;
 
@@ -25,7 +26,6 @@ export default function ProductDetailPage() {
           setProduct(json);
         } catch (err) {
           console.error('❗ JSON 파싱 실패. 응답 내용:', text);
-          throw new Error('JSON 파싱 실패');
         }
       })
       .catch((err) => {
@@ -34,16 +34,18 @@ export default function ProductDetailPage() {
       });
   }, [id]);
 
+  // 수량 제한
   useEffect(() => {
     if (product && quantity > product.quantity) {
       setQuantity(product.quantity);
     }
   }, [product]);
 
+  // 유저 정보 불러오기 (/user/info로 변경)
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/me`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
           credentials: 'include',
         });
         if (!res.ok) throw new Error('유저 정보 가져오기 실패');
@@ -75,19 +77,19 @@ export default function ProductDetailPage() {
 
       if (!response.ok) throw new Error('장바구니 추가 실패');
 
-      setShowCartModal(true); // 모달 열기
+      setShowCartModal(true);
     } catch (err) {
       console.error(err);
       alert('장바구니 담기 실패');
     }
   };
-  
+
   const handleBuyNow = () => {
     const orderId = 'order-' + new Date().getTime();
 
     const orderDto = {
       userId: user?.id || null,
-      totalAmount: totalPrice, // 실제 사용은 confirm에서 다시 설정됨
+      totalAmount: totalPrice,
       status: '결제대기',
       items: [
         {
@@ -99,7 +101,7 @@ export default function ProductDetailPage() {
       ],
     };
 
-    localStorage.setItem('pendingOrder', JSON.stringify(orderDto)); // ✅ 저장
+    localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
 
     const tossPayments = window.TossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
     tossPayments.requestPayment('카드', {
@@ -112,12 +114,10 @@ export default function ProductDetailPage() {
     });
   };
 
-
   if (!product) return <div className="p-6">로딩 중...</div>;
 
   return (
     <>
-
       <Script src="https://js.tosspayments.com/v1/payment" strategy="afterInteractive" />
 
       {/* 모달 */}
@@ -145,7 +145,7 @@ export default function ProductDetailPage() {
 
       {/* 본문 */}
       <div className="max-w-[1100px] mx-auto p-8 flex flex-col lg:flex-row">
-        {/* 이미지 영역 */}
+        {/* 이미지 */}
         <div className="w-full lg:w-1/2 flex justify-center">
           <div className="border border-gray-200 rounded-lg p-4">
             <img
@@ -165,34 +165,21 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* 정보 영역 */}
+        {/* 정보 */}
         <div className="w-full lg:w-1/2 space-y-4 pl-4">
           <p className="text-sm text-gray-500">{product.brand}</p>
           <h1 className="text-3xl font-bold">{product.name}</h1>
-
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span>⭐ {product.rating || 0}</span>
-            <span className="text-gray-600">({product.reviews || 0})</span>
+            <span>({product.reviews || 0})</span>
           </div>
-
           <div className="text-sm text-gray-400">
             <span>{product.discount}%</span>
-            <span className="ml-2 line-through">
-              {product.originalPrice.toLocaleString()}원
-            </span>
+            <span className="ml-2 line-through">{product.originalPrice.toLocaleString()}원</span>
           </div>
-
-          <p className="text-2xl font-bold text-black">
-            {product.price.toLocaleString()}원
-          </p>
-
-          <div className="text-sm text-gray-700">
-            배송비 3,000원 (35,000원 이상 무료배송)
-          </div>
-
-          <hr className="border-t border-gray-200 my-4" />
-
-          {/* 수량 선택 */}
+          <p className="text-2xl font-bold">{product.price.toLocaleString()}원</p>
+          <div className="text-sm text-gray-700">배송비 3,000원 (35,000원 이상 무료배송)</div>
+          <hr className="my-4" />
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">수량</span>
             <div className="flex items-center border border-gray-300 rounded overflow-hidden">
@@ -212,28 +199,15 @@ export default function ProductDetailPage() {
             </div>
             <p className="text-xs text-gray-500">재고: {product.quantity}개</p>
           </div>
-
-          {/* 총 가격 */}
-          <div className="text-xl font-bold text-right text-black">
-            총 가격: {totalPrice.toLocaleString()}원
-          </div>
-
-          {/* 버튼 영역 */}
+          <div className="text-xl font-bold text-right">총 가격: {totalPrice.toLocaleString()}원</div>
           <div className="flex gap-2 pt-4">
-            <button
-              onClick={addToCart}
-              className="flex-1 bg-gray-200 hover:bg-gray-300 text-sm py-2 rounded"
-            >
+            <button onClick={addToCart} className="flex-1 bg-gray-200 hover:bg-gray-300 text-sm py-2 rounded">
               🛒 장바구니
             </button>
-            <button
-              onClick={handleBuyNow}
-              className="flex-1 bg-black hover:bg-gray-800 text-white text-sm py-2 rounded"
-            >
+            <button onClick={handleBuyNow} className="flex-1 bg-black hover:bg-gray-800 text-white text-sm py-2 rounded">
               💳 바로구매
             </button>
           </div>
-
         </div>
       </div>
     </>
