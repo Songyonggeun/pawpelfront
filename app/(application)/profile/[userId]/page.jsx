@@ -8,28 +8,31 @@ export default function UserProfilePage() {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 5;
 
   useEffect(() => {
     fetch(
       `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/${userId}/profile`,
-      {
-        credentials: "include",
-      }
+      { credentials: "include" }
     )
       .then((res) => res.json())
       .then((data) => setUser(data));
 
     fetch(
       `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/user/id/${userId}`,
-      {
-        credentials: "include",
-      }
+      { credentials: "include" }
     )
       .then((res) => res.json())
       .then((data) => setPosts(data.content || []));
   }, [userId]);
 
   if (!user) return <div className="p-6">로딩 중...</div>;
+
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const currentPosts = posts.slice(startIndex, startIndex + postsPerPage);
 
   return (
     <div className="flex flex-col md:flex-row max-w-6xl mx-auto px-6 py-10">
@@ -52,10 +55,8 @@ export default function UserProfilePage() {
           </h2>
           <div className="text-sm text-gray-500">강아지 보호자</div>
           <div className="mt-2 text-sm">
-            작성한 글 {posts.length} | 댓글단 글 0
+            작성한 글 {posts.length}
           </div>
-          <div className="mt-4 text-sm text-left font-semibold">건강토픽</div>
-          <div className="mt-1 text-xs text-blue-500 font-medium">영양제</div>
         </div>
       </aside>
 
@@ -65,10 +66,10 @@ export default function UserProfilePage() {
           <button className="border-b-2 border-blue-500 font-semibold pb-2">
             작성한 글
           </button>
-          <button className="text-gray-400 pb-2">댓글단 글</button>
         </div>
+
         <div className="space-y-6">
-          {posts.map((post) => {
+          {currentPosts.map((post) => {
             const formattedContent = post.content.replace(
               /<img([^>]*)>/g,
               '<img style="width:100px;height:100px;object-fit:cover;border-radius:8px;margin-right:8px;" $1>'
@@ -80,7 +81,6 @@ export default function UserProfilePage() {
                   {post.category}
                 </div>
 
-                {/* 게시글 제목 + 요약을 링크로 감싸기 */}
                 <Link
                   href={`/community/detail/${post.id}`}
                   className="block hover:underline"
@@ -106,6 +106,23 @@ export default function UserProfilePage() {
               </div>
             );
           })}
+        </div>
+
+        {/* 페이지네이션 버튼 */}
+        <div className="flex justify-center mt-6 gap-2">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i + 1}
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
         </div>
       </section>
     </div>
