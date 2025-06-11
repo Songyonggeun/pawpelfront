@@ -259,7 +259,13 @@ export default function PetVaccineSection() {
                       <div className="flex items-center">
                         {pet.imageUrl ? (
                           <img
-                            src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
+                            src={
+                              pet.thumbnailUrl || pet.imageUrl
+                                ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                                    ? pet.thumbnailUrl || pet.imageUrl
+                                    : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                                : defaultImage
+                            }
                             alt={pet.petName}
                             className="w-24 h-24 rounded-full object-cover mr-4"
                           />
