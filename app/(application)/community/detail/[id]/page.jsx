@@ -113,7 +113,7 @@ export default function PostDetailPage() {
         );
         if (!res.ok) throw new Error();
         const user = await res.json();
-        setCurrentUserName(user.name);
+        setCurrentUserName(user.nickname);
       } catch {
         setCurrentUserName(null);
       }
@@ -167,6 +167,7 @@ export default function PostDetailPage() {
   /* ---------- 수정 / 삭제 ---------- */
   const handleEdit = () => router.push(`/community/edit/${id}`);
   const handleDelete = async () => {
+    
     if (!confirm("정말로 삭제하시겠습니까?")) return;
     try {
       const res = await fetch(
@@ -341,22 +342,23 @@ export default function PostDetailPage() {
             >
               목록으로
             </button>
-            {currentUserName === post.authorName && (
-              <>
-                <button
-                  onClick={handleEdit}
-                  className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white"
-                >
-                  수정
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white"
-                >
-                  삭제
-                </button>
-              </>
-            )}
+{currentUserName?.trim().toLowerCase() === post.authorName?.trim().toLowerCase() && (
+  <>
+    <button
+      onClick={handleEdit}
+      className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white"
+    >
+      수정
+    </button>
+    <button
+      onClick={handleDelete}
+      className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white"
+    >
+      삭제
+    </button>
+  </>
+)}
+
           </div>
         </div>
 
