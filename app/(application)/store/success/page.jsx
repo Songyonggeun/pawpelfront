@@ -19,7 +19,6 @@ export default function TossSuccessPage() {
         return;
       }
 
-      // ✅ 주문 상태 업데이트
       pendingOrder.status = '결제완료';
       pendingOrder.totalAmount = amount;
 
@@ -35,10 +34,16 @@ export default function TossSuccessPage() {
 
         if (!response.ok) throw new Error('주문 저장 실패');
 
-        const orderIdFromServer = await response.json();
+        // ✅ 장바구니 결제인 경우 장바구니 비우기
+        if (pendingOrder.items.length > 1) {
+          await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart/clear`, {
+            method: 'DELETE',
+            credentials: 'include',
+          });
+        }
 
-        localStorage.removeItem('pendingOrder'); // 성공적으로 저장 후 제거
-        router.replace(`/myPage/order`); // 주문 완료 페이지로 이동
+        localStorage.removeItem('pendingOrder');
+        router.replace(`/myPage/order`);
       } catch (err) {
         console.error('❗ 주문 저장 오류:', err);
         alert('결제는 완료되었으나 주문 정보 저장에 실패했습니다.');
