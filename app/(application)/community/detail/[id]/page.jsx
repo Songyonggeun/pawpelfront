@@ -444,7 +444,7 @@ export default function PostDetailPage() {
                 <div
                   key={item.id}
                   onClick={() =>
-                    item.id !== currentPostId &&
+                    item.id !== Number(id) &&
                     router.push(`/community/detail/${item.id}`)
                   }
                   className={`grid grid-cols-12 px-4 py-2 text-sm cursor-pointer transition-all
