@@ -223,9 +223,13 @@ export default function PostDetailPage() {
               <div className="flex items-center gap-2">
                 {post.authorThumbnailUrl || post.authorImageUrl ? (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
-                      post.authorThumbnailUrl || post.authorImageUrl
-                    }`}
+                    src={
+                      (post.authorThumbnailUrl || post.authorImageUrl).startsWith("/test/")
+                        ? post.authorThumbnailUrl || post.authorImageUrl // 프론트 public에서 가져옴
+                        : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                            post.authorThumbnailUrl || post.authorImageUrl
+                          }` 
+                    }
                     alt={post.authorName}
                     className="w-8 h-8 rounded-full object-cover border border-gray-300"
                   />
@@ -256,9 +260,13 @@ export default function PostDetailPage() {
             <div className="flex items-center gap-4">
               {post.pet?.thumbnailUrl || post.pet?.imageUrl ? (
                 <img
-                  src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
-                    post.pet.thumbnailUrl || post.pet.imageUrl
-                  }`}
+                  src={
+                    (post.pet.thumbnailUrl || post.pet.imageUrl).startsWith("/test/")
+                      ? post.pet.thumbnailUrl || post.pet.imageUrl 
+                      : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                          post.pet.thumbnailUrl || post.pet.imageUrl
+                        }`
+                  }
                   alt={post.pet.petName}
                   className="w-16 h-16 rounded-full object-cover"
                 />

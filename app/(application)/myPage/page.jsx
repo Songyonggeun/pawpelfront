@@ -77,7 +77,13 @@ export default function MyPage() {
           {userInfo.imageUrl ? (
             <div className="relative">
             <img
-              src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${userInfo.thumbnailUrl || userInfo.imageUrl}?t=${Date.now()}`}
+                src={
+                (userInfo.thumbnailUrl || userInfo.imageUrl)?.startsWith("/test/")
+                  ? `${userInfo.thumbnailUrl || userInfo.imageUrl}?t=${Date.now()}`
+                  : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                      userInfo.thumbnailUrl || userInfo.imageUrl
+                    }?t=${Date.now()}`
+              }
               alt="User Profile"
               className="w-20 h-20 rounded-full object-cover"
             />
@@ -194,8 +200,10 @@ export default function MyPage() {
                 <div className="w-24 h-24 rounded-full overflow-hidden bg-white flex items-center justify-center">
                   <img
                     src={
-                      pet.imageUrl
-                        ? `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`
+                      pet.thumbnailUrl || pet.imageUrl
+                        ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/test/")
+                            ? pet.thumbnailUrl || pet.imageUrl
+                            : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
                         : defaultImage
                     }
                     alt={pet.petName}
