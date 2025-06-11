@@ -220,7 +220,7 @@ export default function PetVaccineSection() {
             <MenuComponents
               data={[
                 { title: '회원 정보 수정', href: '/myPage/checkpw' },
-                { title: '주문내역', href: '/myPage/order' },
+                { title: '주문 내역', href: '/myPage/order' },
                 { title: '건강체크 기록', href: '/myPage/health' },
                 { title: '백신접종 기록', href: '/myPage/vaccine' },
                 { title: '상담 글', href: '/myPage/consult' },

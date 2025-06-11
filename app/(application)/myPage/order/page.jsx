@@ -97,7 +97,7 @@ const formatOrderDate = (datetimeStr) => {
 
   const menuItems = [
     { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '주문내역', href: '/myPage/order' },
+    { title: '주문 내역', href: '/myPage/order' },
     { title: '건강체크 기록', href: '/myPage/health' },
     { title: '백신접종 기록', href: '/myPage/vaccine' },
     { title: '상담 글', href: '/myPage/consult' },
@@ -119,7 +119,7 @@ const formatOrderDate = (datetimeStr) => {
 
       {/* 주문내역 테이블 */}
       <main className="flex-1 order-1 md:order-2 ml-0 md:-ml-6">
-        <h1 className="text-2xl font-bold mb-6 text-center">🧾 내 주문 내역</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">🧾 주문 내역</h1>
 
         {orders.length === 0 ? (
           <div className="p-6 text-center">주문 내역이 없습니다.</div>
