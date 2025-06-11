@@ -7,6 +7,7 @@ import HealthBanner from "@/components/(application)/healthBanner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
+import { Bell } from "lucide-react";
 
 export default function HeaderClient({ isLoggedIn, userRoles }) {
   const router = useRouter();
@@ -225,8 +226,11 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
               </div>
 
               <div className="relative">
-                <button onClick={() => setDropdownOpen((prev) => !prev)}>
-                  🔔
+                <button
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="relative text-gray-700 hover:text-blue-500 transition-colors"
+                >
+                  <Bell className="w-5 h-5" />
                   {notifications.length > 0 && (
                     <span className="absolute -top-1 -right-2 text-xs bg-red-500 text-white rounded-full px-1">
                       {notifications.length}
@@ -295,9 +299,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                                 e.stopPropagation();
                                 await markAsRead(n.id);
                               }}
-                            >
-                              
-                            </button>
+                            ></button>
                           </li>
                         ))}
                       </ul>

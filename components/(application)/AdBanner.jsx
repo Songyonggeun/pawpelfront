@@ -37,7 +37,7 @@ export default function AdBanner() {
         method: 'POST',
         credentials: 'include',
       });
-      setRevenue((prev) => prev + 10);
+      setRevenue((prev) => prev + 1000);
     } catch (err) {
       console.error('광고 클릭 처리 실패', err);
     } finally {
