@@ -58,4 +58,17 @@ button:not(:disabled) {
   animation: scale-in-out 1.5s ease-in-out infinite;
   display: inline-block;
   transform-origin: center;
+
+  /* globals.css */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 100, 100, 0.2);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
 }
