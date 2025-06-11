@@ -18,25 +18,18 @@ export default function TossSuccessPage() {
       method: 'POST',
       credentials: 'include',
     })
-      .then((res) => res.text()) // ✅ 중요: text로 출력
-  .then((data) => {
-    console.log("✅ 결제 승인 응답:", data);
-  })
-  .catch((err) => {
-    console.error("❌ 결제 승인 실패:", err);
-  });
-    //   .then((res) => {
-    //     if (!res.ok) throw new Error('결제 승인 실패');
-    //     return res.json();
-    //   })
-    //   .then((data) => {
-    //     console.log('✅ 결제 승인 성공:', data);
-    //     router.replace('/store/order'); // ✅ 주문 완료 페이지로 이동
-    //   })
-    //   .catch((err) => {
-    //     console.error('❌ 결제 승인 오류:', err);
-    //     alert('결제 승인에 실패했습니다.');
-    //   });
+      .then((res) => {
+        if (!res.ok) throw new Error('결제 승인 실패');
+        return res.json();
+      })
+      .then((data) => {
+        console.log('✅ 결제 승인 성공:', data);
+        router.replace('/myPage/order'); // ✅ 주문 완료 페이지로 이동
+      })
+      .catch((err) => {
+        console.error('❌ 결제 승인 오류:', err);
+        alert('결제 승인에 실패했습니다.');
+      });
   }, [paymentKey, orderId, amount]);
 
   return (
