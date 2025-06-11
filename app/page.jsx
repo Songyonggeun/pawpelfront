@@ -172,6 +172,7 @@ export default function LifetCommunityUI() {
                     src: img,
                   }));
                 })
+                .slice(0, 6) // 여기서 6개까지만 제한
                 .map((item) => (
                   <a
                     key={item.id}
