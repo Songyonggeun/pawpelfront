@@ -155,35 +155,20 @@ export default function CommentInput({ postId, onCommentAdded }) {
             onChange={handleChange}
             placeholder="댓글을 입력하세요..."
             rows={1}
-            className="w-full rounded-md border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none pr-10"
+            className="w-full rounded-md border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none pr-20"
           />
           <button
             type="submit"
             disabled={loading}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-transparent text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute bottom-3 right-1 px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 512 512"
-              width="24"
-              height="24"
-              fill="currentColor"
-              className="w-6 h-6"
-            >
-              <polygon
-                points="16,256 496,32 400,480 256,368 176,432 176,304 416,96 208,320 16,256"
-                stroke="black"
-                strokeWidth="32"
-                fill="none"
-                strokeLinejoin="round"
-              />
-            </svg>
+            작성
           </button>
 
           {mentionDropdown.visible && (
             <ul
               className="absolute z-50 bg-white border rounded shadow w-48"
-              style={{ top: "100%", left: "0px" }} // textarea 아래 고정
+              style={{ top: "100%", left: "0px" }}
             >
               {mentionDropdown.list.map((user) => (
                 <li
