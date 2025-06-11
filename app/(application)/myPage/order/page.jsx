@@ -134,13 +134,12 @@ const formatOrderDate = (datetimeStr) => {
                 <th className="border border-gray-300 px-2 py-2">수량</th>
                 <th className="border border-gray-300 px-2 py-2">상품 총액</th>
                 <th className="border border-gray-300 px-2 py-2">총 결제 금액</th>
-                <th className="border border-gray-300 px-2 py-2">결제 상태</th>
+                <th className="border border-gray-300 px-2 py-2">상태</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order, orderIdx) =>
                 order.items.map((item, itemIdx) => {
-                  console.log('📦 주문 데이터 확인:', order); 
                   const product = item.product;
                   const imageUrl =
                     product?.image?.startsWith('/images/')

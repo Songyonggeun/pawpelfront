@@ -84,35 +84,48 @@ export default function ProductDetailPage() {
     }
   };
 
-  const handleBuyNow = () => {
-    const orderId = 'order-' + new Date().getTime();
-
-    const orderDto = {
-      userId: user?.id || null,
-      totalAmount: totalPrice,
-      status: '결제대기',
-      items: [
-        {
-          productId: product.id,
-          productName: product.name,
-          quantity,
-          price: product.price,
+  const handleBuyNow = async () => {
+    try {
+      // 장바구니에 먼저 추가
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      ],
-    };
+        credentials: 'include',
+        body: JSON.stringify({
+          ...product,
+          quantity,
+        }),
+      });
 
-    localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
+      if (!response.ok) throw new Error('장바구니 추가 실패');
 
-    const tossPayments = window.TossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
-    tossPayments.requestPayment('카드', {
-      orderId,
-      orderName: product.name,
-      amount: totalPrice,
-      customerName: user?.name || '비회원',
-      successUrl: `http://localhost:3000/store/success?orderId=${orderId}&amount=${totalPrice}`,
-      failUrl: 'http://localhost:3000/store/fail',
-    });
+      // orderDto를 localStorage에 저장 (이건 유지)
+      const orderDto = {
+        userId: user?.id || null,
+        totalAmount: totalPrice,
+        status: '결제대기',
+        items: [
+          {
+            productId: product.id,
+            productName: product.name,
+            quantity,
+            price: product.price,
+          },
+        ],
+      };
+
+      localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
+
+      // ✅ checkout 페이지로 product ID를 쿼리로 넘김
+      router.push(`/store/checkout?id=${product.id}`);
+    } catch (err) {
+      console.error('❗ 바로구매 실패:', err);
+      alert('바로구매 중 오류가 발생했습니다.');
+    }
   };
+
 
   if (!product) return <div className="p-6">로딩 중...</div>;
 
