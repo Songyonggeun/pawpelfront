@@ -16,8 +16,9 @@ export default function CheckoutPage() {
   const [address1, setAddress1] = useState('');
   const [address2, setAddress2] = useState('');
   const [deliveryMemo, setDeliveryMemo] = useState('');
+  const [zonecode, setZonecode] = useState('');
 
-  const address = address1 + ' ' + address2;
+  const address = '(' + zonecode + ') ' + address1 + ' ' + address2;
 
   useEffect(() => {
     const stored = localStorage.getItem('pendingOrder');
@@ -80,6 +81,7 @@ export default function CheckoutPage() {
       recipientName,
       recipientPhone,
       address,
+      zonecode,
       deliveryMemo,
     };
 
@@ -99,8 +101,8 @@ export default function CheckoutPage() {
   const openPostcode = () => {
     new window.daum.Postcode({
       oncomplete: function (data) {
-        const selectedAddress = data.address;
-        setAddress1(selectedAddress);
+        setAddress1(data.address);
+        setZonecode(data.zonecode);  // 우편번호 저장
       },
     }).open();
   };
@@ -147,6 +149,18 @@ export default function CheckoutPage() {
         </div>
 
         {/* 주소 + [검색 버튼] */}
+        <div>
+          <label htmlFor="zonecode" className="block mb-1 text-sm font-medium text-gray-700">
+            우편번호
+          </label>
+          <input
+            id="zonecode"
+            type="text"
+            value={zonecode}
+            readOnly
+            className="border border-gray-400 p-2 rounded w-full"
+          />
+        </div>
         <div>
           <label htmlFor="address1" className="block mb-1 text-sm font-medium text-gray-700">
             주소

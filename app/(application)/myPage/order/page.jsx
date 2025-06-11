@@ -5,24 +5,26 @@ import { useEffect, useState } from 'react';
 export default function OrderListPage() {
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
 
   // 날짜 포맷 함수
-const formatOrderDate = (datetimeStr) => {
-  if (!datetimeStr) return '날짜 없음\n--:--';
+  const formatOrderDate = (datetimeStr) => {
+    if (!datetimeStr) return '날짜 없음\n--:--';
 
-  try {
-    // "25/06/12 00:53:51.158567000"
-    const [datePart, timePartWithMs] = datetimeStr.trim().split(' ');
-    const [yy, mm, dd] = datePart.split('/');
-    const fullYear = Number(yy) < 50 ? '20' + yy : '19' + yy;
+    try {
+      // "25/06/12 00:53:51.158567000"
+      const [datePart, timePartWithMs] = datetimeStr.trim().split(' ');
+      const [yy, mm, dd] = datePart.split('/');
+      const fullYear = Number(yy) < 50 ? '20' + yy : '19' + yy;
 
-    const [hh, mi] = timePartWithMs.split(':');
+      const [hh, mi] = timePartWithMs.split(':');
 
-    return `${fullYear}.${mm}.${dd}\n${hh}:${mi}`;
-  } catch (e) {
-    return '파싱 실패\n--:--';
-  }
-};
+      return `${fullYear}.${mm}.${dd}\n${hh}:${mi}`;
+    } catch (e) {
+      return '파싱 실패\n--:--';
+    }
+  };
 
 
   useEffect(() => {
@@ -176,7 +178,13 @@ const formatOrderDate = (datetimeStr) => {
                             rowSpan={order.items.length}
                             className="border border-gray-300 px-2 py-2 text-gray-600"
                           >
-                            {order.status}
+                            <button
+                              onClick={() => setSelectedOrder(order)}
+                              className="bg-gray-300 text-black px-2 py-1 rounded text-sm mb-2"
+                            >
+                              배송정보
+                            </button>
+                            <div>{order.status}</div>
                           </td>
                         </>
                       )}
@@ -188,6 +196,30 @@ const formatOrderDate = (datetimeStr) => {
           </table>
         )}
       </main>
+
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg w-[350px] p-6">
+            <h2 className="text-lg font-bold mb-4">📦 배송 정보</h2>
+            <ul className="space-y-2 text-sm">
+              <li><strong>이름:</strong> {selectedOrder.recipientName || '-'}</li>
+              <li><strong>연락처:</strong> {selectedOrder.recipientPhone || '-'}</li>
+              <li><strong>주소:</strong> {selectedOrder.address || '-'}</li>
+              <li><strong>배송메모:</strong> {selectedOrder.deliveryMemo || '-'}</li>
+              <li><strong>송장번호:</strong> {selectedOrder.trackingNumber || '-'}</li>
+            </ul>
+            <div className="mt-6 text-right">
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="px-4 py-2 bg-blue-500 text-white rounded"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }
