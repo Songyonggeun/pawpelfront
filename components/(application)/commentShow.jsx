@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import CommentLike from "./commentLike";
 import UserIcon from "../(icon)/userIcon";
+import Link from "next/link";
 
 export default function CommentShow({ postId }) {
   const [comments, setComments] = useState([]);
@@ -12,6 +13,8 @@ export default function CommentShow({ postId }) {
   const [replyTo, setReplyTo] = useState(null);
   const [replyContent, setReplyContent] = useState("");
   const [mentionUsers, setMentionUsers] = useState([]);
+  const [openProfileMenuId, setOpenProfileMenuId] = useState(null);
+  const profileMenuRef = useRef(null);
   const [mentionDropdown, setMentionDropdown] = useState({
     visible: false,
     list: [],
@@ -20,6 +23,21 @@ export default function CommentShow({ postId }) {
   });
 
   const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(e.target)
+      ) {
+        setOpenProfileMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     fetchComments();
@@ -246,19 +264,63 @@ export default function CommentShow({ postId }) {
   };
 
   const renderComment = (comment, parentUser = null, depth = 0) => {
-    console.log("내 아이디:", currentUser?.id, "댓글 작성자:", comment.userId);
     return (
       <div
         key={comment.id}
         className="pl-3 my-2 flex gap-2 items-start"
         style={{ marginLeft: depth * 4 }}
       >
-        <div className="flex-shrink-0">
-          <UserIcon />
+        <div className="flex-shrink-0 relative">
+          <div
+            onClick={() =>
+              setOpenProfileMenuId(
+                openProfileMenuId === comment.id ? null : comment.id
+              )
+            }
+            className="cursor-pointer"
+          >
+            <UserIcon />
+          </div>
+
+          {openProfileMenuId === comment.id && (
+            <div
+              ref={profileMenuRef}
+              className="absolute z-10 bg-white border border-gray-300 rounded shadow px-3 py-2 text-sm top-0 left-full ml-2 whitespace-nowrap w-fit space-y-1"
+            >
+              <Link
+                href={`/profile/${comment.userId}`}
+                className="block text-blue-600 hover:underline"
+                onClick={() => setOpenProfileMenuId(null)}
+              >
+                프로필 보기
+              </Link>
+              <button
+                onClick={() => {
+                  setOpenProfileMenuId(null);
+                  alert(`"${comment.userName}"님을 차단했습니다.`);
+                  // 또는 차단 처리 API 호출 가능:
+                  // await fetch(`/api/block/${comment.userId}`, { method: "POST" })
+                }}
+                className="block text-red-500 hover:underline"
+              >
+                차단하기
+              </button>
+            </div>
+          )}
         </div>
+
         <div className="flex-1">
           <div className="flex justify-between text-xs text-gray-500 mb-1">
-            <span className="text-gray-700 font-medium">
+            <span
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setOpenProfileMenuId(
+                  openProfileMenuId === comment.id ? null : comment.id
+                );
+              }}
+              className="text-gray-700 font-medium hover:underline cursor-pointer"
+            >
               {comment.userName}
             </span>
             <span>{formatDate(comment.createdAt)}</span>
@@ -305,18 +367,30 @@ export default function CommentShow({ postId }) {
                 )}
                 {highlightMentions(comment.content)}
               </p>
-<div className="mt-1 flex gap-2 text-sm">
-  <button onClick={() => handleReply(comment.id)} className="text-blue-500">답글</button>
-  {Number(currentUser?.id) === Number(comment.userId) && (
-    <>
-      <button onClick={() => handleEdit(comment.id, comment.content)} className="text-gray-500">수정</button>
-      <button onClick={() => handleDelete(comment.id)} className="text-red-500">삭제</button>
-    </>
-  )}
-</div>
-
-
-
+              <div className="mt-1 flex gap-2 text-sm">
+                <button
+                  onClick={() => handleReply(comment.id)}
+                  className="text-blue-500"
+                >
+                  답글
+                </button>
+                {Number(currentUser?.id) === Number(comment.userId) && (
+                  <>
+                    <button
+                      onClick={() => handleEdit(comment.id, comment.content)}
+                      className="text-gray-500"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={() => handleDelete(comment.id)}
+                      className="text-red-500"
+                    >
+                      삭제
+                    </button>
+                  </>
+                )}
+              </div>
             </>
           )}
 
@@ -378,4 +452,3 @@ export default function CommentShow({ postId }) {
     </div>
   );
 }
-

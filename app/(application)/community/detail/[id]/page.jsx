@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import CommentInput from "@/components/(Inputs)/commentInput";
@@ -22,6 +22,9 @@ export default function PostDetailPage() {
   const [nextPost, setNextPost] = useState(null);
   const [allPosts, setAllPosts] = useState([]);
   const [relatedPopularPosts, setRelatedPopularPosts] = useState([]);
+  const [openProfileMenuId, setOpenProfileMenuId] = useState(null);
+  const profileMenuRef = useRef(null);
+
 
   //페이지네이션
   const [currentPage, setCurrentPage] = useState(0);
@@ -54,6 +57,7 @@ export default function PostDetailPage() {
     (currentPage + 1) * pageSize
   );
 
+
   // 게시글
   useEffect(() => {
     if (!id) return;
@@ -71,6 +75,22 @@ export default function PostDetailPage() {
       }
     })();
   }, [id]);
+
+    //외부클릭시 나오도록
+  useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (
+      profileMenuRef.current &&
+      !profileMenuRef.current.contains(e.target)
+    ) {
+      setOpenProfileMenuId(null);
+    }
+  };
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
 
   /* ---------- 이전·다음 글 ---------- */
   useEffect(() => {
@@ -214,44 +234,65 @@ export default function PostDetailPage() {
           {post.title}
         </h1>
 
-        
+
         {/* 작성자 + 펫 정보 */}
         <div className="flex justify-between text-sm text-gray-600 mb-4">
-          <div className="flex items-center gap-3">
-            {post.pet && (
-              <Link
-                href={`/profile/${post.authorId}`}
-                className="flex items-center gap-2"
-              >
-                {post.authorThumbnailUrl || post.authorImageUrl ? (
-                  <img
-                    src={
-                      (
-                        post.authorThumbnailUrl || post.authorImageUrl
-                      ).startsWith("/images/profile/")
-                        ? post.authorThumbnailUrl || post.authorImageUrl
-                        : `${
-                            process.env.NEXT_PUBLIC_SPRING_SERVER_URL
-                          }/uploads${
-                            post.authorThumbnailUrl || post.authorImageUrl
-                          }`
-                    }
-                    alt={post.authorName}
-                    className="w-8 h-8 rounded-full object-cover border border-gray-300 cursor-pointer"
-                  />
-                ) : (
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300 text-gray-400 cursor-pointer">
-                    🐾
-                  </div>
-                )}
-              </Link>
-            )}
-            <Link href={`/profile/${post.authorId}`}>
-              <span className="font-medium hover:underline cursor-pointer">
-                {post.authorName}
-              </span>
-            </Link>
-          </div>
+ <div className="flex items-center gap-3 relative">
+  <div
+    onClick={() =>
+      setOpenProfileMenuId(
+        openProfileMenuId === post.authorId ? null : post.authorId
+      )
+    }
+    className="cursor-pointer flex items-center gap-2"
+  >
+    {post.authorThumbnailUrl || post.authorImageUrl ? (
+      <img
+        src={
+          (
+            post.authorThumbnailUrl || post.authorImageUrl
+          ).startsWith("/images/profile/")
+            ? post.authorThumbnailUrl || post.authorImageUrl
+            : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                post.authorThumbnailUrl || post.authorImageUrl
+              }`
+        }
+        alt={post.authorName}
+        className="w-8 h-8 rounded-full object-cover border border-gray-300"
+      />
+    ) : (
+      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300 text-gray-400">
+        🐾
+      </div>
+    )}
+    <span className="font-medium hover:underline">{post.authorName}</span>
+  </div>
+
+  {openProfileMenuId === post.authorId && (
+    <div
+      ref={profileMenuRef}
+      className="absolute z-10 bg-white border border-gray-300 rounded shadow px-3 py-2 text-sm top-10 left-0 whitespace-nowrap"
+    >
+      <Link
+        href={`/profile/${post.authorId}`}
+        className="block text-blue-600 hover:underline"
+        onClick={() => setOpenProfileMenuId(null)}
+      >
+        프로필 보기
+      </Link>
+      <button
+        onClick={() => {
+          setOpenProfileMenuId(null);
+          alert(`"${post.authorName}"님을 차단했습니다.`);
+        }}
+        className="block text-red-500 hover:underline mt-1"
+      >
+        차단하기
+      </button>
+    </div>
+  )}
+</div>
+
           <div className="flex flex-wrap items-center gap-x-2 text-right">
             <span>조회수 {post.viewCount || 0}</span>
             <span>|</span>
