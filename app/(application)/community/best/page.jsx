@@ -1,17 +1,79 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 
 export default function PopularPage() {
   const [popularPosts, setPopularPosts] = useState([]);
-  const [totalElements, setTotalElements] = useState(0);
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchField, setSearchField] = useState("title");
+  const [inputValue, setInputValue] = useState("");
+
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const postsPerPage = 10;
 
   const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
 
-  // 작성일 기준 1일 이내면 NEW 표시
+  useEffect(() => {
+    if (!baseUrl) return;
+
+    const fetchPopularPosts = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/posts/popular/views?size=1000`, {
+          credentials: "include",
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        setPopularPosts(data.content || []);
+      } catch (error) {
+        console.error("인기글 불러오기 실패:", error);
+      }
+    };
+
+    fetchPopularPosts();
+  }, [baseUrl]);
+
+  // 검색 필터 처리
+  useEffect(() => {
+    let filtered = [...popularPosts];
+    const q = searchQuery.trim().toLowerCase();
+
+    if (q) {
+      filtered = popularPosts.filter((post) => {
+        if (searchField === "title") {
+          return post.title?.toLowerCase().includes(q);
+        } else if (searchField === "content") {
+          return post.content?.toLowerCase().includes(q);
+        } else if (searchField === "authorName") {
+          return post.authorName?.toLowerCase().includes(q);
+        }
+        return true;
+      });
+    }
+
+    setFilteredPosts(filtered);
+    setCurrentPage(0); // 검색 시 첫 페이지로 초기화
+  }, [searchQuery, searchField, popularPosts]);
+
+  const handleSearch = () => {
+    setSearchQuery(inputValue);
+  };
+
+  const paginatedPosts = filteredPosts.slice(
+    currentPage * postsPerPage,
+    (currentPage + 1) * postsPerPage
+  );
+
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+  const extractFirstImageSrc = (html) => {
+    if (!html) return null;
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    const img = div.querySelector("img");
+    return img ? img.src : null;
+  };
+
   const isNewPost = (createdAt) => {
     const postDate = new Date(createdAt);
     const currentDate = new Date();
@@ -20,144 +82,53 @@ export default function PopularPage() {
     return diffInDays <= 1;
   };
 
-  useEffect(() => {
-    if (!baseUrl) return;
-
-    const fetchPopularPosts = async () => {
-      try {
-        const response = await fetch(
-          `${baseUrl}/posts/popular/views?page=${page}&size=10`,
-          { credentials: "include" }
-        );
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        setPopularPosts(data.content || []);
-        setTotalPages(data.totalPages || 0);
-        setTotalElements(data.totalElements || 0);
-      } catch (error) {
-        console.error("인기글 불러오기 실패:", error);
-      }
-    };
-
-    fetchPopularPosts();
-  }, [page, baseUrl]);
-
-  // 게시글 읽음 상태 PATCH 호출 후 로컬 상태 업데이트
-  const markPostAsRead = async (postId) => {
-    try {
-      const response = await fetch(
-        `${baseUrl}/posts/${postId}/mark-as-read`,
-        { method: "PATCH", credentials: "include" }
-      );
-      if (!response.ok)
-        throw new Error(`HTTP error! status: ${response.status}`);
-      setPopularPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post.id === postId ? { ...post, isRead: true } : post
-        )
-      );
-    } catch (error) {
-      console.error("게시글 읽음 상태 업데이트 실패:", error);
-    }
-  };
-
-  // html 컨텐츠에서 첫번째 이미지 src 추출
-  function extractFirstImageSrc(html) {
-    if (!html) return null;
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    const img = div.querySelector("img");
-    return img ? img.src : null;
-  }
-
-  // 상대 날짜 표시 함수 (오늘, n일 전, n주 전, n달 전)
-  function formatDateRelative(dateString) {
+  const formatDateRelative = (dateString) => {
     const createdDate = new Date(dateString);
     const now = new Date();
-
     const diffInDays = Math.floor(
       (new Date(now.getFullYear(), now.getMonth(), now.getDate()) -
-        new Date(
-          createdDate.getFullYear(),
-          createdDate.getMonth(),
-          createdDate.getDate()
-        )) /
+        new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate())) /
         (1000 * 60 * 60 * 24)
     );
-
     if (diffInDays === 0) return "오늘";
     if (diffInDays < 7) return `${diffInDays}일 전`;
     if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}주 전`;
     return `${Math.floor(diffInDays / 30)}달 전`;
-  }
+  };
 
   return (
     <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
       <div className="max-w-[1300px] mx-auto pt-10 px-4">
-        <div className="flex flex-col gap-8 overflow-visible">
-          <main className="flex-1 min-w-0">
-            <h2 style={{ fontSize: "18px" }} className="font-bold mb-4">
-              인기글 ({totalElements}건)
-            </h2>
+        <main className="flex-1 min-w-0">
+          <h2 className="font-bold mb-4 text-lg">인기글 ({filteredPosts.length}건)</h2>
 
-            <div className="divide-y divide-gray-200 mt-0">
-              {popularPosts.length === 0 && (
-                <p className="text-center text-gray-500 py-10">
-                  인기글이 없습니다.
-                </p>
-              )}
-
-              {popularPosts.map((post) => {
+          {paginatedPosts.length === 0 ? (
+            <p className="text-center text-gray-500 py-10">인기글이 없습니다.</p>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {paginatedPosts.map((post) => {
                 const thumbnail = extractFirstImageSrc(post.content);
-
                 const tempDiv = document.createElement("div");
                 tempDiv.innerHTML = post.content;
                 tempDiv.querySelectorAll("img").forEach((img) => img.remove());
-                const textContent =
-                  tempDiv.textContent || tempDiv.innerText || "";
+                const textContent = tempDiv.textContent || tempDiv.innerText || "";
 
                 return (
                   <div
                     key={post.id}
-                    onClick={() => {
-                      markPostAsRead(post.id);
-                      window.location.href = `/community/detail/${post.id}`;
-                    }}
+                    onClick={() => (window.location.href = `/community/detail/${post.id}`)}
                     className="relative py-4 pr-48 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
-                    role="link"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        markPostAsRead(post.id);
-                        window.location.href = `/community/detail/${post.id}`;
-                      }
-                    }}
                   >
                     {thumbnail && (
                       <div className="absolute top-2 right-4 w-32 h-20 rounded-md overflow-hidden border border-gray-200">
-                        <img
-                          src={thumbnail}
-                          alt="썸네일"
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={thumbnail} alt="썸네일" className="w-full h-full object-cover" />
                       </div>
                     )}
-
                     <div className="flex items-center gap-2 mb-1">
                       {post.category && (
-                        <span className="text-sm text-gray-600 font-semibold">
-                          [{post.category}]
-                        </span>
+                        <span className="text-sm text-gray-600 font-semibold">[{post.category}]</span>
                       )}
-
-                      <div
-                        className={`text-sm md:text-base flex-1 truncate ${
-                          post.isRead
-                            ? "text-gray-500 font-normal"
-                            : "text-black font-bold"
-                        }`}
-                      >
+                      <div className="text-sm md:text-base flex-1 truncate font-bold text-black">
                         {post.title}
                         {post.commentCount > 0 && (
                           <>
@@ -173,11 +144,7 @@ export default function PopularPage() {
                         )}
                       </div>
                     </div>
-
-                    <div className="text-sm text-gray-700 line-clamp-2">
-                      {textContent}
-                    </div>
-
+                    <div className="text-sm text-gray-700 line-clamp-2">{textContent}</div>
                     <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-2">
                       <span>{post.authorName}</span>
                       <span>· {formatDateRelative(post.createdAt)}</span>
@@ -189,40 +156,63 @@ export default function PopularPage() {
                 );
               })}
             </div>
+          )}
 
-            {/* 페이지네이션 */}
-            <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
+          {/* 페이지네이션 */}
+          <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
+            <button
+              className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+              disabled={currentPage === 0}
+            >
+              &lt;
+            </button>
+            {Array.from({ length: totalPages }).map((_, idx) => (
               <button
-                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
-                onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                disabled={page === 0}
-                aria-label="이전 페이지"
+                key={idx}
+                onClick={() => setCurrentPage(idx)}
+                className={`px-3 py-1 rounded ${
+                  currentPage === idx ? "bg-blue-600 text-white" : "bg-gray-200"
+                }`}
               >
-                &lt;
+                {idx + 1}
               </button>
-              {Array.from({ length: totalPages }).map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setPage(idx)}
-                  className={`px-3 py-1 rounded ${
-                    page === idx ? "bg-blue-600 text-white" : "bg-gray-200"
-                  }`}
-                  aria-current={page === idx ? "page" : undefined}
-                >
-                  {idx + 1}
-                </button>
-              ))}
-              <button
-                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages - 1))}
-                disabled={page === totalPages - 1 || totalPages === 0}
-                aria-label="다음 페이지"
-              >
-                &gt;
-              </button>
-            </div>
-          </main>
-        </div>
+            ))}
+            <button
+              className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+              disabled={currentPage >= totalPages - 1}
+            >
+              &gt;
+            </button>
+          </div>
+                    <div className="mb-4 flex justify-center gap-2">
+            <select
+              value={searchField}
+              onChange={(e) => setSearchField(e.target.value)}
+              className="border border-gray-300 rounded-md px-3 py-2"
+            >
+              <option value="title">제목</option>
+              <option value="content">내용</option>
+              <option value="authorName">작성자</option>
+            </select>
+
+            <input
+              type="text"
+              placeholder="검색어를 입력하세요"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-md"
+            />
+
+            <button
+              onClick={handleSearch}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              검색
+            </button>
+          </div>
+        </main>
       </div>
     </div>
   );

@@ -10,6 +10,11 @@ export default function DailyPage() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
+  const [searchField, setSearchField] = useState("title");
+  const [inputValue, setInputValue] = useState("");
+  const [searchApplied, setSearchApplied] = useState("");
+  const [fieldApplied, setFieldApplied] = useState("title");
+
   const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
 
   const categoryToUrl = {
@@ -27,6 +32,31 @@ export default function DailyPage() {
     const diffInDays = diffInTime / (1000 * 3600 * 24);
     return diffInDays <= 1;
   };
+
+  // 검색 버튼 클릭 시 필터링 조건 적용
+  const handleSearch = () => {
+    setSearchApplied(inputValue.trim().toLowerCase());
+    setFieldApplied(searchField);
+    setPage(0); // 검색 시 1페이지로 초기화
+  };
+
+  // 클라이언트 필터링 적용
+  const filteredPosts = posts.filter((post) => {
+    if (!searchApplied) return true;
+
+    if (fieldApplied === "title") {
+      return post.title.toLowerCase().includes(searchApplied);
+    } else if (fieldApplied === "content") {
+      // HTML 태그 제거 후 검색
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = post.content;
+      const textContent = tempDiv.textContent || tempDiv.innerText || "";
+      return textContent.toLowerCase().includes(searchApplied);
+    } else if (fieldApplied === "authorName") {
+      return post.authorName.toLowerCase().includes(searchApplied);
+    }
+    return true;
+  });
 
   useEffect(() => {
     if (!baseUrl) return;
@@ -70,28 +100,25 @@ export default function DailyPage() {
     fetchPopularPosts();
   }, [baseUrl]);
 
-  const markPostAsRead = async (postId) => {
-    try {
-      const response = await fetch(
-        `${baseUrl}/posts/${postId}/mark-as-read`,
-        { method: "PATCH", credentials: "include" }
-      );
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      setPosts((prevPosts) =>
-        prevPosts.map((post) => (post.id === postId ? { ...post, isRead: true } : post))
-      );
-    } catch (error) {
-      console.error("게시글 읽음 상태 업데이트 실패:", error);
-    }
-  };
-
-  function extractFirstImageSrc(html) {
-    if (!html) return null;
+  // 썸네일 추출 함수 (content 내 첫 이미지 src)
+  const extractFirstImageSrc = (htmlString) => {
     const div = document.createElement("div");
-    div.innerHTML = html;
+    div.innerHTML = htmlString;
     const img = div.querySelector("img");
     return img ? img.src : null;
-  }
+  };
+
+  // 게시글 읽음 표시(간단히 localStorage에 저장하는 예)
+  const markPostAsRead = (postId) => {
+    const readPosts = JSON.parse(localStorage.getItem("readPosts") || "[]");
+    if (!readPosts.includes(postId)) {
+      readPosts.push(postId);
+      localStorage.setItem("readPosts", JSON.stringify(readPosts));
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, isRead: true } : p))
+      );
+    }
+  };
 
   return (
     <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
@@ -101,8 +128,13 @@ export default function DailyPage() {
             <h2 style={{ fontSize: "18px" }} className="font-bold mb-4">
               일상글 ({totalElements}건)
             </h2>
+
+            {/* 게시글 리스트 (필터링된 posts 렌더링) */}
             <div className="divide-y divide-gray-200 mt-0">
-              {posts.map((post) => {
+              {filteredPosts.length === 0 && (
+                <p className="py-10 text-center text-gray-500">검색 결과가 없습니다.</p>
+              )}
+              {filteredPosts.map((post) => {
                 const thumbnail = extractFirstImageSrc(post.content);
                 const tempDiv = document.createElement("div");
                 tempDiv.innerHTML = post.content;
@@ -131,7 +163,10 @@ export default function DailyPage() {
                     <div className="flex items-center gap-2 mb-1">
                       {post.category && (
                         <Link
-                          href={categoryToUrl[post.category] || `/community/category/${encodeURIComponent(post.category)}`}
+                          href={
+                            categoryToUrl[post.category] ||
+                            `/community/category/${encodeURIComponent(post.category)}`
+                          }
                           onClick={(e) => e.stopPropagation()}
                           className="text-sm text-gray-600 font-semibold hover:underline"
                         >
@@ -140,8 +175,11 @@ export default function DailyPage() {
                       )}
 
                       <div
-                        className={`text-sm md:text-base flex-1 truncate ${post.isRead ? "text-gray-500 font-normal" : "text-black font-bold"
-                          }`}
+                        className={`text-sm md:text-base flex-1 truncate ${
+                          post.isRead
+                            ? "text-gray-500 font-normal"
+                            : "text-black font-bold"
+                        }`}
                       >
                         {post.title}
                         {post.commentCount > 0 && (
@@ -173,6 +211,7 @@ export default function DailyPage() {
               })}
             </div>
 
+            {/* 페이징 */}
             <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
               <button
                 className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
@@ -184,8 +223,9 @@ export default function DailyPage() {
               {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
                 <button
                   key={pageNumber}
-                  className={`px-3 py-1 rounded ${pageNumber === page ? "bg-blue-500 text-white" : "bg-gray-200"
-                    }`}
+                  className={`px-3 py-1 rounded ${
+                    pageNumber === page ? "bg-blue-500 text-white" : "bg-gray-200"
+                  }`}
                   onClick={() => setPage(pageNumber)}
                 >
                   {pageNumber + 1}
@@ -199,8 +239,40 @@ export default function DailyPage() {
                 &gt;
               </button>
             </div>
+            {/* 검색 UI */}
+            <div className="mb-4 flex justify-center gap-2">
+              <select
+                value={searchField}
+                onChange={(e) => setSearchField(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="title">제목</option>
+                <option value="content">내용</option>
+                <option value="authorName">작성자</option>
+              </select>
+
+              <input
+                type="text"
+                placeholder="검색어를 입력하세요"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch();
+                }}
+                style={{ width: "200px" }}
+                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+
+              <button
+                onClick={handleSearch}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+              >
+                검색
+              </button>
+            </div>
           </main>
 
+          {/* 인기글 */}
           <div className="hidden md:block md:w-[260px] md:pl-2">
             <aside className="sticky top-[110px] h-fit">
               <h3 className="text-base font-semibold text-gray-800 mb-3">🔥 인기글</h3>
@@ -218,11 +290,7 @@ export default function DailyPage() {
                         {post.title}
                       </span>
                     </Link>
-                    {post.commentCount > 0 && (
-                      <span className="ml-2 text-red-500 text-xs font-semibold">
-                        ({post.commentCount})
-                      </span>
-                    )}
+                    <span className="ml-2 text-gray-600 text-xs">조회수 {post.viewCount}</span>
                   </li>
                 ))}
               </ol>
@@ -234,19 +302,15 @@ export default function DailyPage() {
   );
 }
 
-// 날짜 표현 함수 재사용
+// 상대 날짜 포맷 (예: 2시간 전, 3일 전 등)
 function formatDateRelative(dateString) {
-  const createdDate = new Date(dateString);
+  const date = new Date(dateString);
   const now = new Date();
+  const diff = (now.getTime() - date.getTime()) / 1000;
 
-  const diffInDays = Math.floor(
-    (new Date(now.getFullYear(), now.getMonth(), now.getDate()) -
-      new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate())) /
-    (1000 * 60 * 60 * 24)
-  );
-
-  if (diffInDays === 0) return "오늘";
-  else if (diffInDays === 1) return "어제";
-  else if (diffInDays < 7) return `${diffInDays}일 전`;
-  else return createdDate.toLocaleDateString();
+  if (diff < 60) return "방금 전";
+  if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}일 전`;
+  return date.toLocaleDateString();
 }

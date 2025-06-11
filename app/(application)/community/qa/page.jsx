@@ -14,6 +14,13 @@ export default function QnaPage() {
   const [popularPage, setPopularPage] = useState(0);
   const [popularTotalPages, setPopularTotalPages] = useState(0);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  // 추가 상태
+  const [searchField, setSearchField] = useState("title"); // 제목(title), 내용(content), 작성자(authorName)
+  const [inputValue, setInputValue] = useState("");
+  const [searchApplied, setSearchApplied] = useState(""); // 실제 필터링에 적용된 검색어
+  const [fieldApplied, setFieldApplied] = useState("title"); // 실제 필터링에 적용된 필드
+
   const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
 
   // 날짜가 1일 이내면 "new" 배지 표시
@@ -24,6 +31,26 @@ export default function QnaPage() {
     const diffInDays = diffInTime / (1000 * 3600 * 24);
     return diffInDays <= 1;
   };
+
+  // 검색 버튼 클릭 핸들러
+  const handleSearch = () => {
+    setSearchApplied(inputValue.trim().toLowerCase());
+    setFieldApplied(searchField);
+  };
+
+  // 필터링 로직 수정
+  const filteredPosts = posts.filter((post) => {
+    if (!searchApplied) return true; // 검색어 없으면 전체 노출
+
+    if (fieldApplied === "title") {
+      return post.title.toLowerCase().includes(searchApplied);
+    } else if (fieldApplied === "content") {
+      return post.content.toLowerCase().includes(searchApplied);
+    } else if (fieldApplied === "authorName") {
+      return post.authorName.toLowerCase().includes(searchApplied);
+    }
+    return true;
+  });
 
   useEffect(() => {
     if (!baseUrl) return;
@@ -135,8 +162,37 @@ export default function QnaPage() {
               질문과 답변 ({totalElements}건)
             </h2>
 
+            {/* 검색 UI */}
+            <div className="mb-4 flex justify-center gap-2">
+              <select
+                value={searchField}
+                onChange={(e) => setSearchField(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="title">제목</option>
+                <option value="content">내용</option>
+                <option value="authorName">작성자</option>
+              </select>
+
+              <input
+                type="text"
+                placeholder="검색어를 입력하세요"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                style={{ width: "200px" }}
+                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+
+              <button
+                onClick={handleSearch}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+              >
+                검색
+              </button>
+            </div>
+
             <div className="divide-y divide-gray-200 mt-0">
-              {posts.map((post) => {
+              {filteredPosts.map((post) => {
                 const thumbnail = extractFirstImageSrc(post.content);
                 const textContent = extractTextContent(post.content);
 
@@ -165,9 +221,7 @@ export default function QnaPage() {
                         <Link
                           href={
                             categoryToUrl[post.category] ||
-                            `/community/category/${encodeURIComponent(
-                              post.category
-                            )}`
+                            `/community/category/${encodeURIComponent(post.category)}`
                           }
                           onClick={(e) => e.stopPropagation()}
                           className="text-sm text-gray-600 font-semibold hover:underline"
@@ -250,66 +304,55 @@ export default function QnaPage() {
           </main>
 
           {/* 인기글 사이드바 */}
-          <div className="hidden md:block md:w-[260px] md:pl-4">
-            <aside className="sticky top-[110px] h-fit bg-white border rounded-md p-4 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">🔥 인기 Q&A</h3>
+          <aside
+            className="w-[320px] hidden md:block sticky top-[80px]"
+            style={{ height: "calc(100vh - 80px)", overflowY: "auto" }}
+          >
+            <h3 className="text-sm font-bold mb-3 border-b border-gray-300 pb-2">
+              인기글 (조회수)
+            </h3>
 
-              <ol className="space-y-1 text-sm text-gray-800 mb-4">
-                {popularPosts.map((post) => (
-                  <li
-                    key={post.id}
-                    className="flex items-center justify-between hover:bg-gray-100 px-2 py-1 rounded cursor-pointer"
-                    onClick={() => window.location.href = `/community/detail/${post.id}`}
-                  >
-                    <span className="flex-1 truncate group">
-                      <span className="text-gray-400 mr-1 text-xs">
-                        [{post.category || "기타"}]
-                      </span>
-                      <span className="group-hover:underline font-medium text-gray-900">
-                        {post.title}
-                      </span>
-                    </span>
-                    {post.commentCount > 0 && (
-                      <span className="ml-2 text-red-500 text-xs font-semibold">
-                        ({post.commentCount})
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ol>
+            <div>
+              {popularPosts.map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/community/detail/${post.id}`}
+                  className="block py-2 text-gray-600 hover:text-black truncate"
+                >
+                  {post.title}
+                </Link>
+              ))}
+            </div>
 
-              {/* 인기글 페이징 */}
-              <div className="flex justify-center gap-2 text-sm">
+            {/* 인기글 페이징 */}
+            <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
+              <button
+                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+                onClick={() => setPopularPage((prev) => Math.max(prev - 1, 0))}
+                disabled={popularPage === 0}
+              >
+                &lt;
+              </button>
+              {Array.from({ length: popularTotalPages }, (_, i) => i).map((pageNumber) => (
                 <button
-                  className="px-2 py-1 rounded bg-gray-200 disabled:opacity-50"
-                  onClick={() => setPopularPage((p) => Math.max(p - 1, 0))}
-                  disabled={popularPage === 0}
+                  key={pageNumber}
+                  className={`px-3 py-1 rounded ${
+                    pageNumber === popularPage ? "bg-blue-500 text-white" : "bg-gray-200"
+                  }`}
+                  onClick={() => setPopularPage(pageNumber)}
                 >
-                  &lt;
+                  {pageNumber + 1}
                 </button>
-                {Array.from({ length: popularTotalPages }, (_, i) => i).map((num) => (
-                  <button
-                    key={num}
-                    className={`px-3 py-1 rounded ${
-                      num === popularPage ? "bg-blue-500 text-white" : "bg-gray-200"
-                    }`}
-                    onClick={() => setPopularPage(num)}
-                  >
-                    {num + 1}
-                  </button>
-                ))}
-                <button
-                  className="px-2 py-1 rounded bg-gray-200 disabled:opacity-50"
-                  onClick={() =>
-                    setPopularPage((p) => Math.min(p + 1, popularTotalPages - 1))
-                  }
-                  disabled={popularPage === popularTotalPages - 1}
-                >
-                  &gt;
-                </button>
-              </div>
-            </aside>
-          </div>
+              ))}
+              <button
+                className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
+                onClick={() => setPopularPage((prev) => Math.min(prev + 1, popularTotalPages - 1))}
+                disabled={popularPage === popularTotalPages - 1}
+              >
+                &gt;
+              </button>
+            </div>
+          </aside>
         </div>
       </div>
     </div>

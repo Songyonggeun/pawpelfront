@@ -13,9 +13,36 @@ export default function TopicPage() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
+  // 추가 상태
+  const [searchField, setSearchField] = useState("title"); // 제목(title), 내용(content), 작성자(authorName)
+  const [inputValue, setInputValue] = useState("");
+  const [searchApplied, setSearchApplied] = useState(""); // 실제 필터링에 적용된 검색어
+  const [fieldApplied, setFieldApplied] = useState("title"); // 실제 필터링에 적용된 
 
   const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
 
+  // 검색 버튼 클릭 핸들러
+  const handleSearch = () => {
+    setSearchApplied(inputValue.trim().toLowerCase());
+    setFieldApplied(searchField);
+  };
+
+  // 필터링 로직 수정
+  const filteredPosts = posts.filter((post) => {
+  if (!searchApplied) return true;
+
+  const lowerSearch = searchApplied.toLowerCase();
+
+  if (fieldApplied === "title") {
+    return post.title?.toLowerCase().includes(lowerSearch);
+  } else if (fieldApplied === "content") {
+    return post.content?.toLowerCase().includes(lowerSearch);
+  } else if (fieldApplied === "authorName") {
+    return post.authorName?.toLowerCase().includes(lowerSearch);
+  }
+  return true;
+});
   // 날짜가 1일 이내면 "new" 배지 표시
   const isNewPost = (createdAt) => {
     const postDate = new Date(createdAt);
@@ -282,6 +309,33 @@ export default function TopicPage() {
                 disabled={page === totalPages - 1}
               >
                 &gt;
+              </button>
+            </div>
+            <div className="mb-4 flex justify-center gap-2">
+              <select
+                value={searchField}
+                onChange={(e) => setSearchField(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              >
+                <option value="title">제목</option>
+                <option value="content">내용</option>
+                <option value="authorName">작성자</option>
+              </select>
+
+              <input
+                type="text"
+                placeholder="검색어를 입력하세요"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                style={{ width: '200px' }}
+                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+
+              <button
+                onClick={handleSearch}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+              >
+                검색
               </button>
             </div>
           </main>
