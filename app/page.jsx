@@ -97,7 +97,7 @@ export default function LifetCommunityUI() {
             </a>
 
             <a
-              href="/community/map"
+              href="/health/map"
               className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1"
             >
               <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold 
@@ -114,7 +114,7 @@ export default function LifetCommunityUI() {
               href="/community/total"
               className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1"
             >
-              <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold 
+              <div className="w-20 h-20 mx-auto bg-orange-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold 
                         hover:scale-90 hover:shadow-lg hover:text-pink-900 transition-all duration-300">
                 💬
               </div>
@@ -128,7 +128,7 @@ export default function LifetCommunityUI() {
               href="/store"
               className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1"
             >
-              <div className="w-20 h-20 mx-auto bg-orange-100 rounded-full flex items-center justify-center text-orange-500 text-3xl font-bold 
+              <div className="w-20 h-20 mx-auto bg-yellow-100 rounded-full flex items-center justify-center text-orange-500 text-3xl font-bold 
                         hover:scale-90 hover:shadow-lg hover:text-orange-900 transition-all duration-300">
                 🛒
               </div>
