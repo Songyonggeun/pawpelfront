@@ -276,7 +276,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                             key={n.id}
                             className="flex justify-between items-start gap-2 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                             onClick={async () => {
-                              g;
+                              ;
                               await markAsRead(n.id);
                               if (n.postId) {
                                 window.location.href = `/community/detail/${n.postId}`;
