@@ -81,28 +81,37 @@ export default function ProductDetailPage() {
       alert('장바구니 담기 실패');
     }
   };
-
+  
   const handleBuyNow = () => {
     const orderId = 'order-' + new Date().getTime();
-    const orderName = product.name;
-    const amount = totalPrice;
-    const customerName = user?.name || '비회원';
 
-    if (!window.TossPayments) {
-      alert('결제 모듈 로딩 실패');
-      return;
-    }
+    const orderDto = {
+      userId: user?.id || null,
+      totalAmount: totalPrice, // 실제 사용은 confirm에서 다시 설정됨
+      status: '결제대기',
+      items: [
+        {
+          productId: product.id,
+          productName: product.name,
+          quantity,
+          price: product.price,
+        },
+      ],
+    };
+
+    localStorage.setItem('pendingOrder', JSON.stringify(orderDto)); // ✅ 저장
 
     const tossPayments = window.TossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
     tossPayments.requestPayment('카드', {
       orderId,
-      orderName,
-      amount,
-      customerName,
-      successUrl: 'http://localhost:3000/store/success',
+      orderName: product.name,
+      amount: totalPrice,
+      customerName: user?.name || '비회원',
+      successUrl: `http://localhost:3000/store/success?orderId=${orderId}&amount=${totalPrice}`,
       failUrl: 'http://localhost:3000/store/fail',
     });
   };
+
 
   if (!product) return <div className="p-6">로딩 중...</div>;
 
