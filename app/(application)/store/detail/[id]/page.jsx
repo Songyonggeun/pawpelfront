@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Script from 'next/script';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [showCartModal, setShowCartModal] = useState(false); // 모달 상태
+  const [showCartModal, setShowCartModal] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -38,6 +40,23 @@ export default function ProductDetailPage() {
     }
   }, [product]);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/me`, {
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error('유저 정보 가져오기 실패');
+        const data = await res.json();
+        setUser(data);
+      } catch (err) {
+        console.error('❗ 유저 정보 요청 실패:', err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   const totalPrice = product?.price * quantity;
 
   const addToCart = async () => {
@@ -63,10 +82,35 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleBuyNow = () => {
+    const orderId = 'order-' + new Date().getTime();
+    const orderName = product.name;
+    const amount = totalPrice;
+    const customerName = user?.name || '비회원';
+
+    if (!window.TossPayments) {
+      alert('결제 모듈 로딩 실패');
+      return;
+    }
+
+    const tossPayments = window.TossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
+    tossPayments.requestPayment('카드', {
+      orderId,
+      orderName,
+      amount,
+      customerName,
+      successUrl: 'http://localhost:3000/store/toss/success',
+      failUrl: 'http://localhost:3000/store/toss/fail',
+    });
+  };
+
   if (!product) return <div className="p-6">로딩 중...</div>;
 
   return (
     <>
+
+      <Script src="https://js.tosspayments.com/v1/payment" strategy="afterInteractive" />
+
       {/* 모달 */}
       {showCartModal && (
         <div className="fixed inset-0 bg-opacity-40 flex items-center justify-center z-50">
@@ -173,10 +217,14 @@ export default function ProductDetailPage() {
             >
               🛒 장바구니
             </button>
-            <button className="flex-1 bg-black hover:bg-gray-800 text-white text-sm py-2 rounded">
+            <button
+              onClick={handleBuyNow}
+              className="flex-1 bg-black hover:bg-gray-800 text-white text-sm py-2 rounded"
+            >
               💳 바로구매
             </button>
           </div>
+
         </div>
       </div>
     </>

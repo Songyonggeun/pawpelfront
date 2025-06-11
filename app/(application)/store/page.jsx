@@ -11,23 +11,33 @@ export default function PetStorePage() {
 
   const categories = ["전체", "영양제", "사료", "간식", "용품"];
 
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products`);
-      const data = await response.json();
-      setProducts(data);
-    } catch (error) {
-      console.error("상품 목록 불러오기 실패:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products`);
+        const data = await response.json();
+
+        console.log("✅ 서버 응답:", data);
+
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else if (Array.isArray(data.products)) {
+          setProducts(data.products);
+        } else {
+          console.warn("❗ 예기치 않은 데이터 구조:", data);
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error("❌ 상품 목록 불러오기 실패:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchProducts();
   }, []);
 
-  // 현재 선택된 카테고리에 따른 필터링
   const filteredProducts = selectedCategory === "전체"
     ? products
     : products.filter((product) => product.category === selectedCategory);
@@ -61,18 +71,18 @@ export default function PetStorePage() {
             <Card key={product.id} className="rounded-xl overflow-hidden shadow-sm hover:shadow-md">
               <div className="relative bg-white p-4">
                 <Link href={`/store/detail/${product.id}`}>
-                <img
-                  src={
-                    product.image?.startsWith('/images/')
-                      ? product.image // 정적 이미지 (public 폴더)
-                      : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${product.image}` // 업로드 이미지
-                  }
-                  alt={product.name}
-                  className="w-full h-48 object-cover cursor-pointer"
-                  onError={(e) => {
-                    e.currentTarget.src = '/images/product/default-product.png';
-                  }}
-                />
+                  <img
+                    src={
+                      product.image?.startsWith('/images/')
+                        ? product.image
+                        : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${product.image}`
+                    }
+                    alt={product.name}
+                    className="w-full h-48 object-cover cursor-pointer"
+                    onError={(e) => {
+                      e.currentTarget.src = '/images/product/default-product.png';
+                    }}
+                  />
                 </Link>
                 <span className="absolute top-2 right-2 text-gray-400 text-xl">♡</span>
               </div>
@@ -96,14 +106,15 @@ export default function PetStorePage() {
                   {product.originalPrice.toLocaleString()}원
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {product.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-md"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                  {Array.isArray(product.tags) &&
+                    product.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-md"
+                      >
+                        {tag}
+                      </span>
+                    ))}
                 </div>
               </CardContent>
             </Card>
