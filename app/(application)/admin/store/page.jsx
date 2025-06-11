@@ -13,7 +13,7 @@ export default function StoreAdminPage() {
     name: '',
     brand: '',
     originalPrice: '',
-    discount: 0,
+    discount: '',
     image: null,
     tags: [],
     category: '',
@@ -39,7 +39,9 @@ export default function StoreAdminPage() {
 
   const calculatedPrice = () => {
     const price = parseInt(newProduct.originalPrice || '0', 10);
-    const discounted = price * (1 - newProduct.discount / 100);
+    const discountRate = parseFloat(newProduct.discount);
+    if (isNaN(discountRate)) return price;
+    const discounted = price * (1 - discountRate / 100);
     return Math.floor(discounted / 100) * 100;
   };
 
@@ -57,7 +59,7 @@ export default function StoreAdminPage() {
       name: newProduct.name,
       brand: newProduct.brand,
       originalPrice: parseInt(newProduct.originalPrice, 10),
-      discount: newProduct.discount,
+      discount: newProduct.discount === '' ? null : parseInt(newProduct.discount, 10),
       price: calculatedPrice(),
       tags,
       category: newProduct.category,
@@ -148,7 +150,7 @@ return (
             name: '',
             brand: '',
             originalPrice: '',
-            discount: 0,
+            discount: '',
             image: '',
             tags: [],
             category: '',
@@ -221,7 +223,7 @@ return (
 
       {/* 원가 */}
       <div className="flex items-center">
-        <label className="w-24 text-sm font-medium">원가</label>
+        <label className="w-24 text-sm font-medium">원가(원)</label>
         <input
           type="number"
           value={newProduct.originalPrice}
@@ -233,14 +235,14 @@ return (
 
       {/* 할인율 */}
       <div className="flex items-center">
-        <label className="w-24 text-sm font-medium">할인율</label>
+        <label className="w-24 text-sm font-medium">할인율(%)</label>
         <input
           type="number"
           min={0}
           max={100}
           value={newProduct.discount}
           onChange={(e) =>
-            setNewProduct({ ...newProduct, discount: parseInt(e.target.value) || 0 })
+            setNewProduct({ ...newProduct, discount: e.target.value })
           }
           className="flex-1 p-2 border border-gray-300 rounded"
           placeholder="예: 10"
@@ -249,7 +251,7 @@ return (
 
       {/* 할인가 */}
       <div className="flex items-center">
-        <label className="w-24 text-sm font-medium">할인가</label>
+        <label className="w-24 text-sm font-medium">할인가(원)</label>
         <input
           type="text"
           value={`${calculatedPrice()} 원`}
@@ -272,12 +274,23 @@ return (
       {/* 이미지 파일 업로드 */}
       <div className="flex items-center">
         <label className="w-24 text-sm font-medium">이미지</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setNewProduct({ ...newProduct, image: e.target.files?.[0] || null })}
-          className="flex-1 p-2 border border-gray-300 rounded"
-        />
+        <div className="flex-1">
+          <label
+            htmlFor="productImageUpload"
+            className="w-full block p-2 border border-gray-300 rounded cursor-pointer text-gray-700 bg-white hover:bg-gray-100"
+          >
+            {newProduct.image?.name || '이미지 선택'}
+          </label>
+          <input
+            id="productImageUpload"
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              setNewProduct({ ...newProduct, image: e.target.files?.[0] || null })
+            }
+            className="hidden"
+          />
+        </div>
       </div>
     </div>
 
@@ -332,22 +345,22 @@ return (
             <tr key={product.id} className="border-t border-gray-200">
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.id}</td>
               <td className="px-3 py-2 text-center whitespace-nowrap">{product.category}</td>
-<td className="px-3 py-2 text-center whitespace-nowrap">
-  <div className="flex justify-center items-center w-full h-full">
-    <img
-      src={
-        product.image?.startsWith('/images/product/') 
-          ? product.image 
-          : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${product.image}` 
-      }
-      alt={product.name}
-      className="w-16 h-16 object-cover rounded"
-      onError={(e) => {
-        e.currentTarget.src = '/images/product/default-product.png';
-      }}
-    />
-  </div>
-</td>
+              <td className="px-3 py-2 text-center whitespace-nowrap">
+                <div className="flex justify-center items-center w-full h-full">
+                  <img
+                    src={
+                      product.image?.startsWith('/images/product/') 
+                        ? product.image 
+                        : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${product.image}` 
+                    }
+                    alt={product.name}
+                    className="w-16 h-16 object-cover rounded"
+                    onError={(e) => {
+                      e.currentTarget.src = '/images/product/default-product.png';
+                    }}
+                  />
+                </div>
+              </td>
               <td className="px-3 py-2 text-center whitespace-nowrap">
                 <Link href={`/store/detail/${product.id}`} className="hover:underline">
                   {product.name}
