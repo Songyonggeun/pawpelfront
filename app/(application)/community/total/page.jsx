@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import AdBanner from '../../../../components/(application)/AdBanner';
+import AdBanner from "../../../../components/(application)/AdBanner";
 
 export default function TotalPage() {
   const [posts, setPosts] = useState([]);
@@ -10,7 +10,6 @@ export default function TotalPage() {
   const [totalElements, setTotalElements] = useState(0);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  
 
   const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
 
@@ -103,6 +102,21 @@ export default function TotalPage() {
     }
   };
 
+  //멘션댓글
+  const highlightMentions = (text) => {
+    const mentionRegex = /@(\w+)/g;
+    return text.split(mentionRegex).map((part, index) => {
+      if (index % 2 === 1) {
+        return (
+          <span key={index} className="text-blue-500 font-medium">
+            @{part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
   function extractFirstImageSrc(html) {
     if (!html) return null;
     const div = document.createElement("div");
@@ -118,7 +132,7 @@ export default function TotalPage() {
         <div className="flex flex-col md:flex-row gap-8 overflow-visible">
           {/* 메인 콘텐츠 */}
           <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
-          <AdBanner />
+            <AdBanner />
             <h2 style={{ fontSize: "18px" }} className="font-bold mb-4">
               전체글 ({totalElements}건)
             </h2>
@@ -175,27 +189,27 @@ export default function TotalPage() {
                             : "text-black font-bold"
                         }`}
                       >
-               {post.title}
+                        {post.title}
 
-  {/* 댓글 수 */}
-  {post.commentCount > 0 && (
-    <span className="ml-1 text-red-500 text-sm font-semibold">
-      ({post.commentCount})
-    </span>
-  )}
+                        {/* 댓글 수 */}
+                        {post.commentCount > 0 && (
+                          <span className="ml-1 text-red-500 text-sm font-semibold">
+                            ({post.commentCount})
+                          </span>
+                        )}
 
-  {/* NEW 뱃지 */}
-  {isNewPost(post.createdAt) && (
-    <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-sm px-2 py-0.5 animate-pulse relative -top-[2px]">
-      NEW
-    </span>
-  )}
-</div>
+                        {/* NEW 뱃지 */}
+                        {isNewPost(post.createdAt) && (
+                          <span className="ml-1 bg-blue-500 text-white text-xs font-semibold rounded-sm px-2 py-0.5 animate-pulse relative -top-[2px]">
+                            NEW
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* 본문 요약 */}
                     <div className="text-sm text-gray-700 line-clamp-2">
-                      {textContent}
+                      {highlightMentions(textContent)}
                     </div>
 
                     {/* 작성자 / 날짜 / 기타 */}

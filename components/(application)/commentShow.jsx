@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import CommentLike from './commentLike';
 import UserIcon from '../(icon)/userIcon';
 
@@ -11,10 +11,15 @@ export default function CommentShow({ postId }) {
   const [editContents, setEditContents] = useState({});
   const [replyTo, setReplyTo] = useState(null);
   const [replyContent, setReplyContent] = useState('');
+  const [mentionUsers, setMentionUsers] = useState([]);
+  const [mentionDropdown, setMentionDropdown] = useState({ visible: false, list: [], top: 0, left: 0 });
+
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     fetchComments();
     fetchCurrentUser();
+    fetchMentionUsers();
   }, [postId]);
 
   const fetchCurrentUser = async () => {
@@ -30,10 +35,19 @@ export default function CommentShow({ postId }) {
     }
   };
 
+  const fetchMentionUsers = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/mentionable`);
+      const data = await res.json();
+      setMentionUsers(data); // [{ id, nickname }]
+    } catch (err) {
+      console.error('멘션 사용자 불러오기 실패', err);
+    }
+  };
+
   const fetchComments = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/post/${postId}`);
-      if (!res.ok) throw new Error('댓글 불러오기 실패');
       const data = await res.json();
       const tree = buildCommentTree(data);
       setComments(tree);
@@ -67,6 +81,64 @@ export default function CommentShow({ postId }) {
     return roots;
   };
 
+  const handleReplyContentChange = (e) => {
+    const value = e.target.value;
+    setReplyContent(value);
+
+    const cursorPos = e.target.selectionStart;
+    const textUntilCursor = value.substring(0, cursorPos);
+    const match = textUntilCursor.match(/@(\w*)$/);
+
+    if (match) {
+      const keyword = match[1].toLowerCase();
+      const filtered = mentionUsers
+  .filter(user => user.nickname && user.nickname.toLowerCase().startsWith(keyword));
+
+
+      const { top, left } = e.target.getBoundingClientRect();
+      setMentionDropdown({ visible: true, list: filtered, top: top + 30, left: left + 10 });
+    } else {
+      setMentionDropdown({ ...mentionDropdown, visible: false });
+    }
+  };
+
+  const insertMention = (nickname) => {
+    const cursorPos = textareaRef.current.selectionStart;
+    const before = replyContent.substring(0, cursorPos).replace(/@(\w*)$/, `@${nickname} `);
+    const after = replyContent.substring(cursorPos);
+    setReplyContent(before + after);
+    setMentionDropdown({ ...mentionDropdown, visible: false });
+
+    setTimeout(() => {
+      textareaRef.current.focus();
+      textareaRef.current.selectionEnd = before.length;
+    }, 0);
+  };
+
+  const handleReply = (id) => {
+    setReplyTo(id);
+    setReplyContent('');
+  };
+
+  const handleSubmitReply = async (parentId) => {
+    if (!replyContent.trim()) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: replyContent, postId, parentId }),
+      });
+      if (!res.ok) throw new Error('댓글 등록 실패');
+      setReplyTo(null);
+      setReplyContent('');
+      fetchComments();
+    } catch (err) {
+      alert('댓글 등록 중 오류 발생');
+      console.error(err);
+    }
+  };
+
   const handleLike = async (commentId) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`, {
@@ -76,13 +148,9 @@ export default function CommentShow({ postId }) {
       if (!res.ok) throw new Error('좋아요 처리 실패');
       fetchComments();
     } catch (err) {
-      alert('좋아요 처리 중 오류가 발생했습니다.');
+      alert('좋아요 처리 중 오류');
       console.error(err);
     }
-  };
-
-  const handleChange = (id, value) => {
-    setEditContents((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleEdit = (id, content) => {
@@ -96,193 +164,122 @@ export default function CommentShow({ postId }) {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: editContents[id],
-          userId: userId,
-        }),
+        body: JSON.stringify({ content: editContents[id], userId }),
       });
-      if (!res.ok) throw new Error('댓글 수정 실패');
-      alert('댓글이 수정되었습니다.');
+      if (!res.ok) throw new Error('수정 실패');
+      alert('수정 완료');
       setEditingId(null);
       fetchComments();
     } catch (err) {
-      alert('댓글 수정 중 오류가 발생했습니다.');
+      alert('수정 중 오류');
       console.error(err);
     }
   };
 
-  const handleCancel = () => {
-    setEditingId(null);
-  };
-
   const handleDelete = async (id) => {
-    if (!confirm('댓글을 삭제하시겠습니까?')) return;
+    if (!confirm('삭제하시겠습니까?')) return;
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('댓글 삭제 실패');
+      if (!res.ok) throw new Error('삭제 실패');
       fetchComments();
     } catch (err) {
-      alert('댓글 삭제 중 오류가 발생했습니다.');
+      alert('삭제 중 오류');
       console.error(err);
     }
   };
 
-  const handleReply = (id) => {
-    setReplyTo(id);
-    setReplyContent('');
+  const formatDate = (str) => {
+    const date = new Date(str);
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   };
 
-  const handleSubmitReply = async (parentId) => {
-    if (!replyContent.trim()) return;
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: replyContent,
-          postId: postId,
-          parentId: parentId,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || '답글 작성 실패');
-        return;
-      }
-
-      setReplyTo(null);
-      setReplyContent('');
-      fetchComments();
-    } catch (err) {
-      alert('답글 작성 중 오류가 발생했습니다.');
-      console.error(err);
-    }
+  const highlightMentions = (text) => {
+    const regex = /@(\w+)/g;
+    return text.split(regex).map((part, i) => i % 2 === 1
+      ? <span key={i} className="text-blue-500">@{part}</span>
+      : part);
   };
 
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    })}`;
-  };
-
-  const renderComment = (comment, parentUserName = null, depth = 0) => {
-    const likeCount = comment.likeCount || 0;
-    const likedByCurrentUser = comment.likedByCurrentUser || false;
-
+  const renderComment = (comment, parentUser = null, depth = 0) => {
     return (
-      <div
-        key={comment.id}
-        style={{ marginLeft: depth * 4 }}
-        className="pl-3 my-2 flex gap-2 items-start"
-      >
-        <div className="flex-shrink-0">
-          <UserIcon />
-        </div>
+      <div key={comment.id} className="pl-3 my-2 flex gap-2 items-start" style={{ marginLeft: depth * 4 }}>
+        <div className="flex-shrink-0"><UserIcon /></div>
         <div className="flex-1">
-          <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
-            <div className="flex gap-2 items-center">
-              <span className="text-gray-700 font-medium leading-none">{comment.userName ?? '작성자 없음'}</span>
-              <span>|</span>
-              <span>{formatDate(comment.createdAt)}</span>
-              <CommentLike
-                commentId={comment.id}
-                initialLikeCount={likeCount}
-                initialIsLiked={likedByCurrentUser}
-                onLikeToggle={() => fetchComments()}
-              />
-            </div>
+          <div className="flex justify-between text-xs text-gray-500 mb-1">
+            <span className="text-gray-700 font-medium">{comment.userName}</span>
+            <span>{formatDate(comment.createdAt)}</span>
+            <CommentLike
+              commentId={comment.id}
+              initialLikeCount={comment.likeCount}
+              initialIsLiked={comment.likedByCurrentUser}
+              onLikeToggle={fetchComments}
+            />
           </div>
 
           {editingId === comment.id ? (
             <>
-              <textarea
-                rows={1}
-                className="w-full rounded-md border border-gray-300 p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
-                value={editContents[comment.id] || ''}
-                onChange={(e) => handleChange(comment.id, e.target.value)}
-              />
-              <div className="mt-1 flex gap-2 text-xs">
-                <button onClick={() => handleSave(comment.id, comment.userId)} className="text-blue-500 hover:underline">저장</button>
-                <button onClick={handleCancel} className="text-gray-500 hover:underline">취소</button>
+              <textarea className="w-full border p-2 text-sm" value={editContents[comment.id]} onChange={(e) => setEditContents(prev => ({ ...prev, [comment.id]: e.target.value }))} />
+              <div className="flex gap-2 text-xs mt-1">
+                <button onClick={() => handleSave(comment.id, comment.userId)} className="text-blue-500">저장</button>
+                <button onClick={() => setEditingId(null)} className="text-gray-500">취소</button>
               </div>
             </>
           ) : (
             <>
-              <p className="text-sm">
-                {parentUserName && <span className="text-gray-500">@{parentUserName} </span>}
-                {comment.content}
-              </p>
-
+              <p className="text-sm">{parentUser && <span className="text-gray-400">@{parentUser} </span>}{highlightMentions(comment.content)}</p>
               <div className="mt-1 flex gap-2 text-sm">
-                <button
-                  onClick={() => handleReply(comment.id)}
-                  className="text-blue-500 hover:underline"
-                >
-                  답글 달기
-                </button>
-                <button
-                  onClick={() => handleEdit(comment.id, comment.content)}
-                  className="text-gray-600 hover:underline"
-                >
-                  수정
-                </button>
-                <button
-                  onClick={() => handleDelete(comment.id)}
-                  className="text-red-500 hover:underline"
-                >
-                  삭제
-                </button>
+                <button onClick={() => handleReply(comment.id)} className="text-blue-500">답글</button>
+                <button onClick={() => handleEdit(comment.id, comment.content)} className="text-gray-500">수정</button>
+                <button onClick={() => handleDelete(comment.id)} className="text-red-500">삭제</button>
               </div>
             </>
           )}
 
           {replyTo === comment.id && (
-            <div className="mt-2">
+            <div className="mt-2 relative">
               <textarea
-                rows={1}
-                className="w-full border rounded p-2 text-sm"
-                placeholder="답글을 입력하세요"
+                ref={textareaRef}
+                className="w-full border p-2 text-sm"
                 value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
+                onChange={handleReplyContentChange}
+                placeholder="답글을 입력하세요"
               />
+              {mentionDropdown.visible && (
+                <ul className="absolute z-10 bg-white border rounded shadow mt-1 w-48">
+                  {mentionDropdown.list.map(user => (
+                    <li
+                      key={user.id}
+                      onClick={() => insertMention(user.nickname)}
+                      className="px-3 py-1 hover:bg-blue-100 cursor-pointer"
+                    >
+                      @{user.nickname}
+                    </li>
+                  ))}
+                </ul>
+              )}
               <div className="mt-1 flex gap-2 text-xs">
-                <button
-                  onClick={() => handleSubmitReply(comment.id)}
-                  className="text-blue-500"
-                >
-                  등록
-                </button>
-                <button
-                  onClick={() => setReplyTo(null)}
-                  className="text-gray-500"
-                >
-                  취소
-                </button>
+                <button onClick={() => handleSubmitReply(comment.id)} className="text-blue-500">등록</button>
+                <button onClick={() => setReplyTo(null)} className="text-gray-500">취소</button>
               </div>
             </div>
           )}
 
-          {comment.children && comment.children.map(child =>
-            renderComment(child, comment.userName, depth + 1)
-          )}
+          {comment.children && comment.children.map(child => renderComment(child, comment.userName, depth + 1))}
         </div>
       </div>
     );
   };
 
   return (
-    <div className="space-y-4 max-w-full">
-      {comments.length === 0 && <p className="text-gray-500">댓글이 없습니다.</p>}
-      {comments.map(comment => renderComment(comment))}
+    <div className="space-y-4">
+      {comments.length === 0 ? (
+        <p className="text-gray-500">댓글이 없습니다.</p>
+      ) : (
+        comments.map(comment => renderComment(comment))
+      )}
     </div>
   );
 }
