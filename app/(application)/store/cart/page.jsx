@@ -1,11 +1,16 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import Script from "next/script";
 
 export default function CartPage() {
   const [cart, setCart] = useState([]);
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
 
   const fetchCart = async () => {
     try {
@@ -14,7 +19,7 @@ export default function CartPage() {
       });
       const data = await res.json();
       setCart(data);
-      setSelectedItems(new Set(data.map(item => item.id))); // 디폴트 전체 선택
+      setSelectedItems(new Set(data.map(item => item.id)));
     } catch (err) {
       console.error("장바구니 불러오기 실패:", err);
       alert("장바구니 정보를 불러오는 중 오류가 발생했습니다.");
@@ -23,9 +28,48 @@ export default function CartPage() {
     }
   };
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
+  // 🧾 결제 함수: 단일 항목
+  const handleItemPayment = (item) => {
+    const tossPayments = window.TossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
+    const orderId = `item-${item.id}-${Date.now()}`;
+
+    tossPayments.requestPayment('카드', {
+      amount: item.price * item.quantity,
+      orderId,
+      orderName: item.name,
+      customerName: '구매자',
+      successUrl: 'http://localhost:3000/store/toss/success',
+      failUrl: 'http://localhost:3000/store/toss/fail',
+    });
+  };
+
+  // 🧾 결제 함수: 선택된 항목 전체
+  const handleSelectedItemsPayment = () => {
+    const selectedProducts = cart.filter(item => selectedItems.has(item.id));
+    if (selectedProducts.length === 0) {
+      alert("결제할 항목을 선택하세요.");
+      return;
+    }
+
+    const totalAmount = selectedProducts.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const deliveryFee = totalAmount < 35000 ? 3000 : 0;
+    const finalAmount = totalAmount + deliveryFee;
+
+    const tossPayments = window.TossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
+    const orderId = `bulk-${Date.now()}`;
+    const orderName = selectedProducts.length === 1
+      ? selectedProducts[0].name
+      : `${selectedProducts[0].name} 외 ${selectedProducts.length - 1}건`;
+
+    tossPayments.requestPayment('카드', {
+      amount: finalAmount,
+      orderId,
+      orderName,
+      customerName: '구매자',
+      successUrl: 'http://localhost:3000/store/toss/success',
+      failUrl: 'http://localhost:3000/store/toss/fail',
+    });
+  };
 
   const toggleSelectAll = () => {
     if (selectedItems.size === cart.length) {
@@ -87,6 +131,8 @@ export default function CartPage() {
   }
 
   return (
+    <>
+      <Script src="https://js.tosspayments.com/v1/payment" strategy="afterInteractive" />
     <div className="max-w-[1000px] mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-2">🛒 장바구니</h1>
 
@@ -110,60 +156,55 @@ export default function CartPage() {
         </div>
       </div>
 
-    <ul className="space-y-4">
+      <ul className="space-y-4">
         {cart.map(item => (
-            <li key={item.id} className="flex items-center gap-4 border border-gray-200 rounded p-4">
+          <li key={item.id} className="flex items-center gap-4 border border-gray-200 rounded p-4">
             <input
-                type="checkbox"
-                checked={selectedItems.has(item.id)}
-                onChange={() => toggleItem(item.id)}
-                className="w-4 h-4"
+              type="checkbox"
+              checked={selectedItems.has(item.id)}
+              onChange={() => toggleItem(item.id)}
+              className="w-4 h-4"
             />
             <div className="flex-1 flex flex-row gap-6">
-            {/* 이미지 + 상품정보 */}
-            <div className="w-32 flex-shrink-0">
+              <div className="w-32 flex-shrink-0">
                 <img src={item.image} alt={item.name} className="w-full h-24 object-cover rounded" />
-            </div>
-
-            {/* 상품명, 브랜드, 가격 */}
-            <div className="flex-1">
+              </div>
+              <div className="flex-1">
                 <h2 className="font-medium text-gray-800">{item.name}</h2>
                 <p className="text-sm text-gray-500">{item.brand}</p>
                 <div className="text-sm text-gray-400">
-                    <span>{item.discount}%</span>
-                    <span className="ml-2 line-through">
-                        {item.originalPrice.toLocaleString()}원
-                    </span>
+                  <span>{item.discount}%</span>
+                  <span className="ml-2 line-through">
+                    {item.originalPrice.toLocaleString()}원
+                  </span>
                 </div>
-
                 <p className="text-lg font-bold text-black">
-                    {item.price.toLocaleString()}원
+                  {item.price.toLocaleString()}원
                 </p>
-            </div>
-
-            {/* 수량 조절 */}
-            <div className="flex items-center gap-2">
+              </div>
+              <div className="flex items-center gap-2">
                 <button onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}>-</button>
                 <span>{item.quantity}</span>
                 <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
-            </div>
-
-            {/* 주문/삭제 버튼 */}
-            <div className="flex flex-col items-end justify-center gap-1 self-center">
-                <button className="text-sm bg-gray-100 text-black px-3 py-1 rounded hover:bg-gray-300">
-                    주문하기
+              </div>
+              <div className="flex flex-col items-end justify-center gap-1 self-center">
+                <button
+                  onClick={() => handleItemPayment(item)}
+                  className="text-sm bg-gray-100 text-black px-3 py-1 rounded hover:bg-gray-300"
+                >
+                  주문하기
                 </button>
                 <button
-                    onClick={() => removeItem(item.id)}
-                    className="text-sm bg-gray-100 text-black px-3 py-1 rounded hover:bg-gray-300"
+                  onClick={() => removeItem(item.id)}
+                  className="text-sm bg-gray-100 text-black px-3 py-1 rounded hover:bg-gray-300"
                 >
-                    삭제하기
+                  삭제하기
                 </button>
+              </div>
             </div>
-        </div>
-        </li>
-    ))}
-    </ul>
+          </li>
+        ))}
+      </ul>
 
       {deliveryFee > 0 && (
         <div className="text-sm text-gray-500 text-right">
@@ -171,6 +212,7 @@ export default function CartPage() {
         </div>
       )}
 
+      {/* 총 금액 영역 + 전체 결제 버튼 */}
       <div className="text-right text-black space-y-1 text-m">
         <div>상품 금액: {totalProductPrice.toLocaleString()}원</div>
         <div>배송비: {deliveryFee.toLocaleString()}원</div>
@@ -178,10 +220,14 @@ export default function CartPage() {
       </div>
 
       <div className="text-right">
-        <button className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800">
-          💳 결제하기
+        <button
+          onClick={handleSelectedItemsPayment}
+          className="bg-black text-white px-6 py-2 rounded hover:bg-gray-800"
+        >
+          💳 선택 항목 결제하기
         </button>
       </div>
     </div>
+    </>
   );
 }

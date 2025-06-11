@@ -99,8 +99,8 @@ export default function ProductDetailPage() {
       orderName,
       amount,
       customerName,
-      successUrl: 'http://localhost:3000/store/toss/success',
-      failUrl: 'http://localhost:3000/store/toss/fail',
+      successUrl: 'http://localhost:3000/store/success',
+      failUrl: 'http://localhost:3000/store/fail',
     });
   };
 
