@@ -136,10 +136,10 @@ export default function CartPage() {
     <div className="max-w-[1000px] mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-2">🛒 장바구니</h1>
 
-      <div className="flex justify-between items-center text-sm text-gray-500">
+      <div className="flex justify-between items-center text-sm text-gray-500 mt-6">
         <div>
           <button onClick={toggleSelectAll}>
-            {selectedItems.size === cart.length ? "전체 해제" : "전체 선택"}
+            {selectedItems.size === cart.length ? "✅ 전체 해제" : "✅ 전체 선택"}
           </button>
         </div>
         <div className="space-x-4">
