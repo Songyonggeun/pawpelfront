@@ -124,7 +124,9 @@ export default function CommentShow({ postId }) {
       const keyword = match[1].toLowerCase();
       const filtered = mentionUsers.filter(
         (user) =>
-          user.nickname && user.nickname.toLowerCase().startsWith(keyword)
+          user.nickname &&
+          user.nickname.toLowerCase().startsWith(keyword) &&
+          !replyContent.includes(`@${user.nickname}`)
       );
 
       const { top, left } = e.target.getBoundingClientRect();
@@ -141,16 +143,23 @@ export default function CommentShow({ postId }) {
 
   const insertMention = (nickname) => {
     const cursorPos = textareaRef.current.selectionStart;
-    const before = replyContent
-      .substring(0, cursorPos)
-      .replace(/@(\w*)$/, `@${nickname} `);
-    const after = replyContent.substring(cursorPos);
-    setReplyContent(before + after);
-    setMentionDropdown({ ...mentionDropdown, visible: false });
+    const textBeforeCursor = replyContent.substring(0, cursorPos);
+    const textAfterCursor = replyContent.substring(cursorPos);
+
+    const newTextBeforeCursor = textBeforeCursor.replace(
+      /@[\w가-힣]*$/,
+      `@${nickname} `
+    );
+    const newCursorPos = newTextBeforeCursor.length;
+
+    setReplyContent(newTextBeforeCursor + textAfterCursor);
+
+    setMentionDropdown((prev) => ({ ...prev, visible: false }));
 
     setTimeout(() => {
       textareaRef.current.focus();
-      textareaRef.current.selectionEnd = before.length;
+      textareaRef.current.selectionStart = newCursorPos;
+      textareaRef.current.selectionEnd = newCursorPos;
     }, 0);
   };
 
@@ -361,12 +370,13 @@ export default function CommentShow({ postId }) {
             </>
           ) : (
             <>
-              <p className="text-sm">
-                {parentUser && (
-                  <span className="text-gray-400">@{parentUser} </span>
-                )}
-                {highlightMentions(comment.content)}
-              </p>
+<p className="text-sm">
+  {parentUser && !comment.content.includes(`@${parentUser}`) && (
+    <span className="text-gray-400">@{parentUser} </span>
+  )}
+  {highlightMentions(comment.content)}
+</p>
+
               <div className="mt-1 flex gap-2 text-sm">
                 <button
                   onClick={() => handleReply(comment.id)}
