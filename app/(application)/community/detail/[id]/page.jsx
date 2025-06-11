@@ -256,7 +256,7 @@ export default function PostDetailPage() {
 
         {/* 펫 카드 */}
         {post.pet && (
-          <div className="mt-10 border border-gray-300 rounded-md p-3 shadow-sm bg-gray-50 mb-6 w-full max-w-[350px]">
+          <div className="mt-10 border border-gray-300 rounded-md p-3 shadow-sm bg-gray-50 mb-6 w-full max-w-[300px]">
             <div className="flex items-center gap-4">
               {post.pet?.thumbnailUrl || post.pet?.imageUrl ? (
                 <img
