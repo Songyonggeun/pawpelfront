@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 
 export default function CartPage() {
@@ -8,7 +9,8 @@ export default function CartPage() {
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null); // ✅ 유저 상태 추가
-
+  const router = useRouter();
+  
   // 유저 정보 가져오기
   useEffect(() => {
     const fetchUser = async () => {
@@ -46,7 +48,27 @@ export default function CartPage() {
     }
   };
 
-  // 🧾 결제 함수: 선택된 항목 전체
+  const handleSingleItemPayment = (item) => {
+    const orderDto = {
+      userId: user?.id || null,
+      totalAmount: item.price * item.quantity,
+      status: '결제대기',
+      items: [
+        {
+          productId: item.id,
+          productName: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        },
+      ],
+    };
+
+    localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
+
+    // ✅ 상품 ID를 쿼리로 넘기면서 이동 (단일상품 주문 처리인 경우)
+    router.push(`/store/checkout?id=${item.id}`);
+  };
+  
   const handleSelectedItemsPayment = () => {
     const selectedProducts = cart.filter(item => selectedItems.has(item.id));
     if (selectedProducts.length === 0) {
@@ -57,11 +79,6 @@ export default function CartPage() {
     const totalAmount = selectedProducts.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const deliveryFee = totalAmount < 35000 ? 3000 : 0;
     const finalAmount = totalAmount + deliveryFee;
-
-    const orderId = `bulk-${Date.now()}`;
-    const orderName = selectedProducts.length === 1
-      ? selectedProducts[0].name
-      : `${selectedProducts[0].name} 외 ${selectedProducts.length - 1}건`;
 
     const orderDto = {
       userId: user?.id || null,
@@ -77,16 +94,10 @@ export default function CartPage() {
 
     localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
 
-    const tossPayments = window.TossPayments(process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY);
-    tossPayments.requestPayment('카드', {
-      amount: finalAmount,
-      orderId,
-      orderName,
-      customerName: user?.name || '비회원',
-      successUrl: `http://localhost:3000/store/success?orderId=${orderId}&amount=${finalAmount}`,
-      failUrl: 'http://localhost:3000/store/fail'
-    });
+    // ✅ 여러 상품일 경우에는 단일 ID 전달 없이 이동
+    router.push('/store/checkout');
   };
+
 
   const toggleSelectAll = () => {
     if (selectedItems.size === cart.length) {
@@ -208,7 +219,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex flex-col items-end justify-center gap-1 self-center">
                   <button
-                    onClick={() => alert("상품별 단건 결제는 상세 페이지에서 가능합니다.")}
+                    onClick={() => handleSingleItemPayment(item)}
                     className="text-sm bg-gray-100 text-black px-3 py-1 rounded hover:bg-gray-300"
                   >
                     주문하기
