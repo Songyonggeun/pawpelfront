@@ -228,7 +228,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen((prev) => !prev)}
-                  className="relative text-gray-700 hover:text-blue-500 transition-colors"
+                  className="relative top-1 text-gray-700 hover:text-blue-500 transition-colors"
                 >
                   <Bell className="w-5 h-5" />
                   {notifications.length > 0 && (
