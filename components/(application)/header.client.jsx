@@ -276,6 +276,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                             key={n.id}
                             className="flex justify-between items-start gap-2 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                             onClick={async () => {
+                              g;
                               await markAsRead(n.id);
                               if (n.postId) {
                                 window.location.href = `/community/detail/${n.postId}`;
@@ -308,47 +309,50 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 )}
               </div>
 
-              <Link
-                href="/store/cart"
-                className="text-sm text-gray-500 hover:text-black"
-              >
-                장바구니
-              </Link>
-
-              {isLoggedIn ? (
-                userRoles.length === 0 ? null : (
-                  <div className="flex items-center space-x-3">
-                    {userRoles.includes("ADMIN") ? (
-                      <Link
-                        href="/admin"
-                        className="text-sm text-gray-500 hover:text-black"
-                      >
-                        관리자페이지
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/myPage"
-                        className="text-sm text-gray-500 hover:text-black"
-                      >
-                        마이페이지
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="text-sm text-gray-500 hover:text-black"
-                    >
-                      로그아웃
-                    </button>
-                  </div>
-                )
-              ) : (
+              {/* 장바구니 + 마이페이지 + 로그아웃 버튼들 */}
+              <div className="flex items-center space-x-6">
                 <Link
-                  href="/login"
-                  className="text-sm text-gray-500 hover:text-black"
+                  href="/store/cart"
+                  className="text-sm text-black hover:text-blue-500"
                 >
-                  로그인
+                  장바구니
                 </Link>
-              )}
+
+                {isLoggedIn ? (
+                  userRoles.length === 0 ? null : (
+                    <>
+                      {userRoles.includes("ADMIN") ? (
+                        <Link
+                          href="/admin"
+                          className="text-sm text-black hover:text-blue-500"
+                        >
+                          관리자페이지
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/myPage"
+                          className="text-sm text-black hover:text-blue-500"
+                        >
+                          마이페이지
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="text-sm text-black hover:text-blue-500"
+                      >
+                        로그아웃
+                      </button>
+                    </>
+                  )
+                ) : (
+                  <Link
+                    href="/login"
+                    className="text-sm text-black hover:text-blue-500"
+                  >
+                    로그인
+                  </Link>
+                )}
+              </div>
             </>
           )}
         </div>
