@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import CommentLike from './commentLike';
-import UserIcon from '../(icon)/userIcon';
+import { useState, useEffect, useRef } from "react";
+import CommentLike from "./commentLike";
+import UserIcon from "../(icon)/userIcon";
 
 export default function CommentShow({ postId }) {
   const [comments, setComments] = useState([]);
@@ -10,9 +10,14 @@ export default function CommentShow({ postId }) {
   const [editingId, setEditingId] = useState(null);
   const [editContents, setEditContents] = useState({});
   const [replyTo, setReplyTo] = useState(null);
-  const [replyContent, setReplyContent] = useState('');
+  const [replyContent, setReplyContent] = useState("");
   const [mentionUsers, setMentionUsers] = useState([]);
-  const [mentionDropdown, setMentionDropdown] = useState({ visible: false, list: [], top: 0, left: 0 });
+  const [mentionDropdown, setMentionDropdown] = useState({
+    visible: false,
+    list: [],
+    top: 0,
+    left: 0,
+  });
 
   const textareaRef = useRef(null);
 
@@ -24,11 +29,15 @@ export default function CommentShow({ postId }) {
 
   const fetchCurrentUser = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('사용자 정보 불러오기 실패');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`,
+        {
+          credentials: "include",
+        }
+      );
+      if (!res.ok) throw new Error("사용자 정보 불러오기 실패");
       const user = await res.json();
+      console.log("받아온 유저 정보:", user);
       setCurrentUser(user);
     } catch (err) {
       console.error(err);
@@ -37,17 +46,21 @@ export default function CommentShow({ postId }) {
 
   const fetchMentionUsers = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/mentionable`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/mentionable`
+      );
       const data = await res.json();
       setMentionUsers(data); // [{ id, nickname }]
     } catch (err) {
-      console.error('멘션 사용자 불러오기 실패', err);
+      console.error("멘션 사용자 불러오기 실패", err);
     }
   };
 
   const fetchComments = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/post/${postId}`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/post/${postId}`
+      );
       const data = await res.json();
       const tree = buildCommentTree(data);
       setComments(tree);
@@ -60,12 +73,12 @@ export default function CommentShow({ postId }) {
     const map = {};
     const roots = [];
 
-    flatComments.forEach(comment => {
+    flatComments.forEach((comment) => {
       comment.children = [];
       map[comment.id] = comment;
     });
 
-    flatComments.forEach(comment => {
+    flatComments.forEach((comment) => {
       if (comment.parentId) {
         const parent = map[comment.parentId];
         if (parent) {
@@ -91,12 +104,18 @@ export default function CommentShow({ postId }) {
 
     if (match) {
       const keyword = match[1].toLowerCase();
-      const filtered = mentionUsers
-  .filter(user => user.nickname && user.nickname.toLowerCase().startsWith(keyword));
-
+      const filtered = mentionUsers.filter(
+        (user) =>
+          user.nickname && user.nickname.toLowerCase().startsWith(keyword)
+      );
 
       const { top, left } = e.target.getBoundingClientRect();
-      setMentionDropdown({ visible: true, list: filtered, top: top + 30, left: left + 10 });
+      setMentionDropdown({
+        visible: true,
+        list: filtered,
+        top: top + 30,
+        left: left + 10,
+      });
     } else {
       setMentionDropdown({ ...mentionDropdown, visible: false });
     }
@@ -104,7 +123,9 @@ export default function CommentShow({ postId }) {
 
   const insertMention = (nickname) => {
     const cursorPos = textareaRef.current.selectionStart;
-    const before = replyContent.substring(0, cursorPos).replace(/@(\w*)$/, `@${nickname} `);
+    const before = replyContent
+      .substring(0, cursorPos)
+      .replace(/@(\w*)$/, `@${nickname} `);
     const after = replyContent.substring(cursorPos);
     setReplyContent(before + after);
     setMentionDropdown({ ...mentionDropdown, visible: false });
@@ -117,38 +138,44 @@ export default function CommentShow({ postId }) {
 
   const handleReply = (id) => {
     setReplyTo(id);
-    setReplyContent('');
+    setReplyContent("");
   };
 
   const handleSubmitReply = async (parentId) => {
     if (!replyContent.trim()) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: replyContent, postId, parentId }),
-      });
-      if (!res.ok) throw new Error('댓글 등록 실패');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: replyContent, postId, parentId }),
+        }
+      );
+      if (!res.ok) throw new Error("댓글 등록 실패");
       setReplyTo(null);
-      setReplyContent('');
+      setReplyContent("");
       fetchComments();
     } catch (err) {
-      alert('댓글 등록 중 오류 발생');
+      alert("댓글 등록 중 오류 발생");
       console.error(err);
     }
   };
 
   const handleLike = async (commentId) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('좋아요 처리 실패');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      if (!res.ok) throw new Error("좋아요 처리 실패");
       fetchComments();
     } catch (err) {
-      alert('좋아요 처리 중 오류');
+      alert("좋아요 처리 중 오류");
       console.error(err);
     }
   };
@@ -160,56 +187,80 @@ export default function CommentShow({ postId }) {
 
   const handleSave = async (id, userId) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${id}`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: editContents[id], userId }),
-      });
-      if (!res.ok) throw new Error('수정 실패');
-      alert('수정 완료');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${id}`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: editContents[id], userId }),
+        }
+      );
+      if (!res.ok) throw new Error("수정 실패");
+      alert("수정 완료");
       setEditingId(null);
       fetchComments();
     } catch (err) {
-      alert('수정 중 오류');
+      alert("수정 중 오류");
       console.error(err);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('삭제하시겠습니까?')) return;
+    if (!confirm("삭제하시겠습니까?")) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('삭제 실패');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+      if (!res.ok) throw new Error("삭제 실패");
       fetchComments();
     } catch (err) {
-      alert('삭제 중 오류');
+      alert("삭제 중 오류");
       console.error(err);
     }
   };
 
   const formatDate = (str) => {
     const date = new Date(str);
-    return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
   };
 
   const highlightMentions = (text) => {
     const regex = /@(\w+)/g;
-    return text.split(regex).map((part, i) => i % 2 === 1
-      ? <span key={i} className="text-blue-500">@{part}</span>
-      : part);
+    return text.split(regex).map((part, i) =>
+      i % 2 === 1 ? (
+        <span key={i} className="text-blue-500">
+          @{part}
+        </span>
+      ) : (
+        part
+      )
+    );
   };
 
   const renderComment = (comment, parentUser = null, depth = 0) => {
+    console.log("내 아이디:", currentUser?.id, "댓글 작성자:", comment.userId);
     return (
-      <div key={comment.id} className="pl-3 my-2 flex gap-2 items-start" style={{ marginLeft: depth * 4 }}>
-        <div className="flex-shrink-0"><UserIcon /></div>
+      <div
+        key={comment.id}
+        className="pl-3 my-2 flex gap-2 items-start"
+        style={{ marginLeft: depth * 4 }}
+      >
+        <div className="flex-shrink-0">
+          <UserIcon />
+        </div>
         <div className="flex-1">
           <div className="flex justify-between text-xs text-gray-500 mb-1">
-            <span className="text-gray-700 font-medium">{comment.userName}</span>
+            <span className="text-gray-700 font-medium">
+              {comment.userName}
+            </span>
             <span>{formatDate(comment.createdAt)}</span>
             <CommentLike
               commentId={comment.id}
@@ -221,20 +272,51 @@ export default function CommentShow({ postId }) {
 
           {editingId === comment.id ? (
             <>
-              <textarea className="w-full border p-2 text-sm" value={editContents[comment.id]} onChange={(e) => setEditContents(prev => ({ ...prev, [comment.id]: e.target.value }))} />
+              <textarea
+                className="w-full border p-2 text-sm"
+                value={editContents[comment.id]}
+                onChange={(e) =>
+                  setEditContents((prev) => ({
+                    ...prev,
+                    [comment.id]: e.target.value,
+                  }))
+                }
+              />
               <div className="flex gap-2 text-xs mt-1">
-                <button onClick={() => handleSave(comment.id, comment.userId)} className="text-blue-500">저장</button>
-                <button onClick={() => setEditingId(null)} className="text-gray-500">취소</button>
+                <button
+                  onClick={() => handleSave(comment.id, comment.userId)}
+                  className="text-blue-500"
+                >
+                  저장
+                </button>
+                <button
+                  onClick={() => setEditingId(null)}
+                  className="text-gray-500"
+                >
+                  취소
+                </button>
               </div>
             </>
           ) : (
             <>
-              <p className="text-sm">{parentUser && <span className="text-gray-400">@{parentUser} </span>}{highlightMentions(comment.content)}</p>
-              <div className="mt-1 flex gap-2 text-sm">
-                <button onClick={() => handleReply(comment.id)} className="text-blue-500">답글</button>
-                <button onClick={() => handleEdit(comment.id, comment.content)} className="text-gray-500">수정</button>
-                <button onClick={() => handleDelete(comment.id)} className="text-red-500">삭제</button>
-              </div>
+              <p className="text-sm">
+                {parentUser && (
+                  <span className="text-gray-400">@{parentUser} </span>
+                )}
+                {highlightMentions(comment.content)}
+              </p>
+<div className="mt-1 flex gap-2 text-sm">
+  <button onClick={() => handleReply(comment.id)} className="text-blue-500">답글</button>
+  {Number(currentUser?.id) === Number(comment.userId) && (
+    <>
+      <button onClick={() => handleEdit(comment.id, comment.content)} className="text-gray-500">수정</button>
+      <button onClick={() => handleDelete(comment.id)} className="text-red-500">삭제</button>
+    </>
+  )}
+</div>
+
+
+
             </>
           )}
 
@@ -249,7 +331,7 @@ export default function CommentShow({ postId }) {
               />
               {mentionDropdown.visible && (
                 <ul className="absolute z-10 bg-white border rounded shadow mt-1 w-48">
-                  {mentionDropdown.list.map(user => (
+                  {mentionDropdown.list.map((user) => (
                     <li
                       key={user.id}
                       onClick={() => insertMention(user.nickname)}
@@ -261,13 +343,26 @@ export default function CommentShow({ postId }) {
                 </ul>
               )}
               <div className="mt-1 flex gap-2 text-xs">
-                <button onClick={() => handleSubmitReply(comment.id)} className="text-blue-500">등록</button>
-                <button onClick={() => setReplyTo(null)} className="text-gray-500">취소</button>
+                <button
+                  onClick={() => handleSubmitReply(comment.id)}
+                  className="text-blue-500"
+                >
+                  등록
+                </button>
+                <button
+                  onClick={() => setReplyTo(null)}
+                  className="text-gray-500"
+                >
+                  취소
+                </button>
               </div>
             </div>
           )}
 
-          {comment.children && comment.children.map(child => renderComment(child, comment.userName, depth + 1))}
+          {comment.children &&
+            comment.children.map((child) =>
+              renderComment(child, comment.userName, depth + 1)
+            )}
         </div>
       </div>
     );
@@ -278,8 +373,9 @@ export default function CommentShow({ postId }) {
       {comments.length === 0 ? (
         <p className="text-gray-500">댓글이 없습니다.</p>
       ) : (
-        comments.map(comment => renderComment(comment))
+        comments.map((comment) => renderComment(comment))
       )}
     </div>
   );
 }
+
