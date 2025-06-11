@@ -78,7 +78,7 @@ export default function MyPage() {
             <div className="relative">
             <img
                 src={
-                (userInfo.thumbnailUrl || userInfo.imageUrl)?.startsWith("/test/")
+                (userInfo.thumbnailUrl || userInfo.imageUrl)?.startsWith("/images/profile/")
                   ? `${userInfo.thumbnailUrl || userInfo.imageUrl}?t=${Date.now()}`
                   : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
                       userInfo.thumbnailUrl || userInfo.imageUrl
@@ -188,7 +188,7 @@ export default function MyPage() {
           {pets.map((pet, index) => {
             const species = pet.petType?.toLowerCase() || '';
             const isCat = species.includes('cat') || species.includes('고양이') || species.includes('냥');
-            const defaultImage = isCat ? '/images/cat.jpeg' : '/images/dog.jpeg';
+            const defaultImage = isCat ? '/images/profile/default_cat.jpeg' : '/images/profile/default_dog.jpeg';
             const isDefaultImage = !pet.imageUrl;
 
             return (
@@ -201,7 +201,7 @@ export default function MyPage() {
                   <img
                     src={
                       pet.thumbnailUrl || pet.imageUrl
-                        ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/test/")
+                        ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
                             ? pet.thumbnailUrl || pet.imageUrl
                             : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
                         : defaultImage

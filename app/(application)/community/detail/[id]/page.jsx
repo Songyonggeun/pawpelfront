@@ -224,7 +224,7 @@ export default function PostDetailPage() {
                 {post.authorThumbnailUrl || post.authorImageUrl ? (
                   <img
                     src={
-                      (post.authorThumbnailUrl || post.authorImageUrl).startsWith("/test/")
+                      (post.authorThumbnailUrl || post.authorImageUrl).startsWith("/images/profile/")
                         ? post.authorThumbnailUrl || post.authorImageUrl // 프론트 public에서 가져옴
                         : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
                             post.authorThumbnailUrl || post.authorImageUrl
@@ -261,7 +261,7 @@ export default function PostDetailPage() {
               {post.pet?.thumbnailUrl || post.pet?.imageUrl ? (
                 <img
                   src={
-                    (post.pet.thumbnailUrl || post.pet.imageUrl).startsWith("/test/")
+                    (post.pet.thumbnailUrl || post.pet.imageUrl).startsWith("/images/profile/")
                       ? post.pet.thumbnailUrl || post.pet.imageUrl 
                       : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
                           post.pet.thumbnailUrl || post.pet.imageUrl

@@ -334,7 +334,7 @@ return (
                     src={product.image}
                     alt={product.name}
                     className="w-16 h-16 object-cover rounded"
-                    onError={(e) => { e.currentTarget.src = '/images/default-product.png'; }}
+                    onError={(e) => { e.currentTarget.src = '/images/product/default-product.png'; }}
                   />
                 </div>
               </td>
