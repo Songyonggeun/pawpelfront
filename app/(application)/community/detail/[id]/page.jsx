@@ -221,20 +221,21 @@ export default function PostDetailPage() {
           <div className="flex items-center gap-3">
             {post.pet && (
               <div className="flex items-center gap-2">
-                {post.pet.imageUrl ? (
+                {post.authorThumbnailUrl || post.authorImageUrl ? (
                   <img
-                    src={post.pet.thumbnailUrl || post.pet.imageUrl}
-                    alt={post.pet.petName}
-                    className="w-full h-full object-cover"
+                    src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                      post.authorThumbnailUrl || post.authorImageUrl
+                    }`}
+                    alt={post.authorName}
+                    className="w-8 h-8 rounded-full object-cover border border-gray-300"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center border text-gray-400">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300 text-gray-400">
                     🐾
                   </div>
                 )}
               </div>
             )}
-
             <span className="font-medium">{post.authorName}</span>
           </div>
           <div className="flex flex-wrap items-center gap-x-2 text-right">
@@ -251,11 +252,13 @@ export default function PostDetailPage() {
 
         {/* 펫 카드 */}
         {post.pet && (
-          <div className="mt-10 border rounded-md p-3 shadow-sm bg-gray-50 mb-6 w-full max-w-[350px]">
+          <div className="mt-10 border border-gray-300 rounded-md p-3 shadow-sm bg-gray-50 mb-6 w-full max-w-[350px]">
             <div className="flex items-center gap-4">
-              {post.pet.imageUrl ? (
+              {post.pet?.thumbnailUrl || post.pet?.imageUrl ? (
                 <img
-                  src={post.pet.imageUrl}
+                  src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                    post.pet.thumbnailUrl || post.pet.imageUrl
+                  }`}
                   alt={post.pet.petName}
                   className="w-16 h-16 rounded-full object-cover"
                 />
@@ -269,12 +272,11 @@ export default function PostDetailPage() {
                   {post.pet.petName}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {post.pet.petGender}
+                  {post.pet.petType === "dog" ? "강아지" : post.pet.petType === "cat" ? "고양이" : "반려동물"}{" "}
+                  / {post.pet.petGender === "female" ? "여아" : post.pet.petGender === "male" ? "남아" : "성별 정보 없음"}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {post.pet.petAge !== null
-                    ? `${post.pet.petAge}년생`
-                    : "나이 정보 없음"}
+                  {post.pet.petAge !== null ? `${post.pet.petAge}년생` : "나이 정보 없음"}
                 </div>
               </div>
             </div>
