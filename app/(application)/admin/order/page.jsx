@@ -15,6 +15,7 @@ export default function AdminOrderPage() {
     '결제완료': 3,
     '배송중': 2,
     '배송완료': 1,
+    '주문취소': 0,
   };
 
   const formatOrderDate = (datetimeStr) => {
@@ -95,18 +96,18 @@ export default function AdminOrderPage() {
   };
 
   const handleDeleteOrder = async (orderId) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+    if (!confirm('정말 취소하시겠습니까?')) return;
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/order/${orderId}`, {
-        method: 'DELETE',
+      await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/order/${orderId}/status?status=${encodeURIComponent('주문취소')}`, {
+        method: 'PATCH',
         credentials: 'include',
       });
-      alert('삭제되었습니다.');
+      alert('취소되었습니다.');
       setOrders((prev) => prev.filter((order) => order.id !== orderId));
     } catch (err) {
-      console.error('❗ 삭제 실패:', err);
-      alert('삭제 실패');
+      console.error('❗ 취소 실패:', err);
+      alert('취소 실패');
     }
   };
 
@@ -117,112 +118,92 @@ export default function AdminOrderPage() {
   if (loading) return <div className="p-6 text-center">로딩 중...</div>;
 
   return (
-    <div className="max-w-[1200px] mx-auto p-6">
+    <div className="flex-1 overflow-x-auto p-6">
       <h1 className="text-2xl font-bold mb-6 text-center">📦 전체 주문 관리</h1>
 
       {orders.length === 0 ? (
         <div className="p-6 text-center">주문이 없습니다.</div>
       ) : (
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="bg-gray-100 text-center">
-              <th className="border border-gray-300 px-2 py-2">날짜</th>
-              <th className="border border-gray-300 px-2 py-2">주문번호</th>
-              <th className="border border-gray-300 px-2 py-2">상품명</th>
-              <th className="border border-gray-300 px-2 py-2">수량</th>
-              <th className="border border-gray-300 px-2 py-2">상품 총액</th>
-              <th className="border border-gray-300 px-2 py-2">총 결제 금액</th>
-              <th className="border border-gray-300 px-2 py-2">결제 상태</th>
-              <th className="border border-gray-300 px-2 py-2">배송 정보</th>
-              <th className="border border-gray-300 px-2 py-2">관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order, orderIdx) =>
-              order.items.map((item, itemIdx) => {
-                return (
-                  <tr key={`${orderIdx}-${itemIdx}`} className="text-center">
+          <table className="w-full text-xs table-auto border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-300 border-b border-gray-200 text-center">
+                <th className="px-3 py-2 whitespace-nowrap">날짜</th>
+                <th className="px-3 py-2 whitespace-nowrap">주문번호</th>
+                <th className="px-3 py-2 whitespace-nowrap">상품명</th>
+                <th className="px-3 py-2 whitespace-nowrap">수량</th>
+                <th className="px-3 py-2 whitespace-nowrap">상품 총액</th>
+                <th className="px-3 py-2 whitespace-nowrap">총 결제 금액</th>
+                <th className="px-3 py-2 whitespace-nowrap">결제 상태</th>
+                <th className="px-3 py-2 whitespace-nowrap">배송 정보</th>
+                <th className="px-3 py-2 whitespace-nowrap">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order, orderIdx) =>
+                order.items.map((item, itemIdx) => (
+                  <tr key={`${orderIdx}-${itemIdx}`} className="border-t border-gray-200 text-center">
                     {itemIdx === 0 && (
                       <>
-                        <td
-                          rowSpan={order.items.length}
-                          className="border border-gray-300 px-2 py-2 whitespace-pre-line bg-gray-50"
-                        >
+                        <td rowSpan={order.items.length} className="px-3 py-2 whitespace-pre-line bg-gray-50">
                           {formatOrderDate(order.orderDate)}
                         </td>
-                        <td
-                          rowSpan={order.items.length}
-                          className="border border-gray-300 px-2 py-2 font-medium bg-gray-50"
-                        >
+                        <td rowSpan={order.items.length} className="px-3 py-2 font-medium bg-gray-50">
                           #{order.id}
                         </td>
                       </>
                     )}
-
-                    <td className="border border-gray-300 px-2 py-2 text-blue-600 hover:underline">
+                    <td className={order.status === '주문취소' ? 'px-3 py-2 line-through text-gray-400' : 'px-3 py-2'}>
                       <Link href={`/store/detail/${item.productId}`}>
                         {item.productName}
                       </Link>
                     </td>
-                    <td className="border border-gray-300 px-2 py-2">{item.quantity}</td>
-                    <td className="border border-gray-300 px-2 py-2">
+                    <td className={order.status === '주문취소' ? 'px-3 py-2 line-through text-gray-400' : 'px-3 py-2'}>
+                      {item.quantity}
+                    </td>
+                    <td className={order.status === '주문취소' ? 'px-3 py-2 line-through text-gray-400' : 'px-3 py-2'}>
                       {(item.quantity * item.price).toLocaleString()}원
                     </td>
                     {itemIdx === 0 && (
                       <>
-                        <td
-                          rowSpan={order.items.length}
-                          className="border border-gray-300 px-2 py-2 font-bold text-black"
-                        >
+                        <td rowSpan={order.items.length} className={order.status === '주문취소' ? 'px-3 py-2 line-through text-gray-400' : 'px-3 py-2'}>
                           {order.totalAmount.toLocaleString()}원
                         </td>
-                        <td
-                          rowSpan={order.items.length}
-                          className="border border-gray-300 px-2 py-2 text-gray-600"
-                        >
+                        <td rowSpan={order.items.length} className="px-3 py-2 text-gray-600">
                           {order.status}
                         </td>
-                        <td
-                          rowSpan={order.items.length}
-                          className="border border-gray-300 px-2 py-2"
-                        >
+                        <td rowSpan={order.items.length} className="px-3 py-2">
                           <button
                             onClick={() => setSelectedOrder(order)}
-                            className="bg-gray-300 text-black px-2 py-1 rounded text-sm"
+                            className="inline-block bg-gray-100 border border-gray-300 text-xs px-2 py-0.5 rounded mr-1"
                           >
                             배송정보
                           </button>
                         </td>
-                        <td
-                          rowSpan={order.items.length}
-                          className="border border-gray-300 px-2 py-2"
-                        >
-                          <div className="flex flex-col items-center space-y-2">
-                            <button
-                              onClick={() => {
-                                setSelectedOrderForEdit(order);
-                                setNewStatus(order.status); // 초기 상태 설정
-                              }}
-                              className="bg-gray-300 text-black px-2 py-1 rounded text-sm"
-                            >
-                              수정
-                            </button>
-                            <button
-                              onClick={() => handleDeleteOrder(order.id)}
-                              className="bg-gray-300 text-black px-2 py-1 rounded text-sm"
-                            >
-                              삭제
-                            </button>
-                          </div>
+                        <td rowSpan={order.items.length} className="px-3 py-2 text-center whitespace-nowrap space-x-2">
+                          <button
+                            onClick={() => {
+                              setSelectedOrderForEdit(order);
+                              setNewStatus(order.status);
+                            }}
+                            className="text-blue-600 hover:underline"
+                          >
+                            수정
+                          </button>
+                          <button
+                            onClick={() => handleDeleteOrder(order.id)}
+                            className="text-red-600 hover:underline"
+                          >
+                            취소
+                          </button>
                         </td>
                       </>
                     )}
                   </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                ))
+              )}
+            </tbody>
+          </table>
+
       )}
 
       {selectedOrder && (
