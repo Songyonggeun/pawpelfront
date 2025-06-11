@@ -57,6 +57,7 @@ export default function UserProfilePage() {
           <div className="mt-2 text-sm">
             작성한 글 {posts.length}
           </div>
+
         </div>
       </aside>
 
