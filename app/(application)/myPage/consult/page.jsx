@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import MenuComponents from '@/components/(application)/menu';
 import Link from 'next/link';
 
 export default function MyConsultsPage() {
@@ -25,24 +24,9 @@ export default function MyConsultsPage() {
     fetchMyConsults();
   }, []);
 
-  const menuItems = [
-    { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '주문 내역', href: '/myPage/order' },
-    { title: '건강체크 기록', href: '/myPage/health' },
-    { title: '백신접종 기록', href: '/myPage/vaccine' },
-    { title: '상담 글', href: '/myPage/consult' },
-    { title: '작성 글', href: '/myPage/posts' },
-  ];
 
   return (
-    <div className="flex flex-col md:flex-row max-w-[1100px] mx-auto px-6 py-6 gap-10">
-      <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0 bg-gray-50 min-h-[80vh]">
-        <nav className="mt-[10px] px-[10px]">
-          <ul className="space-y-3">
-            <MenuComponents data={menuItems} />
-          </ul>
-        </nav>
-      </aside>
+    <>
 
       <main className="flex-1 order-1 md:order-2 ml-0 md:-ml-6">
         <h1 className="text-2xl font-bold mb-6 text-center">내 상담글 목록</h1>
@@ -81,6 +65,6 @@ export default function MyConsultsPage() {
           </table>
         </div>
       </main>
-    </div>
+    </>
   );
 }
