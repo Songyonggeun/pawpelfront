@@ -44,7 +44,7 @@ export default function MyPostsPage() {
             </thead>
             <tbody>
               {posts.map((post, index) => (
-                <tr key={post.id} className="border-b hover:bg-gray-100 text-sm">
+                <tr key={post.id} className="border-b border-gray-300 hover:bg-gray-100 text-sm">
                   <td className="py-2">{posts.length - index}</td>
                   <td className="py-2">{post.category || '-'}</td>
                   <td className="py-2 text-left px-4 text-blue-600 cursor-pointer hover:underline">

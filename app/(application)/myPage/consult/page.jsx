@@ -44,7 +44,7 @@ export default function MyConsultsPage() {
             </thead>
             <tbody>
               {consults.map((consult, index) => (
-                <tr key={consult.id} className="border-b hover:bg-gray-100 text-sm">
+                <tr key={consult.id} className="border-b border-gray-300 hover:bg-gray-100 text-sm">
                   <td className="py-2">{consults.length - index}</td>
                   <td className="py-2">{consult.subCategory || '-'}</td>
                   <td className="py-2 text-left px-4 text-blue-600 cursor-pointer hover:underline">
