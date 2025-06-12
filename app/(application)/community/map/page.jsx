@@ -149,10 +149,10 @@ function MapInformation() {
             <button
               key={district}
               onClick={() => setSelectedDistrict(district)}
-              className={`px-3 py-1 rounded-full text-sm border ${
+              className={`px-2 py-0.5 text-sm rounded-md border ${
                 selectedDistrict === district
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-300 hover:text-black border-transparent'
               }`}
             >
               {district}
@@ -169,7 +169,7 @@ function MapInformation() {
             {getFilteredPlaces().map((place, index) => (
               <li
                 key={index}
-                className="border p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition"
+                className="border border-gray-300 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition"
                 onClick={() => {
                   const position = new window.naver.maps.LatLng(place.lat, place.lng);
                   mapRef.current.setCenter(position);
@@ -195,7 +195,7 @@ function MapInformation() {
                   infoWindowRef.current.open(mapRef.current, marker);
                 }}
               >
-                <h3 className="text-lg font-semibold">{place.name}</h3>
+                <h3 className="text-m font-semibold">{place.name}</h3>
                 <p className="text-sm text-gray-600">{place.address}</p>
               </li>
             ))}
