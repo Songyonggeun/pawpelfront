@@ -61,7 +61,7 @@ export default function CommunityMenu() {
           href="/community/map"
           className={`hover:underline block ${isActive('/community/map') ? 'text-black font-bold' : ''}`}
         >
-          애견동반 카페
+          애견 동반 카페
         </Link>
       </li>
 
