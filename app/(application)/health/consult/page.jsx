@@ -16,6 +16,7 @@ export default function VetConsultForm() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
+  const [isAuthChecked, setIsAuthChecked] = useState(false); // ✅ 추가
 
   useEffect(() => {
     const fetchPets = async () => {
@@ -23,19 +24,24 @@ export default function VetConsultForm() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
           credentials: "include",
         });
-        if (!res.ok) throw new Error("로그인이 필요합니다.");
+        if (!res.ok) throw new Error("Unauthorized");
+
         const data = await res.json();
         const petsWithCheck = (data.pets || []).map((pet) => {
-          const sortedRecords = (pet.healthRecords || []).sort((a, b) => new Date(b.checkedAt) - new Date(a.checkedAt));
+          const sortedRecords = (pet.healthRecords || []).sort(
+            (a, b) => new Date(b.checkedAt) - new Date(a.checkedAt)
+          );
           const latestCheck = sortedRecords[0] || null;
           return {
             ...pet,
             latestHealthCheckDate: latestCheck ? new Date(latestCheck.checkedAt) : null,
           };
         });
+
         setPets(petsWithCheck);
+        setIsAuthChecked(true); // ✅ 로그인 성공 시 렌더링 허용
       } catch (err) {
-        router.replace("/login");
+        router.replace("/login"); // ✅ 로그인 실패 시 로그인 페이지로 이동
       }
     };
     fetchPets();
@@ -45,59 +51,53 @@ export default function VetConsultForm() {
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
   };
 
-const handleSubmit = async () => {
-  console.log("🟢 handleSubmit 실행됨");
-  if (!selectedPetId || !consultCategory || !title.trim() || !content.trim()) {
-    setError("모든 항목을 입력해주세요.");
-    return;
-  }
-
-  const payload = {
-    title,
-    content,
-    subCategory: consultCategory,
-    petId: selectedPetId,
-    status: 'PENDING', // 반드시 대문자
-  };
-  console.log(payload)
-
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/consult`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
-    });
-
-    const text = await res.text();
-    console.log("응답 상태:", res.status);
-    console.log("응답 내용:", text);
-
-    if (text.startsWith("<!DOCTYPE html")) {
-      alert("⚠️ 서버 오류 페이지가 반환되었습니다.\n다시 시도하거나 관리자에게 문의하세요.");
+  const handleSubmit = async () => {
+    if (!selectedPetId || !consultCategory || !title.trim() || !content.trim()) {
+      setError("모든 항목을 입력해주세요.");
       return;
     }
 
-    if (!res.ok) {
-      alert("❌ 서버 오류 발생: " + text);
-      return;
-    }
+    const payload = {
+      title,
+      content,
+      subCategory: consultCategory,
+      petId: selectedPetId,
+      status: 'PENDING',
+    };
 
-    // 실제로 JSON 형식인지 검사한 후 parse
     try {
-      const data = JSON.parse(text);
-      router.push(`/consult/read?id=${data.id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/consult`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      const text = await res.text();
+      if (text.startsWith("<!DOCTYPE html")) {
+        alert("⚠️ 서버 오류 페이지가 반환되었습니다.\n다시 시도하거나 관리자에게 문의하세요.");
+        return;
+      }
+
+      if (!res.ok) {
+        alert("❌ 서버 오류 발생: " + text);
+        return;
+      }
+
+      try {
+        const data = JSON.parse(text);
+        router.push(`/consult/read?id=${data.id}`);
+      } catch (err) {
+        alert("서버 응답을 JSON으로 변환할 수 없습니다:\n\n" + text);
+      }
+
     } catch (err) {
-      console.error("⚠️ JSON 파싱 실패");
-      alert("서버 응답을 JSON으로 변환할 수 없습니다:\n\n" + text);
+      alert("요청 도중 오류가 발생했습니다.");
     }
+  };
 
-  } catch (err) {
-    console.error("요청 실패:", err);
-    alert("요청 도중 오류가 발생했습니다.");
-  }
-};
-
+  // ✅ 인증 확인 안 된 경우 렌더링 방지
+  if (!isAuthChecked) return null;
 
   return (
     <div className="max-w-xl mx-auto p-4 text-sm">
