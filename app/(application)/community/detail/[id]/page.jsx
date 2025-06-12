@@ -23,6 +23,7 @@ export default function PostDetailPage() {
   const [allPosts, setAllPosts] = useState([]);
   const [relatedPopularPosts, setRelatedPopularPosts] = useState([]);
   const [openProfileMenuId, setOpenProfileMenuId] = useState(null);
+  const [blockedUserIds, setBlockedUserIds] = useState([]);
   const profileMenuRef = useRef(null);
 
 
@@ -199,6 +200,51 @@ export default function PostDetailPage() {
       alert("삭제 중 오류 발생");
     }
   };
+  
+  /* ---------- 유저 차단/해제 토글 ---------- */
+  const toggleBlockUser = async () => {
+    const isBlocked = blockedUserIds.includes(post.authorId);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/${post.authorId}/block`,
+        {
+          method: isBlocked ? "DELETE" : "POST",
+          credentials: "include",
+        }
+      );
+      if (!res.ok) throw new Error();
+      alert(isBlocked ? "차단을 해제했습니다." : "차단했습니다.");
+      setBlockedUserIds((prev) =>
+        isBlocked
+          ? prev.filter((id) => id !== post.authorId)
+          : [...prev, post.authorId]
+      );
+    } catch {
+      alert("처리 중 오류 발생");
+    } finally {
+      setOpenProfileMenuId(null);
+    }
+  };
+
+  /* ---------- 유저 차단 확인 ---------- */
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/blocked`,
+          { credentials: "include" }
+        );
+        if (!res.ok) throw new Error();
+        const list = await res.json();
+        // list가 [{ id: 1, name: "홍길동" }, ...] 형식이면 아래와 같이 처리
+        setBlockedUserIds(list.map((u) => u.id));
+      } catch (err) {
+        console.error("차단 유저 목록 불러오기 실패", err);
+        setBlockedUserIds([]);
+      }
+    })();
+  }, []);
+
 
   /* ---------- 렌더 ---------- */
   if (error)
@@ -216,7 +262,7 @@ export default function PostDetailPage() {
 
   return (
     /* flex 컨테이너로 메인 + 사이드바 배치 */
-    <div className="flex flex-col md:flex-row gap-8 w-full max-w-[1300px] mx-auto px-6 py-10 text-gray-900 font-sans">
+    <div className="flex flex-col md:flex-row gap-8 w-full max-w-[1200px] mx-auto px-6 py-10 text-gray-900 font-sans">
       {/* ---------- 메인 영역 ---------- */}
       <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)] min-h-[800px]">
         {/* 카테고리 경로 */}
@@ -278,17 +324,36 @@ export default function PostDetailPage() {
                 >
                   프로필 보기
                 </Link>
+
                 <button
-                  onClick={() => {
-                    setOpenProfileMenuId(null);
-                    alert(`"${post.authorName}"님을 차단했습니다.`);
+                  onClick={async () => {
+                    const isBlocked = blockedUserIds.includes(post.authorId);
+                    const url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/${isBlocked ? "unblock" : "block"}/${post.authorId}`;
+                    try {
+                      const res = await fetch(url, {
+                        method: isBlocked ? "DELETE" : "POST",
+                        credentials: "include",
+                      });
+                      if (!res.ok) throw new Error();
+                      setBlockedUserIds((prev) =>
+                        isBlocked
+                          ? prev.filter((id) => id !== post.authorId)
+                          : [...prev, post.authorId]
+                      );
+                      alert(`"${post.authorName}"님을 ${isBlocked ? "차단 해제" : "차단"}했습니다.`);
+                    } catch {
+                      alert("처리 중 오류 발생");
+                    } finally {
+                      setOpenProfileMenuId(null);
+                    }
                   }}
-                  className="block text-red-500 hover:underline mt-1"
+                  className={`block mt-1 hover:underline ${blockedUserIds.includes(post.authorId) ? "text-green-500" : "text-red-500"}`}
                 >
-                  차단하기
+                  {blockedUserIds.includes(post.authorId) ? "차단해제하기" : "차단하기"}
                 </button>
               </div>
             )}
+
           </div>
 
           <div className="flex flex-wrap items-center gap-x-2 text-right">
