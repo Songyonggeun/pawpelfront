@@ -84,7 +84,7 @@ export default function PetStorePage() {
                     }}
                   />
                 </Link>
-                <span className="absolute top-2 right-2 text-gray-400 text-xl">♡</span>
+                {/* <span className="absolute top-2 right-2 text-gray-400 text-xl">♡</span> */}
               </div>
               <CardContent className="p-4">
                 <div className="text-sm text-gray-500">{product.brand}</div>

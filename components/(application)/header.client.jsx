@@ -7,6 +7,7 @@ import HealthBanner from "@/components/(application)/healthBanner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
+import { Bell } from "lucide-react";
 
 export default function HeaderClient({ isLoggedIn, userRoles }) {
   const router = useRouter();
@@ -18,6 +19,8 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   const lastScrollY = useRef(0);
   const [mouseAtTop, setMouseAtTop] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [notifications, setNotifications] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => setIsClient(true), []);
@@ -66,6 +69,38 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications`,
+          {
+            credentials: "include",
+          }
+        );
+        const data = await res.json();
+        setNotifications(data);
+      } catch (err) {
+        console.error("알림 불러오기 실패:", err);
+      }
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const markAsRead = async (id) => {
+    await fetch(
+      `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications/${id}/read`,
+      {
+        method: "PATCH",
+        credentials: "include",
+      }
+    );
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
 
   const toggleCommunityMenu = () => {
     setShowCommunityMenu((prev) => !prev);
@@ -121,22 +156,26 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
         headerVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
-      <div className="w-4/5 mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between">
-        {/* 왼쪽 로고 + 데스크탑 네비 */}
-        <div className="flex items-center w-full md:w-auto">
-          <Link href="/" className="flex items-center space-x-2 cursor-pointer">
-            <span className="text-blue-500 text-2xl font-bold">✓</span>
-            <span className="text-2xl font-bold text-blue-500">Pawple</span>
+      <div className="max-w-screen-xl w-full mx-auto px-4 md:px-6 py-6 flex flex-col md:flex-row items-center justify-between">
+        <div className="flex items-center w-full md:w-auto min-w-0">
+          <Link
+            href="/"
+            className="flex items-center space-x-2 cursor-pointer flex-shrink-0"
+          >
+            <span className="text-blue-500 text-2xl font-bold select-none">✓</span>
+            <span className="text-2xl font-bold text-blue-500 select-none whitespace-nowrap">
+              Pawple
+            </span>
           </Link>
 
-          <nav className="hidden md:flex text-gray-700 text-base font-bold items-center space-x-12 ml-10">
+          <nav className="hidden md:flex text-gray-700 text-base font-bold items-center space-x-12 ml-10 min-w-0 flex-shrink-0">
             <button
               onClick={toggleCommunityMenu}
               className={`${
                 pathname.startsWith("/community")
                   ? "text-black font-bold"
                   : "hover:text-blue-500"
-              }`}
+              } whitespace-nowrap`}
             >
               커뮤니티
             </button>
@@ -147,7 +186,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 pathname.startsWith("/health")
                   ? "text-black font-bold"
                   : "hover:text-blue-500"
-              }`}
+              } whitespace-nowrap`}
             >
               건강관리
             </button>
@@ -158,15 +197,14 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 pathname === "/store"
                   ? "text-black font-bold"
                   : "hover:text-blue-500"
-              }`}
+              } whitespace-nowrap`}
             >
               스토어
             </Link>
           </nav>
         </div>
 
-        {/* 데스크탑 오른쪽: 배너, 검색, 로그인/로그아웃 */}
-        <div className="hidden md:flex items-center space-x-6 ml-auto">
+        <div className="hidden md:flex items-center space-x-6 ml-auto min-w-0">
           <HealthBanner
             isLoggedIn={isLoggedIn}
             className="hidden max-[1100px]:hidden"
@@ -174,11 +212,11 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
 
           {isClient && (
             <>
-              <div className="relative">
+              <div className="relative flex-shrink-0 min-w-[280px]">
                 <input
                   type="text"
                   placeholder="검색어를 입력해주세요."
-                  className="border border-gray-300 rounded-full px-4 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border border-gray-300 rounded-full px-4 py-1.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   onKeyDown={onKeyDown}
@@ -192,54 +230,140 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 </button>
               </div>
 
-              <Link
-                href="/store/cart"
-                className="text-sm text-gray-500 hover:text-black"
-              >
-                장바구니
-              </Link>
-
-              {isLoggedIn ? (
-                userRoles.length === 0 ? null : (
-                  <div className="flex items-center space-x-3">
-                    {userRoles.includes("ADMIN") ? (
-                      <Link
-                        href="/admin"
-                        className="text-sm text-gray-500 hover:text-black"
-                      >
-                        관리자페이지
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/myPage"
-                        className="text-sm text-gray-500 hover:text-black"
-                      >
-                        마이페이지
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="text-sm text-gray-500 hover:text-black"
-                    >
-                      로그아웃
-                    </button>
-                  </div>
-                )
-              ) : (
-                <Link
-                  href="/login"
-                  className="text-sm text-gray-500 hover:text-black"
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="relative top-1 text-gray-700 hover:text-blue-500 transition-colors whitespace-nowrap"
                 >
-                  로그인
+                  <Bell className="w-5 h-5" />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-2 text-xs bg-red-500 text-white rounded-full px-1">
+                      {notifications.length}
+                    </span>
+                  )}
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl border border-gray-200 rounded-lg z-50 max-h-96 overflow-y-auto custom-scrollbar">
+                    <div className="p-4 font-semibold text-gray-800 border-b text-sm flex justify-between items-center">
+                      <span>새 알림</span>
+                      {notifications.length > 0 && (
+                        <button
+                          className="text-xs text-blue-500 hover:underline"
+                          onClick={async () => {
+                            try {
+                              await fetch(
+                                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications/read-all`,
+                                {
+                                  method: "PATCH",
+                                  credentials: "include",
+                                }
+                              );
+                              setNotifications([]);
+                            } catch (err) {
+                              console.error("모두 읽음 실패:", err);
+                            }
+                          }}
+                        >
+                          모두 읽음
+                        </button>
+                      )}
+                    </div>
+
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-gray-500 text-sm text-center">
+                        새로운 알림이 없습니다.
+                      </div>
+                    ) : (
+                      <ul className="divide-y divide-gray-100">
+                        {notifications.map((n) => (
+                          <li
+                            key={n.id}
+                            className="flex justify-between items-start gap-2 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                            onClick={async () => {
+                              await markAsRead(n.id);
+                              if (n.postId) {
+                                window.location.href = `/community/detail/${n.postId}`;
+                              }
+                            }}
+                          >
+                            <div className="flex flex-col">
+                              <span className="text-sm text-gray-800">
+                                📩 {n.message}
+                              </span>
+                              <span className="text-xs text-gray-400 mt-1">
+                                {new Date(n.createdAt).toLocaleString("ko-KR", {
+                                  dateStyle: "short",
+                                  timeStyle: "short",
+                                })}
+                              </span>
+                            </div>
+                            <button
+                              className="text-xs text-blue-500 hover:underline whitespace-nowrap"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await markAsRead(n.id);
+                              }}
+                            ></button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 장바구니 + 마이페이지 + 로그아웃 버튼들 */}
+              <div className="flex items-center space-x-6 flex-shrink-0 min-w-max">
+                <Link
+                  href="/store/cart"
+                  className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
+                >
+                  장바구니
                 </Link>
-              )}
+
+                {isLoggedIn ? (
+                  userRoles.length === 0 ? null : (
+                    <>
+                      {userRoles.includes("ADMIN") ? (
+                        <Link
+                          href="/admin"
+                          className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
+                        >
+                          관리자페이지
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/myPage"
+                          className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
+                        >
+                          마이페이지
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
+                      >
+                        로그아웃
+                      </button>
+                    </>
+                  )
+                ) : (
+                  <Link
+                    href="/login"
+                    className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
+                  >
+                    로그인
+                  </Link>
+                )}
+              </div>
             </>
           )}
         </div>
 
         {/* 모바일용 검색창 + 햄버거 버튼 */}
         <div className="flex md:hidden w-full mt-4 space-x-2">
-          <div className="relative flex-grow">
+          <div className="relative flex-grow min-w-0">
             <input
               type="text"
               placeholder="검색어를 입력해주세요."
@@ -258,7 +382,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
           </div>
 
           <button
-            className="p-2 rounded-md hover:bg-gray-100"
+            className="p-2 rounded-md hover:bg-gray-100 flex-shrink-0"
             onClick={toggleMobileMenu}
             aria-label="모바일 메뉴 토글"
           >
@@ -286,70 +410,71 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
           <CommunityMenu visible={showCommunityMenu} />
         </div>
       )}
-
       {showHealthCareMenu && (
         <div className="w-4/5 mx-auto px-4 border-t border-gray-200 md:block hidden">
-          <HealthCareMenu />
+          <HealthCareMenu visible={showHealthCareMenu} />
         </div>
       )}
 
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 px-4 py-3 space-y-4 bg-white">
-          <button
-            onClick={toggleCommunityMenu}
-            className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500"
-          >
-            커뮤니티
-          </button>
-          {showCommunityMenu && <CommunityMenu visible={showCommunityMenu} />}
-
-          <button
-            onClick={toggleHealthCareMenu}
-            className="block w-full text-left text-gray-700 font-semibold hover:text-blue-500"
-          >
-            건강관리
-          </button>
-          {showHealthCareMenu && <HealthCareMenu />}
-
-          <Link href="/store" className="hover:text-blue-500">
-            스토어
-          </Link>
-
-          <div className="flex flex-col space-y-2 text-sm">
-            {!isLoggedIn ? (
-              <Link
-                href="/login"
-                className="text-left p-1 rounded hover:bg-gray-100 text-gray-600"
+        <nav className="md:hidden border-t border-gray-200 w-full px-4 py-3 bg-white shadow-sm">
+          <ul className="space-y-2 font-semibold text-gray-700">
+            <li>
+              <button
+                onClick={toggleCommunityMenu}
+                className="w-full text-left hover:text-blue-500"
               >
-                로그인
+                커뮤니티
+              </button>
+              {showCommunityMenu && <CommunityMenu visible={showCommunityMenu} />}
+            </li>
+            <li>
+              <button
+                onClick={toggleHealthCareMenu}
+                className="w-full text-left hover:text-blue-500"
+              >
+                건강관리
+              </button>
+              {showHealthCareMenu && <HealthCareMenu visible={showHealthCareMenu} />}
+            </li>
+            <li>
+              <Link href="/store" className="block hover:text-blue-500">
+                스토어
               </Link>
-            ) : userRoles.length === 0 ? null : (
+            </li>
+            {isLoggedIn ? (
               <>
                 {userRoles.includes("ADMIN") ? (
-                  <Link
-                    href="/admin"
-                    className="text-left p-1 rounded hover:bg-gray-100 text-gray-600"
-                  >
-                    관리자페이지
-                  </Link>
+                  <li>
+                    <Link href="/admin" className="block hover:text-blue-500">
+                      관리자페이지
+                    </Link>
+                  </li>
                 ) : (
-                  <Link
-                    href="/myPage"
-                    className="text-left p-1 rounded hover:bg-gray-100 text-gray-600"
-                  >
-                    마이페이지
-                  </Link>
+                  <li>
+                    <Link href="/myPage" className="block hover:text-blue-500">
+                      마이페이지
+                    </Link>
+                  </li>
                 )}
-                <button
-                  onClick={handleLogout}
-                  className="text-left p-1 rounded hover:bg-gray-100 text-gray-600"
-                >
-                  로그아웃
-                </button>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left hover:text-blue-500"
+                  >
+                    로그아웃
+                  </button>
+                </li>
               </>
+            ) : (
+              <li>
+                <Link href="/login" className="block hover:text-blue-500">
+                  로그인
+                </Link>
+              </li>
             )}
-          </div>
-        </div>
+          </ul>
+        </nav>
       )}
     </header>
   );

@@ -49,17 +49,45 @@ export default function SelectPetPage() {
       </div> */}
 
       <div className="flex gap-4 flex-wrap justify-center mb-6">
-        {pets.map((pet) => (
-          <div
-            key={pet.id}
-            onClick={() => setSelectedPetId(pet.id)}
-            className={`w-60 h-60 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
-              ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
-          >
-            <div className="w-28 h-28 bg-gray-200 rounded-full mb-2" />
-            <div className="text-m font-medium">{pet.petName}</div>
+        {pets.map((pet) => {
+            const species = pet.petType?.toLowerCase() || '';
+            const isCat = species.includes('cat') || species.includes('고양이') || species.includes('냥');
+            const defaultImage = isCat ? '/images/profile/default_cat.jpeg' : '/images/profile/default_dog.jpeg';
+            const isDefaultImage = !pet.imageUrl;
+
+            return (
+              <div
+                key={pet.id}
+                onClick={() => setSelectedPetId(pet.id)}
+                className={`w-60 h-60 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
+                  ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
+              >
+                  <div className="w-28 h-28 rounded-full overflow-hidden bg-white flex items-center justify-center mb-5">
+                    <img
+                      src={
+                        pet.thumbnailUrl || pet.imageUrl
+                          ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                              ? pet.thumbnailUrl || pet.imageUrl
+                              : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                          : defaultImage
+                      }
+                      alt={pet.petName}
+                      className={`w-full h-full ${
+                        isDefaultImage
+                          ? isCat
+                            ? 'object-contain p-[10px] filter grayscale brightness-110 opacity-60'
+                            : 'object-contain p-1 filter grayscale brightness-110 opacity-60'
+                          : 'object-cover'
+                      }`}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">
+                  {pet.petType === 'cat' ? '고양이' : pet.petType === 'dog' ? '강아지' : '기타'} / {pet.petAge}년생
+                </div>
+                <div className="text-m font-medium">{pet.petName}</div>
           </div>
-        ))}
+            )
+        })}
       </div>
 
       <div className="text-center">
@@ -69,8 +97,6 @@ export default function SelectPetPage() {
         >
           다음 단계로 →
         </button>
-        <div className="mx-auto mt-6 w-[200px] h-[500px] bg-transparent" />
-
       </div>
     </div>
   );

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import MenuComponents from '@/components/(application)/menu';
 
 export default function PetHealthSection() {
   const [pets, setPets] = useState([]);
@@ -35,27 +34,13 @@ export default function PetHealthSection() {
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
   };
 
-  const menuItems = [
-    { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '건강체크 기록', href: '/myPage/health' },
-    { title: '백신접종 기록', href: '/myPage/vaccine' },
-    { title: '상담 글', href: '/myPage/consult' },
-    { title: '작성 글', href: '/myPage/posts' },
-  ];
-
   if (!userInfo) {
     return <div className="text-center py-10">로딩 중...</div>;
   }
 
   return (
-    <div className="flex flex-col md:flex-row max-w-[1100px] mx-auto px-6 py-6 gap-10">
-      <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0 bg-gray-50 min-h-[80vh]">
-        <nav className="mt-[10px] px-[10px]">
-          <ul className="space-y-3">
-            <MenuComponents data={menuItems} />
-          </ul>
-        </nav>
-      </aside>
+    <>
+
 
       <main className="flex-1 order-1 md:order-2">
         <section>
@@ -182,6 +167,6 @@ export default function PetHealthSection() {
           )}
         </section>
       </main>
-    </div>
+    </>
   );
 }

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import MenuComponents from '@/components/(application)/menu';
 import PetInputButton from '@/components/(petInputs)/petInput';
 
 export default function MyPage() {
@@ -46,28 +45,12 @@ export default function MyPage() {
     return <div className="text-center py-10">로딩 중...</div>;
   }
 
-  const menuItems = [
-    { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '건강체크 기록', href: '/myPage/health' },
-    { title: '백신접종 기록', href: '/myPage/vaccine' },
-    { title: '상담 글', href: '/myPage/consult' },
-    { title: '작성 글', href: '/myPage/posts' },
-  ];
-
   const totalHealthCheckCount = pets.reduce((sum, pet) => {
     return sum + (pet.healthRecords?.length || 0);
   }, 0);
 
   return (
-    <div className="flex flex-col md:flex-row max-w-[1100px] mx-auto px-6 py-6 gap-10">
-      {/* 왼쪽 메뉴 */}
-      <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0 bg-gray-50 min-h-[80vh]">
-        <nav className="mt-[10px] px-[10px]">
-          <ul className="space-y-3">
-            <MenuComponents data={menuItems} />
-          </ul>
-        </nav>
-      </aside>
+    <>
 
       {/* 본문 영역 */}
       <main className="flex-1 order-1 md:order-2">
@@ -187,7 +170,7 @@ export default function MyPage() {
           <div className="flex gap-4 flex-wrap">
           {pets.map((pet, index) => {
             const species = pet.petType?.toLowerCase() || '';
-            const isCat = species.includes('cat') || species.includes('고양이') || species.includes('냥');
+            const isCat = species.includes('cat') || species.includes('고양이');
             const defaultImage = isCat ? '/images/profile/default_cat.jpeg' : '/images/profile/default_dog.jpeg';
             const isDefaultImage = !pet.imageUrl;
 
@@ -232,6 +215,6 @@ export default function MyPage() {
           />
         )}
       </main>
-    </div>
+    </>
   );
 }
