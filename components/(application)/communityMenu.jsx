@@ -57,6 +57,15 @@ export default function CommunityMenu() {
           </Link>
         </li>
         <li>
+          <Link
+            href="/community/gallery"
+            className={`hover:underline block ${isActive('/community/gallery') ? 'text-black font-bold' : ''
+              }`}
+          >
+            갤러리
+          </Link>
+        </li>
+        <li>
         <Link
           href="/community/map"
           className={`hover:underline block ${isActive('/community/map') ? 'text-black font-bold' : ''}`}
