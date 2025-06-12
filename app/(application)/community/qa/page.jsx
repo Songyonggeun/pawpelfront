@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import PopularPostList from "@/components/(application)/PopularPostList";
 
 export default function QnaPage() {
   const [posts, setPosts] = useState([]);
@@ -154,7 +155,7 @@ export default function QnaPage() {
 
   return (
     <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
-      <div className="max-w-[1300px] mx-auto pt-10 px-4">
+      <div className="max-w-[1200px] mx-auto pt-10 px-4">
         <div className="flex flex-col md:flex-row gap-8 overflow-visible">
           {/* 메인 콘텐츠 */}
           <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
@@ -304,7 +305,8 @@ export default function QnaPage() {
           </main>
 
           {/* 인기글 사이드바 */}
-          <aside
+          <PopularPostList popularPosts={popularPosts} />
+          {/* <aside
             className="w-[320px] hidden md:block sticky top-[80px]"
             style={{ height: "calc(100vh - 80px)", overflowY: "auto" }}
           >
@@ -322,10 +324,10 @@ export default function QnaPage() {
                   {post.title}
                 </Link>
               ))}
-            </div>
+            </div> */}
 
             {/* 인기글 페이징 */}
-            <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
+            {/* <div className="mt-6 mb-10 flex justify-center gap-2 items-center text-sm">
               <button
                 className="px-3 py-1 rounded bg-gray-200 disabled:opacity-50"
                 onClick={() => setPopularPage((prev) => Math.max(prev - 1, 0))}
@@ -352,7 +354,7 @@ export default function QnaPage() {
                 &gt;
               </button>
             </div>
-          </aside>
+          </aside> */}
         </div>
       </div>
     </div>

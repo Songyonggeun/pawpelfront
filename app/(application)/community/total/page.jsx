@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import PopularPostList from "@/components/(application)/PopularPostList";
 import AdBanner from "../../../../components/(application)/AdBanner";
 import BlindPost from "@/components/(application)/BlindPost";
 
@@ -144,7 +145,7 @@ export default function TotalPage() {
 
     return (
         <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
-            <div className="max-w-[1300px] mx-auto pt-10 px-4">
+            <div className="max-w-[1200px] mx-auto pt-10 px-4">
                 <div className="flex flex-col md:flex-row gap-8 overflow-visible">
                     <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
                         <AdBanner />
@@ -235,7 +236,8 @@ export default function TotalPage() {
                     </main>
 
                     {/* 인기글 사이드바 */}
-                    <div className="hidden md:block md:w-[260px] md:pl-2">
+                    <PopularPostList popularPosts={popularPosts} />
+                    {/* <div className="hidden md:block md:w-[260px] md:pl-2">
                         <aside className="fixed top-[160px] right-[15vw] w-[260px] bg-white/90 p-4">
                             <div className="flex items-center justify-between mb-3">
                                 <h3 className="text-base font-semibold text-gray-800">
@@ -270,8 +272,8 @@ export default function TotalPage() {
                                     </li>
                                 ))}
                             </ol>
-                        </aside>
-                    </div>
+                        </aside> */}
+                    {/* </div> */}
                 </div>
             </div>
         </div>

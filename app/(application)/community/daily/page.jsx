@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import BlindPost from "@/components/(application)/BlindPost";
+import PopularPostList from "@/components/(application)/PopularPostList";
 
 export default function DailyPage() {
     const [posts, setPosts] = useState([]);
@@ -125,7 +126,7 @@ export default function DailyPage() {
 
     return (
         <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
-            <div className="max-w-[1300px] mx-auto pt-10 px-4">
+            <div className="max-w-[1200px] mx-auto pt-10 px-4">
                 <div className="flex flex-col md:flex-row gap-8 overflow-visible">
                     <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
                         <h2
@@ -231,7 +232,8 @@ export default function DailyPage() {
                     </main>
 
                     {/* 인기글 */}
-                    <div className="hidden md:block md:w-[260px] md:pl-2">
+                    <PopularPostList popularPosts={popularPosts} />
+                    {/* <div className="hidden md:block md:w-[260px] md:pl-2">
                         <aside className="sticky top-[110px] h-fit">
                             <h3 className="text-base font-semibold text-gray-800 mb-3">
                                 🔥 인기글
@@ -258,7 +260,7 @@ export default function DailyPage() {
                                 ))}
                             </ol>
                         </aside>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

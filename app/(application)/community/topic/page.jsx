@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import PopularPostList from "@/components/(application)/PopularPostList";
 import Link from "next/link";
 
 const subCategories = ["홈케어", "식이관리", "병원", "영양제", "행동", "질병"];
@@ -179,7 +180,7 @@ export default function TopicPage() {
 
     return (
         <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
-            <div className="max-w-[1300px] mx-auto pt-10 px-4">
+            <div className="max-w-[1200px] mx-auto pt-10 px-4">
                 <div className="flex flex-col md:flex-row gap-8 overflow-visible">
                     {/* 메인 콘텐츠 */}
                     <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
@@ -372,7 +373,8 @@ export default function TopicPage() {
                     </main>
 
                     {/* 인기글 사이드바 */}
-                    <aside className="sticky top-[110px] h-fit">
+                    <PopularPostList popularPosts={popularPosts} />
+                    {/* <aside className="sticky top-[110px] h-fit">
                         <h3 className="text-base font-semibold text-gray-800 mb-3">
                             🔥 인기글
                         </h3>
@@ -399,7 +401,7 @@ export default function TopicPage() {
                                 </li>
                             ))}
                         </ol>
-                    </aside>
+                    </aside> */}
                 </div>
             </div>
         </div>

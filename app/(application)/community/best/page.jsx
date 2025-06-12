@@ -107,7 +107,7 @@ export default function PopularPage() {
 
     return (
         <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
-            <div className="max-w-[1300px] mx-auto pt-10 px-4">
+            <div className="max-w-[1200px] mx-auto pt-10 px-4">
                 <main className="flex-1 min-w-0">
                     <h2 className="font-bold mb-4 text-lg">
                         인기글 ({filteredPosts.length}건)
