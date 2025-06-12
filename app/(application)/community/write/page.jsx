@@ -136,56 +136,56 @@ const WritePost = () => {
     fetchUserAndPets();
   }, []);
 
-const handleSaveContent = async () => {
-  if (!authorName) return alert("로그인이 필요합니다.");
-  if (!title.trim()) return alert("제목을 입력해주세요.");
-  if (!category) return alert("카테고리를 선택해주세요.");
-  if ((category === "토픽" || category === "Q&A") && !subCategory) {
-    return alert("서브카테고리를 선택해주세요.");
-  }
-
-  const content = quillRef.current?.root.innerHTML || "";
-
-  // 본문 내용이 비어있거나 <p><br></p> 등 빈 내용일 경우 체크
-  const plainText = quillRef.current?.getText().trim() || "";
-  if (!plainText) return alert("본문 내용을 입력해주세요.");
-
-  // 또는 아래처럼 HTML 태그만 있으면 비어있는지 체크 가능
-  // if (!content || content === "<p><br></p>") return alert("본문 내용을 입력해주세요.");
-
-  const postData = {
-    title,
-    content,
-    category,
-    subCategory: (category === "토픽" || category === "Q&A") ? subCategory : null,
-    authorName,
-    petId: selectedPetId,
-  };
-
-  try {
-    const formData = new FormData();
-    const postBlob = new Blob([JSON.stringify(postData)], {
-      type: "application/json",
-    });
-    formData.append("post", postBlob);
-
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts`, {
-      method: "POST",
-      body: formData,
-      credentials: "include",
-    });
-
-    if (response.ok) {
-      alert("게시글이 성공적으로 등록되었습니다.");
-      router.push("/community/total");
-    } else {
-      const error = await response.json();
-      alert(error?.error || "게시글 등록 실패");
+  const handleSaveContent = async () => {
+    if (!authorName) return alert("로그인이 필요합니다.");
+    if (!title.trim()) return alert("제목을 입력해주세요.");
+    if (!category) return alert("카테고리를 선택해주세요.");
+    if ((category === "토픽" || category === "Q&A") && !subCategory) {
+      return alert("서브카테고리를 선택해주세요.");
     }
-  } catch (error) {
-    alert("게시글 등록 중 오류가 발생했습니다.");
-  }
-};
+
+    const content = quillRef.current?.root.innerHTML || "";
+
+    // 본문 내용이 비어있거나 <p><br></p> 등 빈 내용일 경우 체크
+    const plainText = quillRef.current?.getText().trim() || "";
+    if (!plainText) return alert("본문 내용을 입력해주세요.");
+
+    // 또는 아래처럼 HTML 태그만 있으면 비어있는지 체크 가능
+    // if (!content || content === "<p><br></p>") return alert("본문 내용을 입력해주세요.");
+
+    const postData = {
+      title,
+      content,
+      category,
+      subCategory: (category === "토픽" || category === "Q&A") ? subCategory : null,
+      authorName,
+      petId: selectedPetId,
+    };
+
+    try {
+      const formData = new FormData();
+      const postBlob = new Blob([JSON.stringify(postData)], {
+        type: "application/json",
+      });
+      formData.append("post", postBlob);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        alert("게시글이 성공적으로 등록되었습니다.");
+        router.push("/community/total");
+      } else {
+        const error = await response.json();
+        alert(error?.error || "게시글 등록 실패");
+      }
+    } catch (error) {
+      alert("게시글 등록 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <div className="bg-white text-black px-6 py-10 max-w-3xl mx-auto">
@@ -295,8 +295,23 @@ const PetCard = ({ pet, selected, onClick }) => (
       </div>
     )}
     <div className="text-sm font-medium truncate">{pet.petName}</div>
-    <div className="text-xs text-gray-600 mt-1">{pet.petGender || "성별 정보 없음"}</div>
-    <div className="text-xs text-gray-600 mt-1 truncate">{pet.petBreed || "종 정보 없음"}</div>
+    <div className="text-xs text-gray-600 mt-1 truncate">
+      {pet.petType === "cat"
+        ? "고양이"
+        : pet.petType === "dog"
+          ? "강아지"
+          : "종 정보 없음"}
+          <>
+           {' / '}
+          </>
+      {pet.petGender === "female"
+        ? "여아"
+        : pet.petGender === "male"
+          ? "남아"
+          : "성별 정보 없음"}
+    </div>
+
+
   </div>
 );
 
