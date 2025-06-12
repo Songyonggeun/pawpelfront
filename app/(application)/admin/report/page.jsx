@@ -7,11 +7,10 @@
     const [editId, setEditId] = useState(null);
     const [editStatus, setEditStatus] = useState('');
     const [message, setMessage] = useState('');
-    const [sortField, setSortField] = useState('reportedAt');  // 정렬 필드 초기값 신고일자
-    const [sortOrder, setSortOrder] = useState('asc');         // 정렬 순서 초기값 오름차순
+    const [sortField, setSortField] = useState('reportedAt');
+    const [sortOrder, setSortOrder] = useState('asc');
 
-    // 검색 상태 추가
-    const [searchType, setSearchType] = useState('reporterId');  // 기본 검색 타입: 신고자 ID
+    const [searchType, setSearchType] = useState('all');  // 기본을 전체로 변경
     const [searchKeyword, setSearchKeyword] = useState('');
     const [filteredReports, setFilteredReports] = useState([]);
 
@@ -29,20 +28,18 @@
         .then((data) => {
             const reportsData = Array.isArray(data) ? data : data.data || [];
             setReports(reportsData);
-            setFilteredReports(reportsData);  // 초기 필터링 결과는 전체 데이터
+            setFilteredReports(reportsData);
         })
         .catch((error) => {
             console.error("신고 목록 로딩 실패:", error);
         });
     }, []);
 
-    // 신고자별 누적 신고 수 계산
     const reportCountByUser = reports.reduce((acc, cur) => {
         acc[cur.reportedUserId] = (acc[cur.reportedUserId] || 0) + 1;
         return acc;
     }, {});
 
-    // 정렬 함수 (filteredReports 기준으로 정렬)
     const handleSort = (field) => {
         const nextOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
 
@@ -50,12 +47,10 @@
         let aVal = a[field];
         let bVal = b[field];
 
-        // 신고 일자 필드인 경우 Date 객체로 변환 후 비교
         if (field === "reportedAt") {
             aVal = aVal ? new Date(aVal).getTime() : 0;
             bVal = bVal ? new Date(bVal).getTime() : 0;
         } else {
-            // 기타 문자열 필드일 경우
             aVal = aVal ? String(aVal) : "";
             bVal = bVal ? String(bVal) : "";
         }
@@ -70,15 +65,13 @@
         setFilteredReports(sorted);
     };
 
-    // 검색 함수
     const handleSearch = () => {
-        if (!searchKeyword.trim()) {
-        // 빈 검색어면 전체 목록 보여주기
+        // 전체 선택이거나, 빈 검색어면 전체 리스트 보여주기
+        if (searchType === 'all' || !searchKeyword.trim()) {
         setFilteredReports(reports);
         return;
         }
 
-        // 필드별 검색 처리
         const filtered = reports.filter((report) => {
         if (searchType === 'reporterId') {
             return String(report.reporterId).includes(searchKeyword);
@@ -105,9 +98,7 @@
         try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/reports/${id}/status`, {
             method: 'PATCH',
-            headers: {
-            'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({ status: editStatus }),
         });
@@ -123,7 +114,6 @@
             )
         );
 
-        // 저장 후 필터링도 다시 적용
         setFilteredReports((prev) =>
             prev.map((report) =>
             report.id === id ? { ...report, status: editStatus } : report
@@ -149,9 +139,7 @@
     return (
         <div className="p-10">
         {message && (
-            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
-            {message}
-            </div>
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">{message}</div>
         )}
 
         <div className="text-2xl font-bold mb-6 flex items-center">
@@ -164,6 +152,7 @@
             onChange={(e) => setSearchType(e.target.value)}
             className="border px-2 py-1 rounded"
             >
+            <option value="all">전체</option>
             <option value="reporterId">신고자 ID</option>
             <option value="reportedUserId">신고당한 유저 ID</option>
             </select>
@@ -203,9 +192,7 @@
             <tbody>
             {filteredReports.length === 0 ? (
                 <tr>
-                <td colSpan={7} className="py-6 text-gray-500">
-                    신고 내역이 없습니다.
-                </td>
+                <td colSpan={7} className="py-6 text-gray-500">신고 내역이 없습니다.</td>
                 </tr>
             ) : (
                 filteredReports.map((report) => (
