@@ -66,21 +66,21 @@ useEffect(() => {
       </div>
 
       {/* 💰 월별 매출 차트 */}
-<div className="bg-white shadow rounded-xl p-6">
-  <h2 className="text-xl font-semibold text-gray-700 mb-2">월별 총 매출</h2>
-  <p className="text-sm text-gray-500 mb-4">
-    전체 합계: <span className="font-semibold text-purple-600">{totalSales.toLocaleString()}원</span>
-  </p>
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={salesData}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="month" />
-      <YAxis />
-      <Tooltip formatter={(value) => `${Number(value).toLocaleString()}원`} />
-      <Bar dataKey="totalSales" fill="#8884d8" name="매출 금액" />
-    </BarChart>
-  </ResponsiveContainer>
-</div>
+      <div className="bg-white shadow rounded-xl p-6">
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">월별 총 매출</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          전체 합계: <span className="font-semibold text-blue-500">{totalSales.toLocaleString()}원</span>
+        </p>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={salesData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip formatter={(value) => `${Number(value).toLocaleString()}원`} />
+            <Bar dataKey="totalSales" fill="#60A5FA" name="매출 금액" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* 관리 메뉴 카드 */}
       <div className="overflow-x-auto">
