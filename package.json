@@ -1,7 +1,7 @@
 {
   "name": "project",
   "version": "1.0.0",
-  "description": "",
+  "description": "프로젝트프런트",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.6",
     "date-fns": "^4.1.0",
-    "next": "^15.3.2",
+    "next": "^15.3.3",
     "quill": "^2.0.3",
     "react": "^19.1.0",
     "react-datepicker": "^8.3.0",
@@ -27,5 +27,16 @@
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.4",
     "tailwindcss": "^4.1.8"
-  }
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Songyonggeun/pawpelfront.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Songyonggeun/pawpelfront/issues"
+  },
+  "homepage": "https://github.com/Songyonggeun/pawpelfront#readme"
 }
