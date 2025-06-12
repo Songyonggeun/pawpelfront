@@ -165,8 +165,14 @@ export default function AdminOrderPage() {
                     </td>
                     {itemIdx === 0 && (
                       <>
-                        <td rowSpan={order.items.length} className={order.status === '주문취소' ? 'px-3 py-2 line-through text-gray-400' : 'px-3 py-2'}>
-                          {order.totalAmount.toLocaleString()}원
+                        <td
+                          rowSpan={order.items.length}
+                          className={`px-3 py-2 whitespace-pre-line ${order.status === '주문취소' ? 'line-through text-gray-400' : ''}`}
+                        >
+                          {(order.totalAmount + (order.totalAmount <= 35000 ? 3000 : 0)).toLocaleString()}원
+                          {order.totalAmount <= 35000 && (
+                            <div className="text-[11px] text-gray-500 mt-1">(배송비 3,000원 포함)</div>
+                          )}
                         </td>
                         <td rowSpan={order.items.length} className="px-3 py-2 text-gray-600">
                           {order.status}
