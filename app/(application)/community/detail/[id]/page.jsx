@@ -600,7 +600,7 @@ export default function PostDetailPage() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSearch();
               }}
-              className="w-full max-w-sm border border-gray-300 rounded px-4 py-2 text-sm"
+              className="w-64 border border-gray-300 rounded px-4 py-2 text-sm"
             />
 
             <button
@@ -610,6 +610,7 @@ export default function PostDetailPage() {
               검색
             </button>
           </div>
+
         </div>
       </main>
 
