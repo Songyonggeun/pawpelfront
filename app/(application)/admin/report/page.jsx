@@ -181,9 +181,10 @@
                 >
                 신고 일시 {sortField === 'reportedAt' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
                 </th>
-                <th className="border border-gray-300 py-2">신고자 ID</th>
-                <th className="border border-gray-300 py-2">신고당한 유저 ID</th>
-                <th className="border border-gray-300 py-2">신고 유형</th>
+                <th className="border border-gray-300 py-2">신고자</th>
+                <th className="border border-gray-300 py-2">신고 유저</th>
+                <th className="border border-gray-300 py-2">신고 타입</th>
+                <th className="border border-gray-300 py-2">신고 사유</th>
                 <th className="border border-gray-300 py-2">누적 신고 수</th>
                 <th className="border border-gray-300 py-2">상태</th>
                 <th className="border border-gray-300 py-2">관리</th>
@@ -203,6 +204,7 @@
                     <td className="border border-gray-300 py-2">{report.reporterId}</td>
                     <td className="border border-gray-300 py-2">{report.reportedUserId}</td>
                     <td className="border border-gray-300 py-2">{report.targetType}</td>
+                    <td className="border border-gray-300 py-2">{report.reason}</td>
                     <td className="border border-gray-300 py-2">
                     {reportCountByUser[report.reportedUserId]}
                     </td>

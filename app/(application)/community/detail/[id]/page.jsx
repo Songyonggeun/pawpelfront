@@ -24,6 +24,11 @@ export default function PostDetailPage() {
   const [relatedPopularPosts, setRelatedPopularPosts] = useState([]);
   const [openProfileMenuId, setOpenProfileMenuId] = useState(null);
   const [blockedUserIds, setBlockedUserIds] = useState([]);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
+  const [customReason, setCustomReason] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
+
   const profileMenuRef = useRef(null);
 
 
@@ -136,6 +141,19 @@ export default function PostDetailPage() {
         setCurrentUserName(user.nickname);
       } catch {
         setCurrentUserName(null);
+      }
+    })();
+  }, []);
+
+  // 로그인 유저 가져오기
+  useEffect(() => {
+    (async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const user = await res.json();
+        setCurrentUser(user); // user.id가 들어 있음
       }
     })();
   }, []);
@@ -347,9 +365,14 @@ export default function PostDetailPage() {
                       setOpenProfileMenuId(null);
                     }
                   }}
-                  className={`block mt-1 hover:underline ${blockedUserIds.includes(post.authorId) ? "text-green-500" : "text-red-500"}`}
                 >
                   {blockedUserIds.includes(post.authorId) ? "차단해제하기" : "차단하기"}
+                </button>
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="block mt-1 hover:underline"
+                >
+                  신고하기
                 </button>
               </div>
             )}
@@ -683,6 +706,97 @@ export default function PostDetailPage() {
       <div className="hidden md:block md:w-[260px] md:pl-2">
         <PopularPostsSidebar />
       </div>
+
+      {/* ---------- 신고하기 ---------- */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
+            <h2 className="text-lg font-bold mb-4">사용자 신고</h2>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const reason = selectedReason === "기타" ? customReason.trim() : selectedReason;
+                if (!reason) {
+                  alert("신고 사유를 입력해주세요.");
+                  return;
+                }
+                try {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/report`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({
+                      reporterId: currentUser.id,
+                      reportedUserId: post.authorId,
+                      postId: post.id,
+                      commentId: null,
+                      reason,
+                      targetType: "POST",
+                      status: "대기중",
+                    }),
+                  });
+                  if (!res.ok) throw new Error();
+                  alert("신고가 접수되었습니다.");
+                  setShowReportModal(false);
+                } catch {
+                  alert("신고 처리 중 오류가 발생했습니다.");
+                }
+              }}
+            >
+              <div className="space-y-2 mb-4">
+                {[
+                  "욕설 혹은 폭언",
+                  "광고성 컨텐츠",
+                  "허위/거짓 정보",
+                  "개인정보 노출",
+                  "사생활 침해",
+                  "명예 훼손",
+                  "기타",
+                ].map((reason) => (
+                  <label key={reason} className="block">
+                    <input
+                      type="radio"
+                      name="reportReason"
+                      value={reason}
+                      checked={selectedReason === reason}
+                      onChange={() => setSelectedReason(reason)}
+                      className="mr-2"
+                    />
+                    {reason}
+                  </label>
+                ))}
+              </div>
+              {selectedReason === "기타" && (
+                <textarea
+                  placeholder="신고 사유를 입력해주세요"
+                  value={customReason}
+                  onChange={(e) => setCustomReason(e.target.value)}
+                  className="w-full border rounded px-3 py-2 mb-4 text-sm"
+                  rows={3}
+                />
+              )}
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReportModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  신고
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
+
+    
   );
 }
