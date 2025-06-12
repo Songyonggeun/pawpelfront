@@ -199,8 +199,12 @@ export default function HealthBanner({ isLoggedIn }) {
             href={item.type === 'health' ? '/myPage/health' : '/myPage/vaccine'}
             className="block"
           >
-            <div
+            {/* <div
               className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-xl shadow-sm"
+              style={{ height: `${ITEM_HEIGHT}px` }}
+            > */}
+            <div
+              className="flex items-center justify-center gap-x-2 px-4 py-2 bg-gray-100 rounded-xl shadow-sm"
               style={{ height: `${ITEM_HEIGHT}px` }}
             >
               <span className="font-bold text-sm whitespace-nowrap min-w-0 truncate">{item.petName}</span>
