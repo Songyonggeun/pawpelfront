@@ -10,48 +10,31 @@ export default function VaccineForm() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
   
   const router = useRouter();
 
   useEffect(() => {
-    const fetchPetsWithAllVaccine = async () => {
+    const checkLogin = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
           credentials: 'include',
         });
-        if (!res.ok) throw new Error('Unauthorized');
+        if (!res.ok) throw new Error('unauthorized');
         const data = await res.json();
+        setUserInfo(data); // 필요 없으면 생략 가능
+        setIsAuthChecked(true);
+      } catch (err) {
+        router.replace('/login');
+      }
+    };
 
-        const petsWithLastVaccine = await Promise.all(
-          (data.pets || []).map(async (pet) => {
-            const vaccineRes = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/history?petId=${pet.id}`, {
-              credentials: 'include',
-            });
-            let records = vaccineRes.ok ? await vaccineRes.json() : [];
-
-            // 최신순 정렬
-            records.sort((a, b) => new Date(b.vaccinatedAt) - new Date(a.vaccinatedAt));
-
-            const lastRecord = records.length > 0 ? records[0] : null;
-            const stepSet = new Set(records.map((r) => r.step));
-            const isFullyVaccinated = stepSet.size >= 6; // 1~7단계가 모두 기록됨
-
-            return { ...pet, 
-              lastVaccine: lastRecord,
-              vaccineRecords: records,
-              isFullyVaccinated, // ✅ 백신 완료 여부 추가
-            };
-          })
-        );
-
-          setPets(petsWithLastVaccine); // 여기서 한 번만 pets 설정
-        } catch (err) {
-          router.replace('/login');
-        }
-      };
-
-    fetchPetsWithAllVaccine();
+    checkLogin();
   }, []);
+
+  // 로그인 확인 전에는 아무것도 안 보임
+  if (!isAuthChecked) return null;
 
   const handleSubmit = async () => {
     if (!selectedPetId) {
