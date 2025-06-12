@@ -156,21 +156,26 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
         headerVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
-      <div className="w-4/5 mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between">
-        <div className="flex items-center w-full md:w-auto">
-          <Link href="/" className="flex items-center space-x-2 cursor-pointer">
-            <span className="text-blue-500 text-2xl font-bold">✓</span>
-            <span className="text-2xl font-bold text-blue-500">Pawple</span>
+      <div className="max-w-screen-xl w-full mx-auto px-4 md:px-6 py-6 flex flex-col md:flex-row items-center justify-between">
+        <div className="flex items-center w-full md:w-auto min-w-0">
+          <Link
+            href="/"
+            className="flex items-center space-x-2 cursor-pointer flex-shrink-0"
+          >
+            <span className="text-blue-500 text-2xl font-bold select-none">✓</span>
+            <span className="text-2xl font-bold text-blue-500 select-none whitespace-nowrap">
+              Pawple
+            </span>
           </Link>
 
-          <nav className="hidden md:flex text-gray-700 text-base font-bold items-center space-x-12 ml-10">
+          <nav className="hidden md:flex text-gray-700 text-base font-bold items-center space-x-12 ml-10 min-w-0 flex-shrink-0">
             <button
               onClick={toggleCommunityMenu}
               className={`${
                 pathname.startsWith("/community")
                   ? "text-black font-bold"
                   : "hover:text-blue-500"
-              }`}
+              } whitespace-nowrap`}
             >
               커뮤니티
             </button>
@@ -181,7 +186,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 pathname.startsWith("/health")
                   ? "text-black font-bold"
                   : "hover:text-blue-500"
-              }`}
+              } whitespace-nowrap`}
             >
               건강관리
             </button>
@@ -192,14 +197,14 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 pathname === "/store"
                   ? "text-black font-bold"
                   : "hover:text-blue-500"
-              }`}
+              } whitespace-nowrap`}
             >
               스토어
             </Link>
           </nav>
         </div>
 
-        <div className="hidden md:flex items-center space-x-6 ml-auto">
+        <div className="hidden md:flex items-center space-x-6 ml-auto min-w-0">
           <HealthBanner
             isLoggedIn={isLoggedIn}
             className="hidden max-[1100px]:hidden"
@@ -207,11 +212,11 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
 
           {isClient && (
             <>
-              <div className="relative">
+              <div className="relative flex-shrink-0 min-w-[280px]">
                 <input
                   type="text"
                   placeholder="검색어를 입력해주세요."
-                  className="border border-gray-300 rounded-full px-4 py-1.5 w-72 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border border-gray-300 rounded-full px-4 py-1.5 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
                   onKeyDown={onKeyDown}
@@ -225,10 +230,10 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 </button>
               </div>
 
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setDropdownOpen((prev) => !prev)}
-                  className="relative top-1 text-gray-700 hover:text-blue-500 transition-colors"
+                  className="relative top-1 text-gray-700 hover:text-blue-500 transition-colors whitespace-nowrap"
                 >
                   <Bell className="w-5 h-5" />
                   {notifications.length > 0 && (
@@ -276,7 +281,6 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                             key={n.id}
                             className="flex justify-between items-start gap-2 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                             onClick={async () => {
-                              ;
                               await markAsRead(n.id);
                               if (n.postId) {
                                 window.location.href = `/community/detail/${n.postId}`;
@@ -310,10 +314,10 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
               </div>
 
               {/* 장바구니 + 마이페이지 + 로그아웃 버튼들 */}
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-6 flex-shrink-0 min-w-max">
                 <Link
                   href="/store/cart"
-                  className="text-sm text-black hover:text-blue-500"
+                  className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
                 >
                   장바구니
                 </Link>
@@ -324,21 +328,21 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                       {userRoles.includes("ADMIN") ? (
                         <Link
                           href="/admin"
-                          className="text-sm text-black hover:text-blue-500"
+                          className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
                         >
                           관리자페이지
                         </Link>
                       ) : (
                         <Link
                           href="/myPage"
-                          className="text-sm text-black hover:text-blue-500"
+                          className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
                         >
                           마이페이지
                         </Link>
                       )}
                       <button
                         onClick={handleLogout}
-                        className="text-sm text-black hover:text-blue-500"
+                        className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
                       >
                         로그아웃
                       </button>
@@ -347,7 +351,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 ) : (
                   <Link
                     href="/login"
-                    className="text-sm text-black hover:text-blue-500"
+                    className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
                   >
                     로그인
                   </Link>
@@ -356,9 +360,10 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
             </>
           )}
         </div>
+
         {/* 모바일용 검색창 + 햄버거 버튼 */}
         <div className="flex md:hidden w-full mt-4 space-x-2">
-          <div className="relative flex-grow">
+          <div className="relative flex-grow min-w-0">
             <input
               type="text"
               placeholder="검색어를 입력해주세요."
@@ -377,7 +382,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
           </div>
 
           <button
-            className="p-2 rounded-md hover:bg-gray-100"
+            className="p-2 rounded-md hover:bg-gray-100 flex-shrink-0"
             onClick={toggleMobileMenu}
             aria-label="모바일 메뉴 토글"
           >
@@ -405,11 +410,71 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
           <CommunityMenu visible={showCommunityMenu} />
         </div>
       )}
-
       {showHealthCareMenu && (
         <div className="w-4/5 mx-auto px-4 border-t border-gray-200 md:block hidden">
-          <HealthCareMenu />
+          <HealthCareMenu visible={showHealthCareMenu} />
         </div>
+      )}
+
+      {mobileMenuOpen && (
+        <nav className="md:hidden border-t border-gray-200 w-full px-4 py-3 bg-white shadow-sm">
+          <ul className="space-y-2 font-semibold text-gray-700">
+            <li>
+              <button
+                onClick={toggleCommunityMenu}
+                className="w-full text-left hover:text-blue-500"
+              >
+                커뮤니티
+              </button>
+              {showCommunityMenu && <CommunityMenu visible={showCommunityMenu} />}
+            </li>
+            <li>
+              <button
+                onClick={toggleHealthCareMenu}
+                className="w-full text-left hover:text-blue-500"
+              >
+                건강관리
+              </button>
+              {showHealthCareMenu && <HealthCareMenu visible={showHealthCareMenu} />}
+            </li>
+            <li>
+              <Link href="/store" className="block hover:text-blue-500">
+                스토어
+              </Link>
+            </li>
+            {isLoggedIn ? (
+              <>
+                {userRoles.includes("ADMIN") ? (
+                  <li>
+                    <Link href="/admin" className="block hover:text-blue-500">
+                      관리자페이지
+                    </Link>
+                  </li>
+                ) : (
+                  <li>
+                    <Link href="/myPage" className="block hover:text-blue-500">
+                      마이페이지
+                    </Link>
+                  </li>
+                )}
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left hover:text-blue-500"
+                  >
+                    로그아웃
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link href="/login" className="block hover:text-blue-500">
+                  로그인
+                </Link>
+              </li>
+            )}
+          </ul>
+        </nav>
       )}
     </header>
   );

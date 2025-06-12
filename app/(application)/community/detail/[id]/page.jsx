@@ -42,8 +42,8 @@ export default function PostDetailPage() {
         searchType === "title"
           ? post.title
           : searchType === "content"
-          ? post.content
-          : post.authorName;
+            ? post.content
+            : post.authorName;
 
       return value?.toLowerCase().includes(query);
     });
@@ -76,21 +76,21 @@ export default function PostDetailPage() {
     })();
   }, [id]);
 
-    //외부클릭시 나오도록
+  //외부클릭시 나오도록
   useEffect(() => {
-  const handleClickOutside = (e) => {
-    if (
-      profileMenuRef.current &&
-      !profileMenuRef.current.contains(e.target)
-    ) {
-      setOpenProfileMenuId(null);
-    }
-  };
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
+    const handleClickOutside = (e) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(e.target)
+      ) {
+        setOpenProfileMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   /* ---------- 이전·다음 글 ---------- */
   useEffect(() => {
@@ -224,7 +224,6 @@ export default function PostDetailPage() {
           <span>{post.category}</span>
           {post.subCategory && (
             <>
-              <CommunityMenu category={post.category} />
               <span className="mx-2 text-gray-400">{">"}</span>
               <span>{post.subCategory}</span>
             </>
@@ -237,61 +236,60 @@ export default function PostDetailPage() {
 
         {/* 작성자 + 펫 정보 */}
         <div className="flex justify-between text-sm text-gray-600 mb-4">
- <div className="flex items-center gap-3 relative">
-  <div
-    onClick={() =>
-      setOpenProfileMenuId(
-        openProfileMenuId === post.authorId ? null : post.authorId
-      )
-    }
-    className="cursor-pointer flex items-center gap-2"
-  >
-    {post.authorThumbnailUrl || post.authorImageUrl ? (
-      <img
-        src={
-          (
-            post.authorThumbnailUrl || post.authorImageUrl
-          ).startsWith("/images/profile/")
-            ? post.authorThumbnailUrl || post.authorImageUrl
-            : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
-                post.authorThumbnailUrl || post.authorImageUrl
-              }`
-        }
-        alt={post.authorName}
-        className="w-8 h-8 rounded-full object-cover border border-gray-300"
-      />
-    ) : (
-      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300 text-gray-400">
-        🐾
-      </div>
-    )}
-    <span className="font-medium hover:underline">{post.authorName}</span>
-  </div>
+          <div className="flex items-center gap-3 relative">
+            <div
+              onClick={() =>
+                setOpenProfileMenuId(
+                  openProfileMenuId === post.authorId ? null : post.authorId
+                )
+              }
+              className="cursor-pointer flex items-center gap-2"
+            >
+              {post.authorThumbnailUrl || post.authorImageUrl ? (
+                <img
+                  src={
+                    (
+                      post.authorThumbnailUrl || post.authorImageUrl
+                    ).startsWith("/images/profile/")
+                      ? post.authorThumbnailUrl || post.authorImageUrl
+                      : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${post.authorThumbnailUrl || post.authorImageUrl
+                      }`
+                  }
+                  alt={post.authorName}
+                  className="w-8 h-8 rounded-full object-cover border border-gray-300"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300 text-gray-400">
+                  🐾
+                </div>
+              )}
+              <span className="font-medium hover:underline">{post.authorName}</span>
+            </div>
 
-  {openProfileMenuId === post.authorId && (
-    <div
-      ref={profileMenuRef}
-      className="absolute z-10 bg-white border border-gray-300 rounded shadow px-3 py-2 text-sm top-10 left-0 whitespace-nowrap"
-    >
-      <Link
-        href={`/profile/${post.authorId}`}
-        className="block text-blue-600 hover:underline"
-        onClick={() => setOpenProfileMenuId(null)}
-      >
-        프로필 보기
-      </Link>
-      <button
-        onClick={() => {
-          setOpenProfileMenuId(null);
-          alert(`"${post.authorName}"님을 차단했습니다.`);
-        }}
-        className="block text-red-500 hover:underline mt-1"
-      >
-        차단하기
-      </button>
-    </div>
-  )}
-</div>
+            {openProfileMenuId === post.authorId && (
+              <div
+                ref={profileMenuRef}
+                className="absolute z-10 bg-white border border-gray-300 rounded shadow px-3 py-2 text-sm top-10 left-0 whitespace-nowrap"
+              >
+                <Link
+                  href={`/profile/${post.authorId}`}
+                  className="block text-blue-600 hover:underline"
+                  onClick={() => setOpenProfileMenuId(null)}
+                >
+                  프로필 보기
+                </Link>
+                <button
+                  onClick={() => {
+                    setOpenProfileMenuId(null);
+                    alert(`"${post.authorName}"님을 차단했습니다.`);
+                  }}
+                  className="block text-red-500 hover:underline mt-1"
+                >
+                  차단하기
+                </button>
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-wrap items-center gap-x-2 text-right">
             <span>조회수 {post.viewCount || 0}</span>
@@ -315,9 +313,8 @@ export default function PostDetailPage() {
                       "/images/profile/"
                     )
                       ? post.pet.thumbnailUrl || post.pet.imageUrl
-                      : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
-                          post.pet.thumbnailUrl || post.pet.imageUrl
-                        }`
+                      : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${post.pet.thumbnailUrl || post.pet.imageUrl
+                      }`
                   }
                   alt={post.pet.petName}
                   className="w-16 h-16 rounded-full object-cover"
@@ -335,14 +332,14 @@ export default function PostDetailPage() {
                   {post.pet.petType === "dog"
                     ? "강아지"
                     : post.pet.petType === "cat"
-                    ? "고양이"
-                    : "반려동물"}{" "}
+                      ? "고양이"
+                      : "반려동물"}{" "}
                   /{" "}
                   {post.pet.petGender === "female"
                     ? "여아"
                     : post.pet.petGender === "male"
-                    ? "남아"
-                    : "성별 정보 없음"}
+                      ? "남아"
+                      : "성별 정보 없음"}
                 </div>
                 <div className="text-sm text-gray-600">
                   {post.pet.petAge !== null
@@ -404,21 +401,21 @@ export default function PostDetailPage() {
             </button>
             {currentUserName?.trim().toLowerCase() ===
               post.authorName?.trim().toLowerCase() && (
-              <>
-                <button
-                  onClick={handleEdit}
-                  className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white"
-                >
-                  수정
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white"
-                >
-                  삭제
-                </button>
-              </>
-            )}
+                <>
+                  <button
+                    onClick={handleEdit}
+                    className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white"
+                  >
+                    수정
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white"
+                  >
+                    삭제
+                  </button>
+                </>
+              )}
           </div>
         </div>
         {/* 좋아요 */}
@@ -457,9 +454,8 @@ export default function PostDetailPage() {
                     {list.map((r, i) => (
                       <tr
                         key={r.id}
-                        className={`hover:bg-gray-50 cursor-pointer ${
-                          i !== list.length - 1 ? "border-b" : ""
-                        }`}
+                        className={`hover:bg-gray-50 cursor-pointer ${i !== list.length - 1 ? "border-b" : ""
+                          }`}
                         onClick={() => router.push(`/community/detail/${r.id}`)}
                       >
                         <td className="py-2 px-3 w-1/2 font-medium text-gray-900">
@@ -503,9 +499,9 @@ export default function PostDetailPage() {
               const isToday = created.toDateString() === now.toDateString();
               const formattedTime = isToday
                 ? created.toLocaleTimeString("ko-KR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
                 : created.toLocaleDateString();
 
               return (
@@ -516,11 +512,10 @@ export default function PostDetailPage() {
                     router.push(`/community/detail/${item.id}`)
                   }
                   className={`grid grid-cols-12 px-4 py-2 text-sm cursor-pointer transition-all
-                ${
-                  isCurrent
-                    ? "bg-blue-50 font-bold text-blue-700"
-                    : "hover:bg-gray-50"
-                }
+                ${isCurrent
+                      ? "bg-blue-50 font-bold text-blue-700"
+                      : "hover:bg-gray-50"
+                    }
                 items-center`}
                 >
                   <div className="col-span-1 text-center text-gray-500">
@@ -568,9 +563,8 @@ export default function PostDetailPage() {
               <button
                 key={i}
                 onClick={() => setCurrentPage(i)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === i ? "bg-blue-500 text-white" : "bg-gray-200"
-                }`}
+                className={`px-3 py-1 rounded ${currentPage === i ? "bg-blue-500 text-white" : "bg-gray-200"
+                  }`}
               >
                 {i + 1}
               </button>
