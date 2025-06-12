@@ -8,12 +8,12 @@
     const [editStatus, setEditStatus] = useState('');
     const [message, setMessage] = useState('');
     const [sortField, setSortField] = useState('reportedAt');
-    const [sortOrder, setSortOrder] = useState('asc');
+    const [sortOrder, setSortOrder] = useState('desc');
 
     const [searchType, setSearchType] = useState('all');  // 기본을 전체로 변경
     const [searchKeyword, setSearchKeyword] = useState('');
     const [filteredReports, setFilteredReports] = useState([]);
-
+    
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/reports`, {
         credentials: 'include',
@@ -27,8 +27,16 @@
         })
         .then((data) => {
             const reportsData = Array.isArray(data) ? data : data.data || [];
-            setReports(reportsData);
-            setFilteredReports(reportsData);
+
+            // 🔽 내림차순 정렬: 최근일자가 가장 위로
+            const sortedReports = [...reportsData].sort((a, b) => {
+                const aTime = new Date(a.reportedAt).getTime();
+                const bTime = new Date(b.reportedAt).getTime();
+                return bTime - aTime;
+            });
+
+            setReports(sortedReports);
+            setFilteredReports(sortedReports);
         })
         .catch((error) => {
             console.error("신고 목록 로딩 실패:", error);
@@ -73,11 +81,14 @@
         }
 
         const filtered = reports.filter((report) => {
-        if (searchType === 'reporterId') {
-            return String(report.reporterId).includes(searchKeyword);
+        if (searchType === 'reporterName') {
+            return String(report.reporterName).includes(searchKeyword);
         }
-        if (searchType === 'reportedUserId') {
-            return String(report.reportedUserId).includes(searchKeyword);
+        if (searchType === 'reportedUserName') {
+            return String(report.reportedUserName).includes(searchKeyword);
+        }
+        if (searchType === 'reason') {
+            return String(report.reason).includes(searchKeyword);
         }
         return false;
         });
@@ -153,8 +164,11 @@
             className="border px-2 py-1 rounded"
             >
             <option value="all">전체</option>
-            <option value="reporterId">신고자 ID</option>
-            <option value="reportedUserId">신고당한 유저 ID</option>
+            {/* <option value="reporterId">신고자 ID</option>
+            <option value="reportedUserId">신고당한 유저 ID</option> */}
+            <option value="reporterName">신고자</option>
+            <option value="reportedUserName">작성자</option>
+            <option value="reason">신고사유</option>
             </select>
             <input
             type="text"
@@ -182,9 +196,11 @@
                 신고 일시 {sortField === 'reportedAt' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}
                 </th>
                 <th className="border border-gray-300 py-2">신고자</th>
-                <th className="border border-gray-300 py-2">신고 유저</th>
-                <th className="border border-gray-300 py-2">신고 타입</th>
                 <th className="border border-gray-300 py-2">신고 사유</th>
+                <th className="border border-gray-300 py-2">작성자</th>
+                <th className="border border-gray-300 py-2">신고타입</th>
+                <th className="border border-gray-300 py-2">작성글</th>
+                <th className="border border-gray-300 py-2">작성댓글</th>
                 <th className="border border-gray-300 py-2">누적 신고 수</th>
                 <th className="border border-gray-300 py-2">상태</th>
                 <th className="border border-gray-300 py-2">관리</th>
@@ -201,10 +217,12 @@
                     <td className="border border-gray-300 py-2">
                     {new Date(report.reportedAt).toLocaleString()}
                     </td>
-                    <td className="border border-gray-300 py-2">{report.reporterId}</td>
-                    <td className="border border-gray-300 py-2">{report.reportedUserId}</td>
-                    <td className="border border-gray-300 py-2">{report.targetType}</td>
+                    <td className="border border-gray-300 py-2">{report.reporterName}</td>
                     <td className="border border-gray-300 py-2">{report.reason}</td>
+                    <td className="border border-gray-300 py-2">{report.reportedUserName}</td>
+                    <td className="border border-gray-300 py-2">{report.targetType}</td>
+                    <td className="border border-gray-300 py-2">{report.postId}</td>
+                    <td className="border border-gray-300 py-2">{report.commentId}</td>
                     <td className="border border-gray-300 py-2">
                     {reportCountByUser[report.reportedUserId]}
                     </td>
