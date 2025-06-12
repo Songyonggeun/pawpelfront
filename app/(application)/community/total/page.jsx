@@ -148,7 +148,7 @@ export default function TotalPage() {
             <div className="max-w-[1200px] mx-auto pt-10 px-4">
                 <div className="flex flex-col md:flex-row gap-8 overflow-visible">
                     <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
-                        <AdBanner />
+                        {/* <AdBanner /> */}
                         <h2
                             style={{ fontSize: "18px" }}
                             className="font-bold mb-4">

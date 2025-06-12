@@ -7,7 +7,6 @@ import CommentInput from "@/components/(Inputs)/commentInput";
 import CommentShow from "@/components/(application)/commentShow";
 import LikeCard from "@/components/(application)/postLike";
 import PopularPostsSidebar from "@/components/(application)/PopularPostsSidebar";
-import CommunityMenu from "@/components/(application)/communityMenu";
 import Link from "next/link";
 
 export default function PostDetailPage() {
@@ -65,7 +64,7 @@ export default function PostDetailPage() {
 
 
   // 게시글
-  useEffect(() => {
+   useEffect(() => {
     if (!id) return;
     (async () => {
       try {
@@ -74,13 +73,22 @@ export default function PostDetailPage() {
           { credentials: "include" }
         );
         if (!res.ok) throw new Error("게시글을 불러오지 못했습니다.");
-        setPost(await res.json());
+
+        const data = await res.json();
+
+        if (data.isPublic === false) {
+          // 비공개 글이면 404 페이지로 이동
+          router.replace("/404");
+          return;
+        }
+
+        setPost(data);
         setError(null);
       } catch (e) {
         setError(e.message);
       }
     })();
-  }, [id]);
+  }, [id, router]);
 
   //외부클릭시 나오도록
   useEffect(() => {
@@ -218,7 +226,7 @@ export default function PostDetailPage() {
       alert("삭제 중 오류 발생");
     }
   };
-  
+
   /* ---------- 유저 차단/해제 토글 ---------- */
   const toggleBlockUser = async () => {
     const isBlocked = blockedUserIds.includes(post.authorId);
@@ -277,6 +285,7 @@ export default function PostDetailPage() {
         로딩 중입니다...
       </div>
     );
+    
 
   return (
     /* flex 컨테이너로 메인 + 사이드바 배치 */
@@ -586,56 +595,51 @@ export default function PostDetailPage() {
               const now = new Date();
               const isToday = created.toDateString() === now.toDateString();
               const formattedTime = isToday
-                ? created.toLocaleTimeString("ko-KR", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                ? created.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })
                 : created.toLocaleDateString();
+
+              const isBlinded = item.isPublic === false;
 
               return (
                 <div
                   key={item.id}
-                  onClick={() =>
-                    item.id !== Number(id) &&
-                    router.push(`/community/detail/${item.id}`)
-                  }
-                  className={`grid grid-cols-12 px-4 py-2 text-sm cursor-pointer transition-all
-                ${isCurrent
-                      ? "bg-blue-50 font-bold text-blue-700"
-                      : "hover:bg-gray-50"
+                  onClick={() => {
+                    if (!isBlinded && item.id !== Number(id)) {
+                      router.push(`/community/detail/${item.id}`);
                     }
-                items-center`}
+                  }}
+                  className={`grid grid-cols-12 px-4 py-2 text-sm transition-all items-center
+        ${isCurrent ? "bg-blue-50 font-bold text-blue-700" : "hover:bg-gray-50"}
+        ${isBlinded ? "cursor-not-allowed opacity-60 italic text-red-600" : "cursor-pointer"}
+      `}
+                  title={isBlinded ? "비공개 처리된 글입니다." : ""}
+                  aria-disabled={isBlinded}
                 >
-                  <div className="col-span-1 text-center text-gray-500">
-                    {item.id}
-                  </div>
+                  <div className="col-span-1 text-center text-gray-500">{item.id}</div>
+
                   <div className="col-span-6 text-left truncate">
                     <span className="text-gray-400 mr-1">
-                      [{item.category}
-                      {item.subCategory ? ` > ${item.subCategory}` : ""}]
+                      [{item.category}{item.subCategory ? ` > ${item.subCategory}` : ""}]
                     </span>
-                    <span className="hover:underline">{item.title}</span>
-                    {item.commentCount > 0 && (
-                      <span className="ml-1 text-red-600 font-semibold">
-                        [{item.commentCount}]
-                      </span>
+                    <span className={isBlinded ? "" : "hover:underline"}>
+                      {isBlinded ? "비공개 처리된 글입니다." : item.title}
+                    </span>
+                    {!isBlinded && item.commentCount > 0 && (
+                      <span className="ml-1 text-red-600 font-semibold">[{item.commentCount}]</span>
                     )}
                   </div>
-                  <div className="col-span-2 text-center text-gray-700">
-                    {item.authorName}
-                  </div>
-                  <div className="text-center text-gray-500 w-[90px]">
-                    {formattedTime}
-                  </div>
-                  <div className="col-span-1 text-center text-gray-600">
-                    {item.viewCount}
-                  </div>
-                  <div className="col-span-1 text-center text-gray-600">
-                    {item.likeCount}
-                  </div>
+
+                  <div className="col-span-2 text-center text-gray-700">{item.authorName}</div>
+
+                  <div className="col-span-1 text-center text-gray-500 w-[90px]">{formattedTime}</div>
+
+                  <div className="col-span-1 text-center text-gray-600">{item.viewCount}</div>
+
+                  <div className="col-span-1 text-center text-gray-600">{item.likeCount}</div>
                 </div>
               );
             })}
+
           </div>
 
           {/* 페이지네이션 */}
@@ -797,6 +801,6 @@ export default function PostDetailPage() {
 
     </div>
 
-    
+
   );
 }
