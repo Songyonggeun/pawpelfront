@@ -578,7 +578,7 @@ return (
                   body: JSON.stringify({
                     reporterId: currentUser?.id,
                     reportedUserId: reportedComment.userId,
-                    postId: null,
+                    postId: reportedComment.postId,
                     commentId: reportedComment.id,
                     reason,
                     targetType: "COMMENT",
