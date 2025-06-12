@@ -170,7 +170,7 @@ export default function MyPage() {
           <div className="flex gap-4 flex-wrap">
           {pets.map((pet, index) => {
             const species = pet.petType?.toLowerCase() || '';
-            const isCat = species.includes('cat') || species.includes('고양이') || species.includes('냥');
+            const isCat = species.includes('cat') || species.includes('고양이');
             const defaultImage = isCat ? '/images/profile/default_cat.jpeg' : '/images/profile/default_dog.jpeg';
             const isDefaultImage = !pet.imageUrl;
 

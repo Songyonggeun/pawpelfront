@@ -38,12 +38,18 @@ export default function UserProfilePage() {
     <div className="flex flex-col md:flex-row max-w-6xl mx-auto px-6 py-10">
       {/* 프로필 카드 */}
       <aside className="w-full md:w-64 mb-6 md:mb-0 md:mr-8">
-        <div className="border rounded-lg p-4 text-center shadow-sm">
-          {user.thumbnailUrl ? (
+        <div className="border border-gray-300 rounded-lg p-4 text-center shadow-sm">
+          {user.imageUrl ? (
             <img
-              src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${user.thumbnailUrl}`}
+                src={
+                (user.thumbnailUrl || user.imageUrl)?.startsWith("/images/profile/")
+                  ? `${user.thumbnailUrl || user.imageUrl}?t=${Date.now()}`
+                  : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                      user.thumbnailUrl || user.imageUrl
+                    }?t=${Date.now()}`
+                }
               alt="Profile"
-              className="w-24 h-24 rounded-full mx-auto object-cover border"
+              className="border-gray-300 w-24 h-24 rounded-full mx-auto object-cover border"
             />
           ) : (
             <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto flex items-center justify-center text-3xl text-gray-400">
@@ -53,7 +59,7 @@ export default function UserProfilePage() {
           <h2 className="text-lg font-semibold mt-4">
             {user.socialName || user.name}
           </h2>
-          <div className="text-sm text-gray-500">강아지 보호자</div>
+          {/* <div className="text-sm text-gray-500">강아지 보호자</div> */}
           <div className="mt-2 text-sm">
             작성한 글 {posts.length}
           </div>

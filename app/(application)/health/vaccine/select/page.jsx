@@ -201,31 +201,45 @@ export default function VaccineForm() {
 
       {/* 반려동물 선택 */}
       <div className="flex gap-4 flex-wrap justify-center mb-6">
-        {pets.map((pet) => (
-          <div
-            key={pet.id}
-            onClick={() => setSelectedPetId(pet.id)}
-            className={`w-32 h-48 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
-              ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
-          >
-            <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
-            <div className="text-sm font-medium">{pet.petName}</div>
+        {pets.map((pet) => {
+            const species = pet.petType?.toLowerCase() || '';
+            const isCat = species.includes('cat') || species.includes('고양이') || species.includes('냥');
+            const defaultImage = isCat ? '/images/profile/default_cat.jpeg' : '/images/profile/default_dog.jpeg';
+            const isDefaultImage = !pet.imageUrl;
 
-            {/* {pet.isFullyVaccinated ? (
-              <div className="text-[10px] text-green-600 font-semibold mt-1 text-center">
-                모든 백신 접종 완료 🎉
-              </div>
-            ) : pet.lastVaccine ? (
-              <div className="text-[10px] text-gray-500 text-center mt-1">
-                {pet.lastVaccine.vaccineName}<br />
-                {new Date(pet.lastVaccine.vaccinatedAt).toLocaleDateString('ko-KR')}
-              </div>
-            ) : (
-              <div className="text-[10px] text-gray-400 mt-1 text-center">접종 이력 없음</div>
-            )} */}
-
+            return (
+              <div
+                key={pet.id}
+                onClick={() => setSelectedPetId(pet.id)}
+                className={`w-60 h-60 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
+                  ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
+              >
+                  <div className="w-28 h-28 rounded-full overflow-hidden bg-white flex items-center justify-center mb-5">
+                    <img
+                      src={
+                        pet.thumbnailUrl || pet.imageUrl
+                          ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                              ? pet.thumbnailUrl || pet.imageUrl
+                              : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                          : defaultImage
+                      }
+                      alt={pet.petName}
+                      className={`w-full h-full ${
+                        isDefaultImage
+                          ? isCat
+                            ? 'object-contain p-[10px] filter grayscale brightness-110 opacity-60'
+                            : 'object-contain p-1 filter grayscale brightness-110 opacity-60'
+                          : 'object-cover'
+                      }`}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">
+                  {pet.petType === 'cat' ? '고양이' : pet.petType === 'dog' ? '강아지' : '기타'} / {pet.petAge}년생
+                </div>
+                <div className="text-m font-medium">{pet.petName}</div>
           </div>
-        ))}
+            )
+        })}
       </div>
 
       {/* 백신 단계 선택 + 안내 버튼 */}
