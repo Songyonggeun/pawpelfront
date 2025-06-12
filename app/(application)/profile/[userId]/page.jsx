@@ -148,7 +148,7 @@ export default function UserProfilePage() {
               <div className="text-gray-500">작성한 댓글이 없습니다.</div>
             ) : (
               currentComments.map((comment) => (
-                <div key={comment.id} className="border-b pb-4">
+                <div key={comment.id} className="border-b pb-4 border-gray-400">
                   <div className="text-sm text-gray-500 mb-1">
                     <Link href={`/community/detail/${comment.postId}`} className="hover:underline">
                       {comment.postTitle}
