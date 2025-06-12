@@ -3,7 +3,7 @@ import React from "react";
 const PetHealthBanner = () => {
   return (
     <div className="w-full border-gray-200 bg-white">
-      <div className="max-w-[1100px] mx-auto px-6 py-6">
+      <div className="max-w-[1100px] max-h-[300px] mx-auto px-6 py-6">
         <div className="w-full rounded-xl overflow-hidden bg-gradient-to-r from-blue-200 to-green-200 shadow-md flex items-center justify-between px-8 py-5">
           <div>
             <div className="font-bold text-[1.1rem] text-gray-800">

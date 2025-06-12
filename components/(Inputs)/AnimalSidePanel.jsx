@@ -40,7 +40,7 @@ export default function AnimalSidePanel() {
   return (
     <aside className="w-[200px] shrink-0">
       <div className="bg-amber-50 rounded-lg p-4 shadow-none">
-        <h2 className="text-m font-semibold mb-2">최근 구조된 동물</h2>
+        <h2 className="text-center text-m font-semibold mb-3">최근 구조된 동물</h2>
         {animals.map((animal, index) => (
           <div key={index} className="mb-3 pb-2">
             <img
@@ -48,8 +48,8 @@ export default function AnimalSidePanel() {
               alt="동물"
               className="w-full h-[130px] object-cover rounded mb-1"
             />
-            <div className="text-xs font-medium">{animal.kindNm || animal.kindCd}</div>
-            <div className="text-xs text-gray-500">{animal.age}</div>
+            <div className="text-center text-xs font-medium">{animal.kindNm || animal.kindCd}</div>
+            <div className="text-center text-xs text-gray-500">{animal.age}</div>
           </div>
         ))}
       </div>
