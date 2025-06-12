@@ -87,6 +87,15 @@ export default function CommentShow({ postId }) {
       );
       const data = await res.json();
       const tree = buildCommentTree(data);
+      
+    console.log("댓글 데이터:", data);
+    data.forEach((comment, idx) => {
+      console.log(
+        `[#${idx}] ID: ${comment.id}, 이름: ${comment.userName}, ` +
+        `썸네일: ${comment.userThumbnailUrl}, 이미지: ${comment.userImageUrl}`
+      );
+    });
+
       setComments(tree);
     } catch (err) {
       console.error(err);
@@ -288,14 +297,27 @@ export default function CommentShow({ postId }) {
         <div className="flex-shrink-0 relative">
           <div
             onClick={() =>
-              setOpenProfileMenuId(
-                openProfileMenuId === comment.id ? null : comment.id
-              )
+              setOpenProfileMenuId(openProfileMenuId === comment.id ? null : comment.id)
             }
             className="cursor-pointer"
           >
-            <UserIcon />
+            {comment.userThumbnailUrl || comment.userImageUrl ? (
+              <img
+                src={
+                  (comment.userThumbnailUrl || comment.userImageUrl).startsWith("/images/profile/")
+                    ? comment.userThumbnailUrl || comment.userImageUrl
+                    : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${comment.userThumbnailUrl || comment.userImageUrl}`
+                }
+                alt={comment.userName}
+                className="w-8 h-8 rounded-full object-cover border border-gray-300"
+              />
+            ) : (
+              <div className="w-8 h-8">
+                <UserIcon />
+              </div>
+            )}
           </div>
+
 
           {openProfileMenuId === comment.id && (
             <div
