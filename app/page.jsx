@@ -223,7 +223,7 @@ export default function LifetCommunityUI() {
 
             {/* 오른쪽 더보기 버튼 (탭에 따라 링크 변경) */}
             <Link
-              href={activeTab === "popular" ? "/community/popular" : "/community/latest"}
+              href={activeTab === "popular" ? "/community/best" : "/community/latest"}
               className="text-sm text-black-500 hover:underline whitespace-nowrap"
             >
               더보기 &gt;
