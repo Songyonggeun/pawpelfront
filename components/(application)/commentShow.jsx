@@ -21,6 +21,12 @@ export default function CommentShow({ postId }) {
     top: 0,
     left: 0,
   });
+  const [page, setPage] = useState(1);
+  const pageSize = 5; // 한 페이지에 루트 댓글 몇 개씩 보여줄지
+
+  const totalPages = Math.ceil(comments.length / pageSize);
+
+  const pagedComments = comments.slice((page - 1) * pageSize, page * pageSize);
 
   const textareaRef = useRef(null);
 
@@ -452,13 +458,31 @@ export default function CommentShow({ postId }) {
     );
   };
 
-  return (
-    <div className="space-y-4">
-      {comments.length === 0 ? (
-        <p className="text-gray-500">댓글이 없습니다.</p>
-      ) : (
-        comments.map((comment) => renderComment(comment))
-      )}
+return (
+  <div className="space-y-4">
+    {comments.length === 0 ? (
+      <p className="text-gray-500">댓글이 없습니다.</p>
+    ) : (
+      pagedComments.map((comment) => renderComment(comment))
+    )}
+
+    {/* 페이지네이션 버튼 */}
+    <div className="flex justify-center space-x-2 mt-4">
+      {[...Array(totalPages)].map((_, i) => (
+        <button
+          key={i}
+          className={`px-3 py-1 border rounded ${
+            page === i + 1
+              ? "bg-blue-500 text-white"
+              : "bg-white text-blue-500 hover:bg-blue-100"
+          }`}
+          onClick={() => setPage(i + 1)}
+        >
+          {i + 1}
+        </button>
+      ))}
     </div>
-  );
+  </div>
+);
+
 }
