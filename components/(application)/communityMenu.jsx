@@ -56,6 +56,15 @@ export default function CommunityMenu() {
             건강일상
           </Link>
         </li>
+        <li>
+        <Link
+          href="/community/map"
+          className={`hover:underline block ${isActive('/community/map') ? 'text-black font-bold' : ''}`}
+        >
+          애견동반 카페
+        </Link>
+      </li>
+
       </ul>
 
       <div className="w-full md:w-auto ml-auto">
