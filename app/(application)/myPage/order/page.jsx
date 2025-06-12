@@ -222,8 +222,14 @@ export default function OrderListPage() {
                       </td>
                       <td className="border border-gray-300 px-2 py-2">{product?.name || item.productName}</td>
                       <td className="border border-gray-300 px-2 py-2">{item.quantity}</td>
-                      <td className="border border-gray-300 px-2 py-2">
-                        {(item.quantity * (product?.price || item.price)).toLocaleString()}원
+                      <td
+                        rowSpan={order.items.length}
+                        className="border border-gray-300 px-2 py-2 font-bold text-black whitespace-pre-line"
+                      >
+                        {(order.totalAmount + (order.totalAmount <= 35000 ? 3000 : 0)).toLocaleString()}원
+                        {order.totalAmount <= 35000 && (
+                          <div className="text-xs text-gray-500 mt-1">(배송비 3,000원)</div>
+                        )}
                       </td>
                       {itemIdx === 0 && (
                         <>
