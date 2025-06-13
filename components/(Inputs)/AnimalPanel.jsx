@@ -47,7 +47,8 @@ export default function AnimalPanel() {
   return (
     <div>
       <h2 className="text-left text-lg font-semibold mb-4">최근 구조된 동물</h2>
-      <div className="grid grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+
         {interleaved.map((animal, index) => (
           <div key={index} className="bg-white rounded-lg p-2 shadow-sm">
             <img
