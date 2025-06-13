@@ -6,7 +6,7 @@ export default function KakaoMap() {
     const mapRef = useRef(null);
     const [map, setMap] = useState(null);
     const [selectedDistrict, setSelectedDistrict] = useState("전체");
-
+    const infoWindowRef = useRef(null);
     const districts = {
         강남구: { lat: 37.5172, lng: 127.0473 },
         강동구: { lat: 37.5302, lng: 127.1238 },
@@ -633,10 +633,7 @@ export default function KakaoMap() {
         const bounds = new window.kakao.maps.LatLngBounds();
 
         filteredHospitals.forEach((hospital) => {
-            const position = new window.kakao.maps.LatLng(
-                hospital.lat,
-                hospital.lng
-            );
+            const position = new window.kakao.maps.LatLng(hospital.lat, hospital.lng);
             bounds.extend(position);
 
             const marker = new window.kakao.maps.Marker({
@@ -646,41 +643,27 @@ export default function KakaoMap() {
             });
 
             const overlayContent = `
-                <div style="
-                    padding: 12px;
-                    font-size: 14px;
-                    line-height: 1.6;
-                    background: white;
-                    border-radius: 8px;
-                    border: 1px solid #d1d5db;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-                    white-space: nowrap;
-                    ">
-                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">
-                    🏥 ${hospital.name}
-                    </div>
+                <div style="padding: 12px; font-size: 14px; background: white; border-radius: 8px;
+                    border: 1px solid #d1d5db; box-shadow: 0 2px 6px rgba(0,0,0,0.2); white-space: nowrap;">
+                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">🏥 ${hospital.name}</div>
                     <div>📍 ${hospital.addr}</div>
                     <div>📞 <a href="tel:${hospital.tel}" style="color:#2563eb; text-decoration:none;">${hospital.tel}</a></div>
-                </div>
-                `;
+                </div>`;
 
-                const overlay = new window.kakao.maps.CustomOverlay({
+            const overlay = new window.kakao.maps.CustomOverlay({
                 content: overlayContent,
                 position,
                 yAnchor: 1,
                 zIndex: 3,
-                });
+            });
 
-                window.kakao.maps.event.addListener(marker, "click", () => {
-                // 기존 오버레이가 있다면 제거
-                if (selectedInfoWindow) selectedInfoWindow.setMap(null);
-
+            window.kakao.maps.event.addListener(marker, "click", () => {
+                if (infoWindowRef.current) infoWindowRef.current.setMap(null);
                 overlay.setMap(map);
-                setSelectedInfoWindow(overlay);
-
+                infoWindowRef.current = overlay;
                 map.setCenter(position);
                 map.setLevel(5);
-                });
+            });
 
             markers.push(marker);
         });
@@ -690,13 +673,18 @@ export default function KakaoMap() {
         } else {
             const center = districts[selectedDistrict];
             if (center) {
-                map.setCenter(
-                    new window.kakao.maps.LatLng(center.lat, center.lng)
-                );
+                map.setCenter(new window.kakao.maps.LatLng(center.lat, center.lng));
                 map.setLevel(5);
             }
         }
 
+        window.kakao.maps.event.addListener(map, "click", () => {
+            if (infoWindowRef.current) {
+                infoWindowRef.current.setMap(null);
+                infoWindowRef.current = null;
+            }
+        });
+        
         return () => {
             markers.forEach((m) => m.setMap(null));
         };
@@ -750,47 +738,31 @@ export default function KakaoMap() {
                             map.setCenter(pos);
                             map.setLevel(5);
 
-                            // 기존 마커 제거
                             if (selectedMarker) selectedMarker.setMap(null);
-                            if (selectedInfoWindow) selectedInfoWindow.setMap(null); // InfoWindow에서 overlay로 변경됐으므로 setMap(null)
+                            if (infoWindowRef.current) infoWindowRef.current.setMap(null);
 
-                            const marker = new window.kakao.maps.Marker({
-                            map,
-                            position: pos,
-                            });
+                            const marker = new window.kakao.maps.Marker({ map, position: pos });
 
                             const overlayContent = `
-                            <div style="
-                                padding: 14px;
-                                font-size: 14px;
-                                line-height: 1.6;
-                                background: white;
-                                border-radius: 10px;
-                                border: 1px solid #d1d5db;
-                                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                                white-space: nowrap;
-                            ">
-                                <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">
-                                🏥 <strong>${h.name}</strong>
-                                </div>
-                                <div>📍 ${h.addr.replace(/\n/g, " ")}</div>
-                                <div>📞 <a href="tel:${h.tel}" style="color:#2563eb; text-decoration:none;">${h.tel}</a></div>
-                            </div>
-                            `;
+                                <div style="padding: 14px; font-size: 14px; background: white;
+                                    border-radius: 10px; border: 1px solid #d1d5db; box-shadow: 0 2px 6px rgba(0,0,0,0.1); white-space: nowrap;">
+                                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">🏥 ${h.name}</div>
+                                    <div>📍 ${h.addr}</div>
+                                    <div>📞 <a href="tel:${h.tel}" style="color:#2563eb; text-decoration:none;">${h.tel}</a></div>
+                                </div>`;
 
                             const overlay = new window.kakao.maps.CustomOverlay({
-                            content: overlayContent,
-                            position: pos,
-                            yAnchor: 1,
-                            zIndex: 3,
+                                content: overlayContent,
+                                position: pos,
+                                yAnchor: 1,
+                                zIndex: 3,
                             });
 
                             overlay.setMap(map);
-
+                            infoWindowRef.current = overlay;
                             setSelectedMarker(marker);
-                            setSelectedInfoWindow(overlay);
                         }}
-                        >
+                    >
                         <h3 className="font-semibold text-base mb-1">🏥 {h.name}</h3>
                         <p className="text-gray-700 mb-1">📍 {h.addr}</p>
                         <p className="text-gray-600">📞 {h.tel}</p>
@@ -802,8 +774,7 @@ export default function KakaoMap() {
                         >
                             카카오맵에서 보기
                         </a>
-                        </div>
-
+                    </div>
                 ))}
             </div>
         </div>
