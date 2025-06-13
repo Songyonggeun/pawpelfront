@@ -9,17 +9,55 @@ const menuItems = [
 
 export default function LifetCommunityUI() {
     return (
-
         <div>
             <PetInsuranceBanner />
             {/* 상단 메뉴 */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "1.5rem", margin: "1.5rem 0" }}>
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "1.5rem",
+                    margin: "1.5rem 0",
+                }}
+            >
                 {menuItems.map((item, idx) => (
-                    <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-                        <div style={{ width: 56, height: 56, borderRadius: "9999px", backgroundColor: item.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <span style={{ fontSize: "1.25rem", fontWeight: "bold" }}>{item.label === 'AI 체크' ? 'AI' : '✓'}</span>
+                    <div
+                        key={idx}
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            textAlign: "center",
+                        }}
+                    >
+                        <div
+                            style={{
+                                width: 56,
+                                height: 56,
+                                borderRadius: "9999px",
+                                backgroundColor: item.color,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            <span
+                                style={{
+                                    fontSize: "1.25rem",
+                                    fontWeight: "bold",
+                                }}
+                            >
+                                {item.label === "AI 체크" ? "AI" : "✓"}
+                            </span>
                         </div>
-                        <span style={{ marginTop: "0.5rem", fontSize: "0.875rem" }}>{item.label}</span>
+                        <span
+                            style={{
+                                marginTop: "0.5rem",
+                                fontSize: "0.875rem",
+                            }}
+                        >
+                            {item.label}
+                        </span>
                     </div>
                 ))}
             </div>
@@ -49,22 +87,26 @@ export default function LifetCommunityUI() {
                             "젤리 모으기",
                             "오 배송에 빨라요",
                             "다들 진드기 관리 어케 하시나요...",
-                            "플러그오프 준비중"
+                            "플러그오프 준비중",
                         ].map((title, idx) => (
-                            <div key={idx} className="bg-gray-800 rounded-lg p-4 text-white">
+                            <div
+                                key={idx}
+                                className="bg-gray-800 rounded-lg p-4 text-white"
+                            >
                                 <div className="flex justify-between">
-                                    <span className="font-semibold">{idx + 1}. {title}</span>
-                                    <span className="text-sm text-gray-400">1일 전 ♡ 10 💬 5</span>
+                                    <span className="font-semibold">
+                                        {idx + 1}. {title}
+                                    </span>
+                                    <span className="text-sm text-gray-400">
+                                        1일 전 ♡ 10 💬 5
+                                    </span>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
-            <div>
-                
-            </div>
-
+            <div></div>
         </div>
     );
 }
