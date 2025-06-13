@@ -28,7 +28,7 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="flex justify-center items-start min-h-[calc(100vh-285px)] bg-gray-50 pt-20">
+    <div className="flex justify-center items-start min-h-[calc(100vh-280px)] bg-gray-50 pt-20">
       <form
         action={process.env.NEXT_PUBLIC_SPRING_SERVER_URL + '/permit/signin'}
         method='post'
