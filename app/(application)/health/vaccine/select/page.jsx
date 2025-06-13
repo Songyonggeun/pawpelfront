@@ -24,6 +24,7 @@ export default function VaccineForm() {
         if (!res.ok) throw new Error('unauthorized');
         const data = await res.json();
         setUserInfo(data); // 필요 없으면 생략 가능
+        setPets(data.pets || []);
         setIsAuthChecked(true);
       } catch (err) {
         router.replace('/login');
