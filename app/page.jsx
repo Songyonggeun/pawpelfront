@@ -168,7 +168,7 @@ export default function LifetCommunityUI() {
                     <div className="mb-6">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-lg font-bold text-gray-900">사진 갤러리</h3>
-                            <Link href="/community/gallery" className="text-sm text-black-500 hover:underline">
+                            <Link href="/community/gallery" className="text-sm text-gray-500 hover:underline whitespace-nowrap">
                                 더보기 &gt;
                             </Link>
                         </div>
