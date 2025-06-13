@@ -645,21 +645,42 @@ export default function KakaoMap() {
                 title: hospital.name,
             });
 
-            const infowindow = new window.kakao.maps.InfoWindow({
-                content: `
-                <div style="padding:10px; max-width:250px; font-size:14px; line-height:1.6;">
-                    <div style="font-size:16px;">🏥 <strong>${hospital.name}</strong></div>
+            const overlayContent = `
+                <div style="
+                    padding: 12px;
+                    font-size: 14px;
+                    line-height: 1.6;
+                    background: white;
+                    border-radius: 8px;
+                    border: 1px solid #d1d5db;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+                    white-space: nowrap;
+                    ">
+                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">
+                    🏥 ${hospital.name}
+                    </div>
                     <div>📍 ${hospital.addr}</div>
                     <div>📞 <a href="tel:${hospital.tel}" style="color:#2563eb; text-decoration:none;">${hospital.tel}</a></div>
                 </div>
-            `,
-            });
+                `;
 
-            window.kakao.maps.event.addListener(marker, "click", () => {
-                infowindow.open(map, marker);
+                const overlay = new window.kakao.maps.CustomOverlay({
+                content: overlayContent,
+                position,
+                yAnchor: 1,
+                zIndex: 3,
+                });
+
+                window.kakao.maps.event.addListener(marker, "click", () => {
+                // 기존 오버레이가 있다면 제거
+                if (selectedInfoWindow) selectedInfoWindow.setMap(null);
+
+                overlay.setMap(map);
+                setSelectedInfoWindow(overlay);
+
                 map.setCenter(position);
                 map.setLevel(5);
-            });
+                });
 
             markers.push(marker);
         });
@@ -725,50 +746,52 @@ export default function KakaoMap() {
                         key={i}
                         className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition text-sm"
                         onClick={() => {
-                            const pos = new window.kakao.maps.LatLng(
-                                h.lat,
-                                h.lng
-                            );
+                            const pos = new window.kakao.maps.LatLng(h.lat, h.lng);
                             map.setCenter(pos);
                             map.setLevel(5);
 
                             // 기존 마커 제거
                             if (selectedMarker) selectedMarker.setMap(null);
-                            if (selectedInfoWindow) selectedInfoWindow.close();
+                            if (selectedInfoWindow) selectedInfoWindow.setMap(null); // InfoWindow에서 overlay로 변경됐으므로 setMap(null)
 
                             const marker = new window.kakao.maps.Marker({
-                                map,
-                                position: pos,
+                            map,
+                            position: pos,
                             });
 
-                            const iw = new window.kakao.maps.InfoWindow({
-                                content: `
-                                  <div style="padding:14px; max-width:500px; font-size:14px; line-height:1.6;">
-                                      <div style="font-size:16px;">🏥 <strong>${
-                                          h.name
-                                      }</strong></div>
-                                      <div>📍 ${h.addr.replace(
-                                          /\n/g,
-                                          " "
-                                      )}</div>
-                                      <div>📞 <a href="tel:${
-                                          h.tel
-                                      }" style="color:#2563eb; text-decoration:none;">${
-                                    h.tel
-                                }</a></div>
-                                  </div>
-                              `,
+                            const overlayContent = `
+                            <div style="
+                                padding: 14px;
+                                font-size: 14px;
+                                line-height: 1.6;
+                                background: white;
+                                border-radius: 10px;
+                                border: 1px solid #d1d5db;
+                                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                                white-space: nowrap;
+                            ">
+                                <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">
+                                🏥 <strong>${h.name}</strong>
+                                </div>
+                                <div>📍 ${h.addr.replace(/\n/g, " ")}</div>
+                                <div>📞 <a href="tel:${h.tel}" style="color:#2563eb; text-decoration:none;">${h.tel}</a></div>
+                            </div>
+                            `;
+
+                            const overlay = new window.kakao.maps.CustomOverlay({
+                            content: overlayContent,
+                            position: pos,
+                            yAnchor: 1,
+                            zIndex: 3,
                             });
 
-                            iw.open(map, marker);
+                            overlay.setMap(map);
 
                             setSelectedMarker(marker);
-                            setSelectedInfoWindow(iw);
+                            setSelectedInfoWindow(overlay);
                         }}
-                    >
-                        <h3 className="font-semibold text-base mb-1">
-                            🏥 {h.name}
-                        </h3>
+                        >
+                        <h3 className="font-semibold text-base mb-1">🏥 {h.name}</h3>
                         <p className="text-gray-700 mb-1">📍 {h.addr}</p>
                         <p className="text-gray-600">📞 {h.tel}</p>
                         <a
@@ -779,7 +802,8 @@ export default function KakaoMap() {
                         >
                             카카오맵에서 보기
                         </a>
-                    </div>
+                        </div>
+
                 ))}
             </div>
         </div>
