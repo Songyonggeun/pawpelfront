@@ -86,7 +86,7 @@ export default function VetConsultForm() {
 
       try {
         const data = JSON.parse(text);
-        router.push(`/consult/read?id=${data.id}`);
+        router.push(`/myPage/consult/`);
       } catch (err) {
         alert("서버 응답을 JSON으로 변환할 수 없습니다:\n\n" + text);
       }
