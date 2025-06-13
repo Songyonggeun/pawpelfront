@@ -54,9 +54,11 @@ const districts = {
   중구: { lat: 37.5636, lng: 126.9970 },
   중랑구: { lat: 37.6063, lng: 127.0927 },
 };
-
 function MapInformation() {
   const [selectedDistrict, setSelectedDistrict] = useState('서울');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 9;
+
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const infoWindowRef = useRef(null);
@@ -112,12 +114,7 @@ function MapInformation() {
     filteredPlaces.forEach((place) => {
       const marker = new naver.maps.Marker({
         position: new naver.maps.LatLng(place.lat, place.lng),
-        map: mapRef.current,
-        icon: {
-          url: '/paw-print.png',
-          size: new naver.maps.Size(32, 32),
-          anchor: new naver.maps.Point(16, 32),
-        },
+        map: mapRef.current
       });
 
       naver.maps.Event.addListener(marker, 'click', () => {
@@ -138,6 +135,14 @@ function MapInformation() {
     selectedDistrict === '서울'
       ? PLACES
       : PLACES.filter((place) => place.address.includes(selectedDistrict));
+
+  const paginatedPlaces = () => {
+    const filtered = getFilteredPlaces();
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  };
+
+  const totalPages = Math.ceil(getFilteredPlaces().length / ITEMS_PER_PAGE);
 
   const showInfo = (place, marker) => {
     const naver = window.naver;
@@ -168,7 +173,10 @@ function MapInformation() {
           {Object.keys(districts).map((district) => (
             <button
               key={district}
-              onClick={() => setSelectedDistrict(district)}
+              onClick={() => {
+                setSelectedDistrict(district);
+                setCurrentPage(1); // ✅ 지역 변경 시 페이지 초기화
+              }}
               className={`px-2 py-0.5 text-sm rounded-md border ${
                 selectedDistrict === district
                   ? 'bg-blue-500 text-white'
@@ -184,7 +192,7 @@ function MapInformation() {
 
         <div className="mt-4 px-4 pb-8">
           <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {getFilteredPlaces().map((place, index) => (
+            {paginatedPlaces().map((place, index) => (
               <li
                 key={index}
                 onClick={() => {
@@ -193,11 +201,7 @@ function MapInformation() {
                   const marker = new naver.maps.Marker({
                     position,
                     map: mapRef.current,
-                    icon: {
-                      url: '/paw-print.png',
-                      size: new naver.maps.Size(32, 32),
-                      anchor: new naver.maps.Point(16, 32),
-                    },
+                  
                   });
                   showInfo(place, marker);
                 }}
@@ -221,6 +225,25 @@ function MapInformation() {
               </li>
             ))}
           </ul>
+
+          {/* ✅ 페이지네이션 버튼 */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              {Array.from({ length: totalPages }, (_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentPage(index + 1)}
+                  className={`px-3 py-1 rounded ${
+                    currentPage === index + 1
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -100,7 +100,8 @@ export default function CommentShow({ postId }) {
             data.forEach((comment, idx) => {
                 console.log(
                     `[#${idx}] ID: ${comment.id}, 이름: ${comment.userName}, ` +
-                        `썸네일: ${comment.userThumbnailUrl}, 이미지: ${comment.userImageUrl}`
+                        `썸네일: ${comment.userThumbnailUrl}, 이미지: ${comment.userImageUrl}` +
+                        `좋아요 여부: ${comment.likedByCurrentUser}, 좋아요 수: ${comment.likeCount}`
                 );
             });
 
@@ -409,7 +410,7 @@ export default function CommentShow({ postId }) {
                 </div>
 
                 <div className="flex-1">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <div className="flex justify-start items-center text-xs text-gray-500 mb-1 gap-3">
                         <span
                             onClick={(e) => {
                                 e.preventDefault();
@@ -423,7 +424,7 @@ export default function CommentShow({ postId }) {
                             className="text-gray-700 font-medium hover:underline cursor-pointer">
                             {comment.userName}
                         </span>
-                        <span>{formatDate(comment.createdAt)}</span>
+                        <span>{formatDateRelative(comment.createdAt)}</span>
                         <CommentLike
                             commentId={comment.id}
                             initialLikeCount={comment.likeCount}
@@ -705,4 +706,19 @@ export default function CommentShow({ postId }) {
             )}
         </div>
     );
+}
+function formatDateRelative(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+    const seconds = Math.floor(diff / 1000);
+    if (seconds < 60) return "방금 전";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}분 전`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}시간 전`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}일 전`;
+    return date.toLocaleDateString();
 }
