@@ -71,6 +71,8 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
     }, []);
 
     useEffect(() => {
+        if (!isLoggedIn) return;
+
         const fetchNotifications = async () => {
             try {
                 const res = await fetch(
@@ -79,15 +81,21 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                         credentials: "include",
                     }
                 );
+                if (!res.ok) {
+                    const text = await res.text();
+                    console.error("알림 실패 상태:", res.status, text);
+                    return;
+                }
+
                 const data = await res.json();
                 setNotifications(data);
             } catch (err) {
-                console.error("알림 불러오기 실패:", err);
+                console.error("알림 패치 중 네트워크 오류:", err);
             }
         };
 
-        fetchNotifications();
-        const interval = setInterval(fetchNotifications, 10000);
+        fetchNotifications(); // 초기 1회 호출
+        const interval = setInterval(fetchNotifications, 10000); // 이후 10초마다 반복
         return () => clearInterval(interval);
     }, []);
 
