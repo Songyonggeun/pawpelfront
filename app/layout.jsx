@@ -49,15 +49,15 @@ export default function RootLayout({ children }) {
         <HeaderComponent />
 
        
-        <main className="w-full flex justify-center m-0 p-0 flex-1">
-           <div className="w-full min-h-[500px]">
+        <main className="w-full flex-1 m-0 p-0">
+          <div className="w-full h-full">
             {children}
           </div>
         </main>
 
         {/* 오른쪽 사이드 패널 */}
         <div className="fixed top-[180px] right-[40px] z-10 hide-below-1550">
-          <AnimalSidePanel />
+          {/* <AnimalSidePanel /> */}
         </div>
 
         <FooterComponent />
