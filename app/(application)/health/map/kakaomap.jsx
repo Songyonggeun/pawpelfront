@@ -691,7 +691,7 @@ export default function KakaoMap() {
     }, [map, selectedDistrict]);
 
     return (
-        <div className="max-w-[1100px] p-4 mx-auto">
+        <div className="max-w-[1100px] p-4 mx-auto mb-20">
             <h2 className="text-xl font-bold mb-4">서울 24시 동물병원</h2>
 
             {/* 버튼 */}
