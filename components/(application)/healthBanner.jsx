@@ -21,7 +21,7 @@ export default function HealthBanner({ isLoggedIn }) {
 
   useEffect(() => {
     const checkWidth = () => {
-      setShowBanner(window.innerWidth > 1100);
+      setShowBanner(window.innerWidth > 1250);
     };
     checkWidth();
     window.addEventListener('resize', checkWidth);

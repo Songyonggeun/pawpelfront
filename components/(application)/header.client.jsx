@@ -204,15 +204,14 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
           </nav>
         </div>
 
-        <div className="hidden md:flex items-center space-x-6 ml-auto min-w-0">
+        <div className="md:flex items-center space-x-6 ml-auto min-w-0">
           <HealthBanner
             isLoggedIn={isLoggedIn}
-            className="hidden max-[1100px]:hidden"
           />
 
           {isClient && (
             <>
-              <div className="relative flex-shrink-0 min-w-[280px]">
+              <div className="relative flex-shrink-0 min-w-[280px] max-[1050px]:hidden">
                 <input
                   type="text"
                   placeholder="검색어를 입력해주세요."
@@ -230,91 +229,93 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                 </button>
               </div>
 
-              <div className="relative flex-shrink-0">
-                <button
-                  onClick={() => setDropdownOpen((prev) => !prev)}
-                  className="relative top-1 text-gray-700 hover:text-blue-500 transition-colors whitespace-nowrap"
-                >
-                  <Bell className="w-5 h-5" />
-                  {notifications.length > 0 && (
-                    <span className="absolute -top-1 -right-2 text-xs bg-red-500 text-white rounded-full px-1">
-                      {notifications.length}
-                    </span>
-                  )}
-                </button>
 
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl border border-gray-200 rounded-lg z-50 max-h-96 overflow-y-auto custom-scrollbar">
-                    <div className="p-4 font-semibold text-gray-800 border-b text-sm flex justify-between items-center">
-                      <span>새 알림</span>
-                      {notifications.length > 0 && (
-                        <button
-                          className="text-xs text-blue-500 hover:underline"
-                          onClick={async () => {
-                            try {
-                              await fetch(
-                                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications/read-all`,
-                                {
-                                  method: "PATCH",
-                                  credentials: "include",
-                                }
-                              );
-                              setNotifications([]);
-                            } catch (err) {
-                              console.error("모두 읽음 실패:", err);
-                            }
-                          }}
-                        >
-                          모두 읽음
-                        </button>
-                      )}
-                    </div>
+              {/* 장바구니 + 마이페이지 + 로그아웃 버튼들 */}
 
-                    {notifications.length === 0 ? (
-                      <div className="p-4 text-gray-500 text-sm text-center">
-                        새로운 알림이 없습니다.
-                      </div>
-                    ) : (
-                      <ul className="divide-y divide-gray-100">
-                        {notifications.map((n) => (
-                          <li
-                            key={n.id}
-                            className="flex justify-between items-start gap-2 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+              <div className="flex items-center space-x-6 flex-shrink-0 min-w-max">
+                <div className="relative flex-shrink-0">
+                  <button
+                    onClick={() => setDropdownOpen((prev) => !prev)}
+                    className="relative top-1 text-gray-700 hover:text-blue-500 transition-colors whitespace-nowrap"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {notifications.length > 0 && (
+                      <span className="absolute -top-1 -right-2 text-xs bg-red-500 text-white rounded-full px-1">
+                        {notifications.length}
+                      </span>
+                    )}
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl border border-gray-200 rounded-lg z-50 max-h-96 overflow-y-auto custom-scrollbar">
+                      <div className="p-4 font-semibold text-gray-800 border-b text-sm flex justify-between items-center">
+                        <span>새 알림</span>
+                        {notifications.length > 0 && (
+                          <button
+                            className="text-xs text-blue-500 hover:underline"
                             onClick={async () => {
-                              await markAsRead(n.id);
-                              if (n.postId) {
-                                window.location.href = `/community/detail/${n.postId}`;
+                              try {
+                                await fetch(
+                                  `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications/read-all`,
+                                  {
+                                    method: "PATCH",
+                                    credentials: "include",
+                                  }
+                                );
+                                setNotifications([]);
+                              } catch (err) {
+                                console.error("모두 읽음 실패:", err);
                               }
                             }}
                           >
-                            <div className="flex flex-col">
-                              <span className="text-sm text-gray-800">
-                                📩 {n.message}
-                              </span>
-                              <span className="text-xs text-gray-400 mt-1">
-                                {new Date(n.createdAt).toLocaleString("ko-KR", {
-                                  dateStyle: "short",
-                                  timeStyle: "short",
-                                })}
-                              </span>
-                            </div>
-                            <button
-                              className="text-xs text-blue-500 hover:underline whitespace-nowrap"
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                await markAsRead(n.id);
-                              }}
-                            ></button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </div>
+                            모두 읽음
+                          </button>
+                        )}
+                      </div>
 
-              {/* 장바구니 + 마이페이지 + 로그아웃 버튼들 */}
-              <div className="flex items-center space-x-6 flex-shrink-0 min-w-max">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-gray-500 text-sm text-center">
+                          새로운 알림이 없습니다.
+                        </div>
+                      ) : (
+                        <ul className="divide-y divide-gray-100">
+                          {notifications.map((n) => (
+                            <li
+                              key={n.id}
+                              className="flex justify-between items-start gap-2 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                              onClick={async () => {
+                                await markAsRead(n.id);
+                                if (n.postId) {
+                                  window.location.href = `/community/detail/${n.postId}`;
+                                }
+                              }}
+                            >
+                              <div className="flex flex-col">
+                                <span className="text-sm text-gray-800">
+                                  📩 {n.message}
+                                </span>
+                                <span className="text-xs text-gray-400 mt-1">
+                                  {new Date(n.createdAt).toLocaleString("ko-KR", {
+                                    dateStyle: "short",
+                                    timeStyle: "short",
+                                  })}
+                                </span>
+                              </div>
+                              <button
+                                className="text-xs text-blue-500 hover:underline whitespace-nowrap"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await markAsRead(n.id);
+                                }}
+                              ></button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <Link
                   href="/store/cart"
                   className="text-sm text-black hover:text-blue-500 whitespace-nowrap"
