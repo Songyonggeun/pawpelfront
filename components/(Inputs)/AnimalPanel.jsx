@@ -61,6 +61,20 @@ export default function AnimalPanel() {
             <div className="text-center text-xs text-gray-500">
               {animal.age}
             </div>
+
+              {animal.desertionNo && (
+                <div className="text-center mt-1">
+                  <a
+                    href="https://www.animal.go.kr/front/awtis/public/publicList.do?menuNo=1000000055"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 text-xs underline hover:text-blue-800"
+                  >
+                    상세정보 보러가기 
+                  </a>
+                  <div className="text-[10px] text-gray-400">(공고번호: {animal.noticeNo})</div>
+                </div>
+              )}
           </div>
         ))}
       </div>
