@@ -15,6 +15,15 @@ const PLACES = [
   { id: 10, name: '토치커피 삼성점', lat: 37.509593, lng: 127.051916, address: '서울 강남구 봉은사로68길 41 1층', phone: '02-555-0224' },
   { id: 11, name: 'YISEULJAE 이슬재', lat: 37.519511, lng: 127.049285, address: '서울 강남구 학동로77길 10 1층 카페 이슬재', phone: '0507-1404-7738' },
   { id: 12, name: '포히어오어투고', lat: 37.505385, lng: 127.078842, address: '서울 송파구 도곡로64길 7 1층 포히어오어투고', phone: '0507-1441-6685' },
+  { id: 13, name: '펌킨 펫하우스 서울 숲', lat: 37.545585, lng: 127.048553, address: '서울 성동구 상원1길 22 1층', phone: '02-994-4000' },
+  { id: 14, name: '개네집곳간', lat: 37.617220, lng: 126.916999, address: '서울 은평구 연서로27길 19 6층', phone: '0507-1327-8297' },
+  { id: 15, name: '스낵랩', lat: 37.502009, lng: 126.942987, address: '서울 동작구 장승배기로10길 130 상도포스코더샵아파트 202호', phone: '02-6956-1644' },
+  { id: 16, name: '방배동 커피상회', lat: 37.498219, lng: 126.984930, address: '서울 서초구 방배중앙로 213 1층, 2층', phone: '010-7700-2615' },
+  { id: 17, name: '라떼킹 학동역점', lat: 37.512966, lng: 127.033923, address: '서울 강남구 학동로34길 25 102호 라떼킹 학동역점', phone: '0507-0289-9567' },
+  { id: 18, name: '칠앤도프커피바', lat: 37.536205, lng: 126.899701, address: '서울 영등포구 선유로54길 9 2층', phone: '0507-1320-3536' },
+  { id: 19, name: '봉땅 서울숲점', lat: 37.547433, lng: 127.043475, address: '서울 성동구 서울숲6길 16-1 1층 봉땅', phone: '0507-1464-7769' },
+  { id: 20, name: '아티스트 베이커리', lat: 37.576347, lng: 126.984314, address: '서울 종로구 율곡로 45 1층', phone: '' },
+  { id: 21, name: '스태픽스', lat: 37.577492, lng: 126.967974, address: '서울 종로구 사직로9길 22 102호', phone: '010-2243-2712' },
 ];
 
 const districts = {
@@ -112,16 +121,7 @@ function MapInformation() {
       });
 
       naver.maps.Event.addListener(marker, 'click', () => {
-        infoWindowRef.current.setContent(`
-          <div style="padding:10px; max-width:250px; font-size:14px;">
-            <strong style="font-size:16px;">${place.name}</strong><br />
-            <span>${place.address}</span><br />
-            <a href="tel:${place.phone}" style="color:blue;">${place.phone}</a>
-          </div>
-        `);
-        infoWindowRef.current.open(mapRef.current, marker);
-        mapRef.current.setCenter(marker.getPosition());
-        mapRef.current.setZoom(15);
+        showInfo(place, marker);
       });
 
       markersRef.current.push(marker);
@@ -139,11 +139,31 @@ function MapInformation() {
       ? PLACES
       : PLACES.filter((place) => place.address.includes(selectedDistrict));
 
+  const showInfo = (place, marker) => {
+    const naver = window.naver;
+    if (!naver || !mapRef.current) return;
+
+    infoWindowRef.current.setContent(`
+      <div style="padding:10px; max-width:250px; font-size:14px; line-height:1.6;">
+        <div style="font-size:16px;">🏠 <strong>${place.name}</strong></div>
+        <div>📍 ${place.address}</div>
+        <div>📞 <a href="tel:${place.phone}" style="color:#2563eb; text-decoration:none;">${place.phone}</a></div>
+      </div>
+    `);
+    infoWindowRef.current.open(mapRef.current, marker);
+    mapRef.current.setCenter(marker.getPosition());
+    mapRef.current.setZoom(15);
+  };
+
+  const openNaverMapSearch = (placeName) => {
+    const url = `https://map.naver.com/v5/search/${encodeURIComponent(placeName)}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="max-w-[1100px] p-4 justify-center mx-auto">
       <h2 className="text-lg font-bold mb-4">서울 애견동반 카페</h2>
       <div className="w-auto">
-        {/* 구 선택 버튼 */}
         <div className="flex flex-wrap gap-2 p-4 bg-white border-b">
           {Object.keys(districts).map((district) => (
             <button
@@ -160,43 +180,44 @@ function MapInformation() {
           ))}
         </div>
 
-        {/* 지도 */}
         <div id="map" className="w-full h-[400px]" />
 
-        {/* 카페 카드 목록 */}
         <div className="mt-4 px-4 pb-8">
           <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {getFilteredPlaces().map((place, index) => (
               <li
                 key={index}
-                className="border border-gray-300 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition"
                 onClick={() => {
-                  const position = new window.naver.maps.LatLng(place.lat, place.lng);
-                  mapRef.current.setCenter(position);
-                  mapRef.current.setZoom(15);
-
-                  const marker = new window.naver.maps.Marker({
+                  const naver = window.naver;
+                  const position = new naver.maps.LatLng(place.lat, place.lng);
+                  const marker = new naver.maps.Marker({
                     position,
                     map: mapRef.current,
                     icon: {
                       url: '/paw-print.png',
-                      size: new window.naver.maps.Size(32, 32),
-                      anchor: new window.naver.maps.Point(16, 32),
+                      size: new naver.maps.Size(32, 32),
+                      anchor: new naver.maps.Point(16, 32),
                     },
                   });
-
-                  infoWindowRef.current.setContent(`
-                    <div style="padding:10px; max-width:250px; font-size:14px; line-height:1.6;">
-                      <div style="font-size:16px;">🏠 <strong>${place.name}</strong></div>
-                      <div>📍 ${place.address}</div>
-                      <div>📞 <a href="tel:${place.phone}" style="color:#2563eb; text-decoration:none;">${place.phone}</a></div>
-                    </div>
-                  `);
-                  infoWindowRef.current.open(mapRef.current, marker);
+                  showInfo(place, marker);
                 }}
+                className="border border-gray-300 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition"
               >
-                <h3 className="text-m font-semibold">{place.name}</h3>
+                <h3 className="text-sm font-semibold">{place.name}</h3>
                 <p className="text-sm text-gray-600">{place.address}</p>
+                <div className="mt-2 text-sm text-blue-600">
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openNaverMapSearch(place.name);
+                    }}
+                    style={{ cursor: 'pointer', color: 'grey' }}
+                    onMouseOver={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                    onMouseOut={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                  >
+                    📌 네이버 지도에서 검색
+                  </span>
+                </div>
               </li>
             ))}
           </ul>

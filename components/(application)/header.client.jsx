@@ -71,7 +71,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   }, []);
 
   useEffect(() => {
-    if (!isLoggedIn) return; // 🔒 로그인하지 않은 경우 알림 요청 중단
+    if (!isLoggedIn) return; 
 
     const fetchNotifications = async () => {
       try {
