@@ -8,7 +8,10 @@ export default function StoreAdminPage() {
   const [showModal, setShowModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editingProductId, setEditingProductId] = useState(null);
+  const [originalProduct, setOriginalProduct] = useState(null);
   const [tagString, setTagString] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 8;
   const [newProduct, setNewProduct] = useState({
     name: '',
     brand: '',
@@ -19,8 +22,8 @@ export default function StoreAdminPage() {
     category: '',
     quantity: '',
   });
-
-  // 화면 너비 감지 상태 추가
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  const currentItems = products.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -67,30 +70,39 @@ export default function StoreAdminPage() {
       ? tagString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
       : null;
 
-    const baseProduct = {
-      name: newProduct.name,
-      brand: newProduct.brand,
-      originalPrice: parseInt(newProduct.originalPrice, 10),
-      discount: newProduct.discount === '' ? null : parseInt(newProduct.discount, 10),
-      price: calculatedPrice(),
-      tags,
-      category: newProduct.category,
-      quantity: isNaN(parseInt(newProduct.quantity)) ? 0 : parseInt(newProduct.quantity, 10),
-      rating: 0,
-      reviews: 0,
+    const updatedFields = {
+      ...(newProduct.name !== originalProduct?.name && { name: newProduct.name }),
+      ...(newProduct.brand !== originalProduct?.brand && { brand: newProduct.brand }),
+      ...(parseInt(newProduct.originalPrice) !== originalProduct?.originalPrice && {
+        originalPrice: parseInt(newProduct.originalPrice, 10),
+      }),
+      ...(parseInt(newProduct.discount) !== originalProduct?.discount && {
+        discount: newProduct.discount === '' ? null : parseInt(newProduct.discount, 10),
+      }),
+      ...(calculatedPrice() !== originalProduct?.price && {
+        price: calculatedPrice(),
+      }),
+      ...(JSON.stringify(tags) !== JSON.stringify(originalProduct?.tags) && {
+        tags,
+      }),
+      ...(newProduct.category !== originalProduct?.category && { category: newProduct.category }),
+      ...(parseInt(newProduct.quantity) !== originalProduct?.quantity && {
+        quantity: parseInt(newProduct.quantity, 10),
+      }),
     };
 
     const formData = new FormData();
-    formData.append("data", new Blob([JSON.stringify(baseProduct)], { type: "application/json" }));
+    formData.append("data", new Blob([JSON.stringify(updatedFields)], { type: "application/json" }));
+
     if (newProduct.image) {
       formData.append("image", newProduct.image);
     }
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products${isEdit ? `/${editingProductId}` : ''}`,
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${isEdit ? `/admin/product/${editingProductId}` : '/store/products'}`,
         {
-          method: isEdit ? 'PUT' : 'POST',
+          method: isEdit ? 'PATCH' : 'POST',
           credentials: 'include',
           body: formData,
         }
@@ -115,11 +127,11 @@ export default function StoreAdminPage() {
 
   const handleEdit = (product) => {
     setNewProduct({
-      name: product.name,
-      brand: product.brand,
-      originalPrice: product.originalPrice.toString(),
-      discount: product.discount,
-      image: product.image,
+      name: product.name ?? '',
+      brand: product.brand ?? '',
+      originalPrice: product.originalPrice?.toString() ?? '',
+      discount: product.discount?.toString() ?? '',
+      image: null,
       tags: product.tags ?? [],
       category: product.category ?? '',
       quantity: product.quantity?.toString() ?? '',
@@ -128,6 +140,7 @@ export default function StoreAdminPage() {
     setEditingProductId(product.id);
     setIsEdit(true);
     setShowModal(true);
+    setOriginalProduct(product); // 이 줄을 마지막으로 옮김
   };
 
   const handleDelete = async (id) => {
@@ -328,7 +341,7 @@ export default function StoreAdminPage() {
           {products.length === 0 ? (
             <p className="text-center p-6 text-gray-500">상품이 없습니다.</p>
           ) : (
-            products.map((product) => (
+            currentItems.map((product) => (
               <div
                 key={product.id}
                 className="border rounded p-4 shadow-sm bg-white"
@@ -413,7 +426,7 @@ export default function StoreAdminPage() {
                 </td>
               </tr>
             ) : (
-              products.map((product) => (
+              currentItems.map((product) => (
                 <tr key={product.id} className="even:bg-gray-100">
                   <td className="border border-gray-300 text-center">{product.id}</td>
                   <td className="border border-gray-300 text-center">{product.category}</td>
@@ -476,6 +489,20 @@ export default function StoreAdminPage() {
             )}
           </tbody>
         </table>
+      )}
+
+      {totalPages >= 1 && (
+        <div className="flex justify-center mt-6 space-x-2 text-sm">
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-1 rounded border ${currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
