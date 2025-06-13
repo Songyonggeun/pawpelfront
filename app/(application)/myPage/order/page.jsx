@@ -260,7 +260,7 @@ export default function OrderListPage() {
 
 
       {selectedOrderForEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center ">
           <div className="bg-white rounded-lg shadow-lg w-[350px] p-6">
             <h2 className="text-lg font-bold mb-4">✏️ 배송지</h2>
             <div className="space-y-2 text-sm">
