@@ -9,8 +9,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // 로그인 안 된 상태에서 보호된 페이지 접근 → /login으로 리디렉션
-  const protectedPaths = ['/myPage', '/admin'];
+  // 보호 경로 리스트
+  const protectedPaths = ['/myPage', '/admin', '/store/checkout'];
   const isProtectedPath = protectedPaths.some((path) => url.pathname.startsWith(path));
   if (isProtectedPath && !token) {
     return NextResponse.redirect(new URL('/login', request.url));
@@ -19,7 +19,12 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// 👇 matcher에 감시할 경로들 추가
+// 감시할 경로 지정
 export const config = {
-  matcher: ['/login', '/myPage/:path*', '/admin/:path*'],
+  matcher: [
+    '/login',
+    '/myPage/:path*',
+    '/admin/:path*',
+    '/store/checkout',
+  ],
 };
