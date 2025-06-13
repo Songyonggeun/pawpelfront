@@ -9,6 +9,7 @@ export default function LifetCommunityUI() {
     const [posts, setPosts] = useState([]);
     const [activeTab, setActiveTab] = useState("popular");
     const [loadingPosts, setLoadingPosts] = useState(true);
+    const [originalProduct, setOriginalProduct] = useState(null);
 
     const fetchPosts = async (type) => {
         try {
