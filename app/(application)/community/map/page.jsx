@@ -201,11 +201,7 @@ function MapInformation() {
                   const marker = new naver.maps.Marker({
                     position,
                     map: mapRef.current,
-                    icon: {
-                      url: '/paw-print.png',
-                      size: new naver.maps.Size(32, 32),
-                      anchor: new naver.maps.Point(16, 32),
-                    },
+                  
                   });
                   showInfo(place, marker);
                 }}
