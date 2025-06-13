@@ -45,6 +45,9 @@ export default function VaccineForm() {
 
     const selectedPet = pets.find((p) => p.id === selectedPetId);
     const selectedDateObj = new Date(date);
+    console.log('selectedPet:', selectedPet);
+console.log('healthRecords:', selectedPet.healthRecords);
+console.log('selectedPet keys:', Object.keys(selectedPet));
 
     const firstDose = selectedPet?.vaccineRecords?.find((r) => r.step === 1);
     if (firstDose && step > 1) {
