@@ -71,16 +71,18 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   }, []);
 
   useEffect(() => {
+    if (!isLoggedIn) return; // 🔒 로그인하지 않은 경우 알림 요청 중단
+
     const fetchNotifications = async () => {
       try {
-const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications`, {
-  credentials: "include",
-});
-if (!res.ok) {
-  const text = await res.text();
-  console.error("알림 실패 상태:", res.status, text);
-  return;
-}
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("알림 실패 상태:", res.status, text);
+          return;
+        }
 
         const data = await res.json();
         setNotifications(data);
