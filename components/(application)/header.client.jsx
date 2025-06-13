@@ -71,6 +71,7 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   }, []);
 
   useEffect(() => {
+    if(!isLoggedIn) return;
     const fetchNotifications = async () => {
       try {
 const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications`, {
