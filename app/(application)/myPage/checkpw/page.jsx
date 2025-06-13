@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import MenuComponents from '@/components/(application)/menu';
 
 export default function CheckPasswordPage() {
   const [password, setPassword] = useState('');
@@ -32,24 +31,9 @@ export default function CheckPasswordPage() {
     }
   };
 
-  const menuItems = [
-    { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '건강체크 기록', href: '/myPage/health' },
-    { title: '백신접종 기록', href: '/myPage/vaccine' },
-    { title: '상담 글', href: '/myPage/consult' },
-    { title: '작성 글', href: '/myPage/posts' },
-  ];
 
   return (
-    <div className="flex max-w-[1100px] mx-auto px-6 py-6 md:px-6 gap-10">
-      {/* 왼쪽 메뉴 */}
-      <aside className="w-full md:w-60 flex-shrink-0 bg-gray-50 min-h-[80vh]">
-        <nav className="mt-[10px] px-[10px]">
-          <ul className="space-y-3">
-            <MenuComponents data={menuItems} />
-          </ul>
-        </nav>
-      </aside>
+    <>
 
       {/* 오른쪽 본문 */}
       <main className="flex-grow pt-10">
@@ -70,7 +54,7 @@ export default function CheckPasswordPage() {
           </form>
         </div>
       </main>
-    </div>
+    </>
 
 
 

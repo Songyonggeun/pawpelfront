@@ -18,7 +18,7 @@ async function fetchUserInfo(cookieHeader) {
     console.error('유저 정보 조회 실패:', err);
     return { roles: [] };
   }
-}
+}``
 
 export default async function Header() {
   const headerList = await headers(); // ✅ await 추가!

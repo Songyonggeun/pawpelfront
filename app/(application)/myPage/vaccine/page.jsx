@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import MenuComponents from '@/components/(application)/menu';
 
 const VACCINE_STEPS = [
   "1차접종(종합백신+코로나 장염)",
@@ -18,6 +17,9 @@ export default function PetVaccineSection() {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedPetIds, setExpandedPetIds] = useState([]);
+  const [editModal, setEditModal] = useState({ open: false, petId: null, step: null, oldDate: null });
+  const [deleteModal, setDeleteModal] = useState({ open: false, petId: null, vaccinatedAt: null });
+  const [newDate, setNewDate] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -96,9 +98,18 @@ export default function PetVaccineSection() {
     }
 
     return schedule.sort((a, b) => {
-      const aDate = a.record?.vaccinatedAt || a.nextDate;
-      const bDate = b.record?.vaccinatedAt || b.nextDate;
-      return new Date(aDate) - new Date(bDate);
+      // 1차~6차: 고정 순서 유지
+      if (a.step <= 6 && b.step <= 6) return a.step - b.step;
+
+      // 종합백신: 날짜 순 정렬
+      if (a.step > 6 && b.step > 6) {
+        const aDate = new Date(a.record?.vaccinatedAt || a.nextDate);
+        const bDate = new Date(b.record?.vaccinatedAt || b.nextDate);
+        return aDate - bDate;
+      }
+
+      // 1~6차는 종합백신보다 앞에 위치
+      return a.step - b.step;
     });
   };
 
@@ -107,28 +118,100 @@ export default function PetVaccineSection() {
       prev.includes(petId) ? prev.filter((id) => id !== petId) : [...prev, petId]
     );
   };
+  
+  const handleUpdate = (petId, step, vaccinatedAt) => {
+    setEditModal({ open: true, petId, step, oldDate: vaccinatedAt });
+    setNewDate(vaccinatedAt); // 기존 날짜를 기본값으로
+  };
+
+  const handleDelete = (petId, vaccinatedAt) => {
+    setDeleteModal({ open: true, petId, vaccinatedAt });
+  };
 
   if (loading) {
     return <div className="text-center py-10">로딩 중...</div>;
   }
 
   return (
-    <div className="flex flex-col md:flex-row max-w-[1100px] mx-auto px-6 py-6 gap-10">
-      <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0 bg-gray-50 min-h-[80vh]">
-        <nav className="mt-[10px] px-[10px]">
-          <ul className="space-y-3">
-            <MenuComponents
-              data={[
-                { title: '회원 정보 수정', href: '/myPage/checkpw' },
-                { title: '건강체크 기록', href: '/myPage/health' },
-                { title: '백신접종 기록', href: '/myPage/vaccine' },
-                { title: '상담 글', href: '/myPage/consult' },
-                { title: '작성 글', href: '/myPage/posts' },
-              ]}
+    <>
+
+      {/* ✅ 수정 모달 */}
+      {editModal.open && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+          <div className="bg-white p-6 rounded shadow-md w-[300px]">
+            <h3 className="text-lg font-semibold mb-4">접종일 수정</h3>
+            <input
+              type="date"
+              className="w-full border p-2 mb-4"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
             />
-          </ul>
-        </nav>
-      </aside>
+            <div className="flex justify-end space-x-2">
+              <button
+                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                onClick={() => setEditModal({ open: false, petId: null, step: null, oldDate: null })}
+              >
+                취소
+              </button>
+              <button
+                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={async () => {
+                  const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/update?petId=${editModal.petId}&vaccinatedAt=${editModal.oldDate}&step=${editModal.step}&selectedDate=${newDate}`,
+                    {
+                      method: 'PUT',
+                      credentials: 'include',
+                    }
+                  );
+                  if (res.ok) {
+                    alert('수정 완료');
+                    location.reload();
+                  } else {
+                    alert('수정 실패');
+                  }
+                }}
+                disabled={!newDate}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ 삭제 모달 */}
+      {deleteModal.open && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-md w-[300px]">
+            <h3 className="text-lg font-semibold mb-4">정말 삭제하시겠습니까?</h3>
+            <div className="flex justify-end space-x-2">
+              <button
+                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                onClick={() => setDeleteModal({ open: false, petId: null, vaccinatedAt: null })}
+              >
+                취소
+              </button>
+              <button
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                onClick={async () => {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/vaccine/delete?petId=${deleteModal.petId}&vaccinatedAt=${deleteModal.vaccinatedAt}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                  });
+                  if (res.ok) {
+                    alert('삭제 완료');
+                    location.reload();
+                  } else {
+                    alert('삭제 실패');
+                  }
+                }}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 order-1 md:order-2">
         <section>
@@ -159,7 +242,13 @@ export default function PetVaccineSection() {
                       <div className="flex items-center">
                         {pet.imageUrl ? (
                           <img
-                            src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
+                            src={
+                              pet.thumbnailUrl || pet.imageUrl
+                                ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                                    ? pet.thumbnailUrl || pet.imageUrl
+                                    : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                                : defaultImage
+                            }
                             alt={pet.petName}
                             className="w-24 h-24 rounded-full object-cover mr-4"
                           />
@@ -188,6 +277,7 @@ export default function PetVaccineSection() {
                               <th className="px-3 py-2 text-center whitespace-nowrap">접종일</th>
                               <th className="px-3 py-2 text-center whitespace-nowrap">다음 예정일</th>
                               <th className="px-3 py-2 text-center whitespace-nowrap">D-Day</th>
+                              <th className="px-3 py-2 text-center whitespace-nowrap">관리</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -197,7 +287,9 @@ export default function PetVaccineSection() {
                                 <td className="px-3 py-2 text-center whitespace-nowrap">
                                   {item.record ? formatDate(item.record.vaccinatedAt) : '-'}
                                 </td>
-                                <td className={`px-3 py-2 text-center whitespace-nowrap ${item.status === 'done' ? 'text-gray-400' : item.status === 'future' ? 'text-gray-400' : ''}`}>
+                                <td className={`px-3 py-2 text-center whitespace-nowrap ${
+                                  item.status === 'done' ? 'text-gray-400' : item.status === 'future' ? 'text-gray-400' : ''
+                                }`}>
                                   {item.nextDate && item.status !== 'done' ? formatDate(item.nextDate) : '-'}
                                 </td>
                                 <td className={`px-3 py-2 text-center whitespace-nowrap ${
@@ -213,6 +305,26 @@ export default function PetVaccineSection() {
                                 }`}>
                                   {item.status === 'done' ? '완료' : item.dday}
                                 </td>
+                                <td className="px-3 py-2 text-center whitespace-nowrap text-blue-600 space-x-2">
+                                  {item.status === 'done' && item.record ? (
+                                    <>
+                                      <span
+                                        onClick={() => handleUpdate(pet.id, item.step, item.record.vaccinatedAt)}
+                                        className="cursor-pointer hover:underline"
+                                      >
+                                        수정
+                                      </span>
+                                      <span
+                                        onClick={() => handleDelete(pet.id, item.record.vaccinatedAt)}
+                                        className="cursor-pointer hover:underline text-red-500"
+                                      >
+                                        삭제
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400">-</span>
+                                  )}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -226,6 +338,6 @@ export default function PetVaccineSection() {
           </div>
         </section>
       </main>
-    </div>
+    </>
   );
 }

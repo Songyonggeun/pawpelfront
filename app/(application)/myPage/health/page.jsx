@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import MenuComponents from '@/components/(application)/menu';
 
 export default function PetHealthSection() {
   const [pets, setPets] = useState([]);
@@ -35,27 +34,13 @@ export default function PetHealthSection() {
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
   };
 
-  const menuItems = [
-    { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '건강체크 기록', href: '/myPage/health' },
-    { title: '백신접종 기록', href: '/myPage/vaccine' },
-    { title: '상담 글', href: '/myPage/consult' },
-    { title: '작성 글', href: '/myPage/posts' },
-  ];
-
   if (!userInfo) {
     return <div className="text-center py-10">로딩 중...</div>;
   }
 
   return (
-    <div className="flex flex-col md:flex-row max-w-[1100px] mx-auto px-6 py-6 gap-10">
-      <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0 bg-gray-50 min-h-[80vh]">
-        <nav className="mt-[10px] px-[10px]">
-          <ul className="space-y-3">
-            <MenuComponents data={menuItems} />
-          </ul>
-        </nav>
-      </aside>
+    <>
+
 
       <main className="flex-1 order-1 md:order-2">
         <section>
@@ -87,7 +72,13 @@ export default function PetHealthSection() {
                     <div className="flex flex-col items-center justify-center w-32 mr-6">
                       {pet.imageUrl ? (
                         <img
-                          src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
+                          src={
+                            pet.thumbnailUrl || pet.imageUrl
+                              ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                                  ? pet.thumbnailUrl || pet.imageUrl
+                                  : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                              : defaultImage
+                          }
                           alt={pet.petName}
                           className="w-24 h-24 rounded-full object-cover mb-2"
                         />
@@ -104,10 +95,7 @@ export default function PetHealthSection() {
                         <table className="w-full text-xs table-auto border-collapse">
                           <thead>
                             <tr className="bg-gray-50 border-b border-gray-200">
-                              <th className="px-3 py-2 text-center whitespace-nowrap">검진일자</th>
-                              <th className="px-3 py-2 text-center whitespace-nowrap">점수</th>
-                              <th className="px-3 py-2 text-center whitespace-nowrap">결과</th>
-                              <th className="px-3 py-2 text-center whitespace-nowrap">주의 항목</th>
+                              <th className="px-3 py-2 text-center whitespace-nowrap">검진일자</th><th className="px-3 py-2 text-center whitespace-nowrap">점수</th><th className="px-3 py-2 text-center whitespace-nowrap">결과</th><th className="px-3 py-2 text-center whitespace-nowrap">주의 항목</th><th className="px-3 py-2 text-center whitespace-nowrap">삭제</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -124,6 +112,25 @@ export default function PetHealthSection() {
                                 </td>
                                 <td className="text-center whitespace-normal break-words">
                                   {record.warnings?.join(', ') || '없음'}
+                                </td>
+                                <td className="text-center text-red-500 cursor-pointer hover:underline whitespace-nowrap"
+                                    onClick={async () => {
+                                      const confirmed = confirm('정말 삭제하시겠습니까?');
+                                      if (!confirmed) return;
+
+                                      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/health/delete/${record.id}`, {
+                                        method: 'DELETE',
+                                        credentials: 'include',
+                                      });
+
+                                      if (res.ok) {
+                                        alert('삭제되었습니다.');
+                                        location.reload(); // 또는 상태 갱신
+                                      } else {
+                                        alert('삭제에 실패했습니다.');
+                                      }
+                                    }}>
+                                  삭제
                                 </td>
                               </tr>
                             ))}
@@ -160,6 +167,6 @@ export default function PetHealthSection() {
           )}
         </section>
       </main>
-    </div>
+    </>
   );
 }

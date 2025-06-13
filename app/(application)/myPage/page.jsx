@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import MenuComponents from '@/components/(application)/menu';
 import PetInputButton from '@/components/(petInputs)/petInput';
 
 export default function MyPage() {
@@ -46,28 +45,12 @@ export default function MyPage() {
     return <div className="text-center py-10">로딩 중...</div>;
   }
 
-  const menuItems = [
-    { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '건강체크 기록', href: '/myPage/health' },
-    { title: '백신접종 기록', href: '/myPage/vaccine' },
-    { title: '상담 글', href: '/myPage/consult' },
-    { title: '작성 글', href: '/myPage/posts' },
-  ];
-
   const totalHealthCheckCount = pets.reduce((sum, pet) => {
     return sum + (pet.healthRecords?.length || 0);
   }, 0);
 
   return (
-    <div className="flex flex-col md:flex-row max-w-[1100px] mx-auto px-6 py-6 gap-10">
-      {/* 왼쪽 메뉴 */}
-      <aside className="w-full md:w-60 flex-shrink-0 md:mr-10 order-2 md:order-1 mt-10 md:mt-0 bg-gray-50 min-h-[80vh]">
-        <nav className="mt-[10px] px-[10px]">
-          <ul className="space-y-3">
-            <MenuComponents data={menuItems} />
-          </ul>
-        </nav>
-      </aside>
+    <>
 
       {/* 본문 영역 */}
       <main className="flex-1 order-1 md:order-2">
@@ -77,7 +60,13 @@ export default function MyPage() {
           {userInfo.imageUrl ? (
             <div className="relative">
             <img
-              src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${userInfo.thumbnailUrl || userInfo.imageUrl}?t=${Date.now()}`}
+                src={
+                (userInfo.thumbnailUrl || userInfo.imageUrl)?.startsWith("/images/profile/")
+                  ? `${userInfo.thumbnailUrl || userInfo.imageUrl}?t=${Date.now()}`
+                  : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                      userInfo.thumbnailUrl || userInfo.imageUrl
+                    }?t=${Date.now()}`
+              }
               alt="User Profile"
               className="w-20 h-20 rounded-full object-cover"
             />
@@ -179,24 +168,41 @@ export default function MyPage() {
           </div>
 
           <div className="flex gap-4 flex-wrap">
-            {pets.map((pet, index) => (
+          {pets.map((pet, index) => {
+            const species = pet.petType?.toLowerCase() || '';
+            const isCat = species.includes('cat') || species.includes('고양이');
+            const defaultImage = isCat ? '/images/profile/default_cat.jpeg' : '/images/profile/default_dog.jpeg';
+            const isDefaultImage = !pet.imageUrl;
+
+            return (
               <div
                 key={pet.id ?? `${pet.petName}-${index}`}
                 onClick={() => setEditPet(pet)}
                 className="w-32 h-40 border border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white shadow-sm cursor-pointer hover:bg-gray-100"
               >
-                {pet.imageUrl ? (
+                <div className="w-24 h-24 rounded-full overflow-hidden bg-white flex items-center justify-center">
                   <img
-                    src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
+                    src={
+                      pet.thumbnailUrl || pet.imageUrl
+                        ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                            ? pet.thumbnailUrl || pet.imageUrl
+                            : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                        : defaultImage
+                    }
                     alt={pet.petName}
-                    className="w-20 h-20 rounded-full object-cover mb-2"
+                    className={`w-full h-full ${
+                      isDefaultImage
+                        ? isCat
+                          ? 'object-contain p-[10px] filter grayscale brightness-110 opacity-60'
+                          : 'object-contain p-1 filter grayscale brightness-110 opacity-60'
+                        : 'object-cover'
+                    }`}
                   />
-                ) : (
-                  <div className="w-20 h-20 bg-gray-200 rounded-full mb-2" />
-                )}
-                <div className="text-sm font-medium">{pet.petName}</div>
+                </div>
+                <div className="text-sm font-medium mt-2">{pet.petName}</div>
               </div>
-            ))}
+            );
+          })}
           </div>
         </section>
 
@@ -209,6 +215,6 @@ export default function MyPage() {
           />
         )}
       </main>
-    </div>
+    </>
   );
 }

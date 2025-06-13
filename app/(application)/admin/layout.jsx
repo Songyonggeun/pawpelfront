@@ -14,7 +14,13 @@
                 <Link href="/admin/post" className="text-gray-700 hover:underline font-medium">게시글 관리</Link>
                 </li>
                 <li>
-                <Link href="admin/store" className="text-gray-700 hover:underline font-medium">스토어 관리</Link>
+                <Link href="/admin/store" className="text-gray-700 hover:underline font-medium">스토어 관리</Link>
+                </li>
+                <li>
+                <Link href="/admin/order" className="text-gray-700 hover:underline font-medium">주문 관리</Link>
+                </li>
+                <li>
+                <Link href="/admin/report" className="text-gray-700 hover:underline font-medium">신고 내역</Link>
                 </li>
             </ul>
             </nav>

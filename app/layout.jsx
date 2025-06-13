@@ -38,24 +38,25 @@ export const metadata = {
     }
 }
 
-export default function RootLayout({children}){
+export default function RootLayout({ children }) {
   return (
     <html lang={meta.locale} suppressHydrationWarning>
       <head>
         <link rel="preload" href="/_next/static/chunks/app_globals_73c37791.css" as="style" />
       </head>
-      <body className="relative">
+      
+      <body className="min-h-[100dvh] flex flex-col">
         <HeaderComponent />
 
-        {/* 가운데 정렬 본문 */}
-        <main className="w-full flex justify-center m-0 p-0">
-          <div className="w-full">
+       
+        <main className="w-full flex justify-center m-0 p-0 flex-1">
+           <div className="w-full min-h-[500px]">
             {children}
           </div>
         </main>
 
-        {/* 오른쪽 사이드 패널  */}
-        <div className="absolute top-[110px] right-[40px] z-10 hide-below-1550">
+        {/* 오른쪽 사이드 패널 */}
+        <div className="fixed top-[180px] right-[40px] z-10 hide-below-1550">
           <AnimalSidePanel />
         </div>
 

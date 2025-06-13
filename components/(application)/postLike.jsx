@@ -1,11 +1,29 @@
-'use client';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function LikeCard({ postId, initialLikeCount = 0, initialIsLiked = false, onLikeCountChange }) {
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [loading, setLoading] = useState(false);
+
+  // 페이지 로드 시 서버에서 좋아요 상태 불러오기
+  useEffect(() => {
+    async function fetchLikeStatus() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${postId}/like/status`, {
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error('좋아요 상태를 불러오지 못했습니다.');
+        const data = await res.json();
+
+        setLikeCount(data.likeCount);
+        setIsLiked(data.isLiked);
+        onLikeCountChange?.(data.likeCount, data.isLiked);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    fetchLikeStatus();
+  }, [postId, onLikeCountChange]);
 
   const toggleLike = async () => {
     if (loading) return;

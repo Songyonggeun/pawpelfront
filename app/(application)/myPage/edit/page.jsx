@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import MenuComponents from '@/components/(application)/menu';
 
 export default function EditPage() {
   const router = useRouter();
@@ -136,27 +135,43 @@ export default function EditPage() {
       alert('서버 오류');
     }
   };
+  
+  const handleWithdraw = async () => {
+    const confirmed = confirm('정말 탈퇴하시겠습니까? 탈퇴 후에는 계정 정보가 삭제됩니다.');
+    if (!confirmed) return;
 
-  const menuItems = [
-    { title: '회원 정보 수정', href: '/myPage/checkpw' },
-    { title: '건강체크 기록', href: '/myPage/health' },
-    { title: '백신접종 기록', href: '/myPage/vaccine' },
-    { title: '상담 글', href: '/myPage/consult' },
-    { title: '작성 글', href: '/myPage/posts' },
-  ];
+    try {
+      // ✅ 1. 회원탈퇴 먼저 실행
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/withdraw`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        alert('회원 탈퇴에 실패했습니다.');
+        return;
+      }
+
+      // ✅ 2. 탈퇴 성공 후 로그아웃 요청
+      await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      alert('회원 탈퇴가 완료되었습니다.');
+      window.location.href = '/';
+
+    } catch (error) {
+      console.error('탈퇴 중 오류 발생:', error);
+      alert('서버 오류로 탈퇴에 실패했습니다.');
+    }
+  };
 
   if (!user) return <div className="text-center mt-10">로딩 중...</div>;
 
   return (
-      <div className="flex max-w-[1100px] mx-auto px-6 py-6 md:px-6 gap-10">
-        {/* 왼쪽 메뉴 영역 */}
-        <aside className="w-full md:w-60 flex-shrink-0 bg-gray-50 min-h-[80vh]">
-          <nav className="mt-[10px] px-[10px]">
-            <ul className="space-y-3">
-              <MenuComponents data={menuItems} />
-            </ul>
-          </nav>
-        </aside>
+      <>
+
 
         {/* 오른쪽 본문 영역 */}
         <main className="flex justify-center items-start min-h-screen pt-10">
@@ -270,15 +285,25 @@ export default function EditPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-            >
-              수정하기
-            </button>
+            <div className="flex gap-4 mt-4">
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+              >
+                수정하기
+              </button>
+
+              <button
+                type="button"
+                onClick={handleWithdraw}
+                className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
+              >
+                회원탈퇴
+              </button>
+            </div>
           </form>
         </div>
       </main>
-    </div>
+    </>
   );
 }

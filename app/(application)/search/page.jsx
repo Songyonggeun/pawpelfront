@@ -7,10 +7,12 @@ import { useSearchParams } from 'next/navigation';
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const keyword = searchParams.get('keyword') || '';
-  
+
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
 
   const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
 
@@ -32,6 +34,7 @@ export default function SearchPage() {
         const data = await response.json();
         setPosts(data.content || []);
         setTotalPages(data.totalPages || 0);
+        setTotalElements(data.totalElements || 0);
       } catch (error) {
         console.error('검색 결과 불러오기 실패:', error);
       }
@@ -70,6 +73,7 @@ export default function SearchPage() {
       <div className="max-w-[1100px] mx-auto pt-10 px-4">
         <main className="min-w-0">
           <h2 className="text-2xl font-bold mb-2">검색 결과: "{keyword}"</h2>
+          <p className="text-gray-600 mb-4">총 {totalElements}건의 결과가 있습니다.</p>
 
           <div className="divide-y divide-gray-200 mt-0">
             {posts.length === 0 ? (
@@ -84,39 +88,52 @@ export default function SearchPage() {
                 const textContent = tempDiv.textContent || tempDiv.innerText || '';
 
                 return (
-                  <div key={post.id} className="py-6">
-                    <div className="text-sm text-gray-500 mb-1">{post.category}</div>
+                  <div
+                    key={post.id}
+                    onClick={() => {
+                      if (typeof markPostAsRead === 'function') {
+                        markPostAsRead(post.id);
+                      }
+                      window.location.href = `/community/detail/${post.id}`;
+                    }}
+                    className="relative py-4 pr-48 border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+                  >
+                    {/* 썸네일 (오른쪽 상단 고정) */}
                     {thumbnail && (
-                      <img
-                        src={thumbnail}
-                        alt="썸네일 이미지"
-                        className="w-40 h-28 object-cover rounded mb-3"
-                      />
+                      <div className="absolute top-2 right-4 w-32 h-20 rounded-md overflow-hidden border border-gray-200">
+                        <img src={thumbnail} alt="썸네일" className="w-full h-full object-cover" />
+                      </div>
                     )}
 
-                    <Link href={`/community/detail/${post.id}`}>
-                      <div className="font-semibold text-lg mb-1 hover:underline cursor-pointer">
-                        {post.title}
-                      </div>
-                    </Link>
+                    {/* 제목 */}
+                    <div
+                      className={`text-lg font-semibold mb-1 ${post.isRead ? "text-gray-500 font-normal" : "text-black font-bold"
+                        } truncate`}
+                    >
+                      {post.title}
+                    </div>
 
-                    <div className="text-gray-700 mb-3 text-sm line-clamp-2">{textContent}</div>
+                    {/* 본문 요약 (이미지 제외 텍스트) */}
+                    <div className="line-clamp-2 text-sm text-gray-700 mb-3">
+                      {textContent.trim()}
+                    </div>
 
-                    <div className="flex items-center text-xs text-gray-500">
+                    {/* 작성자, 날짜, 조회수, 댓글, 좋아요 */}
+                    <div className="flex items-center text-xs text-gray-500 gap-2 whitespace-nowrap">
                       <span>{post.authorName}</span>
-                      <span className="mx-2">·</span>
+                      <span>·</span>
                       <span>{formatDateRelative(post.createdAt)}</span>
-                      <span className="mx-2">·</span>
+                      <span>·</span>
                       <span>조회수 {post.viewCount}</span>
                       {typeof post.commentCount === 'number' && (
                         <>
-                          <span className="mx-2">·</span>
+                          <span>·</span>
                           <span>💬 {post.commentCount}</span>
                         </>
                       )}
                       {typeof post.likeCount === 'number' && (
                         <>
-                          <span className="mx-2">·</span>
+                          <span>·</span>
                           <span>❤️ {post.likeCount}</span>
                         </>
                       )}
@@ -141,9 +158,8 @@ export default function SearchPage() {
               {Array.from({ length: totalPages }, (_, i) => i).map((pageNumber) => (
                 <button
                   key={pageNumber}
-                  className={`px-3 py-1 rounded ${
-                    pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
-                  }`}
+                  className={`px-3 py-1 rounded ${pageNumber === page ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                    }`}
                   onClick={() => setPage(pageNumber)}
                 >
                   {pageNumber + 1}

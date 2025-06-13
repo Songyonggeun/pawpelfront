@@ -28,7 +28,17 @@ const WritePost = () => {
     const div = document.createElement('div');
     div.innerHTML = html;
     const img = div.querySelector('img');
-    return img ? img.src : null;
+    if (!img) return null;
+
+    const src = img.src;
+    if (src.startsWith("/images/post")) {
+      // 정적 리소스이면 그대로 사용
+      return src;
+    } else {
+      // 그 외에는 백엔드 주소가 붙지 않은 상대 경로로 간주하고 baseUrl을 붙임
+      const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
+      return src.startsWith("http") ? src : `${baseUrl}${src}`;
+    }
   }
 
   useEffect(() => {
@@ -50,6 +60,40 @@ const WritePost = () => {
               ["clean"],
             ],
           },
+        });
+
+        quillRef.current.getModule("toolbar").addHandler("image", () => {
+          const input = document.createElement("input");
+          input.setAttribute("type", "file");
+          input.setAttribute("accept", "image/*");
+          input.click();
+
+          input.onchange = async () => {
+            const file = input.files?.[0];
+            if (file) {
+              const formData = new FormData();
+              formData.append("image", file);
+
+              try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/image-upload`, {
+                  method: "POST",
+                  body: formData,
+                  credentials: "include",
+                });
+
+                if (!res.ok) throw new Error("이미지 업로드 실패");
+
+                const { imageUrl } = await res.json();
+                const range = quillRef.current.getSelection(true);
+                const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
+                const fullUrl = `${baseUrl}${imageUrl}`;
+                quillRef.current.insertEmbed(range.index, "image", fullUrl);
+                quillRef.current.setSelection(range.index + 1);
+              } catch (error) {
+                alert("이미지 업로드 중 오류가 발생했습니다.");
+              }
+            }
+          };
         });
 
         const editor = editorRef.current.querySelector(".ql-editor");
@@ -102,6 +146,13 @@ const WritePost = () => {
 
     const content = quillRef.current?.root.innerHTML || "";
 
+    // 본문 내용이 비어있거나 <p><br></p> 등 빈 내용일 경우 체크
+    const plainText = quillRef.current?.getText().trim() || "";
+    if (!plainText) return alert("본문 내용을 입력해주세요.");
+
+    // 또는 아래처럼 HTML 태그만 있으면 비어있는지 체크 가능
+    // if (!content || content === "<p><br></p>") return alert("본문 내용을 입력해주세요.");
+
     const postData = {
       title,
       content,
@@ -112,10 +163,15 @@ const WritePost = () => {
     };
 
     try {
+      const formData = new FormData();
+      const postBlob = new Blob([JSON.stringify(postData)], {
+        type: "application/json",
+      });
+      formData.append("post", postBlob);
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(postData),
+        body: formData,
         credentials: "include",
       });
 
@@ -123,7 +179,8 @@ const WritePost = () => {
         alert("게시글이 성공적으로 등록되었습니다.");
         router.push("/community/total");
       } else {
-        alert("게시글 등록 실패");
+        const error = await response.json();
+        alert(error?.error || "게시글 등록 실패");
       }
     } catch (error) {
       alert("게시글 등록 중 오류가 발생했습니다.");
@@ -238,8 +295,23 @@ const PetCard = ({ pet, selected, onClick }) => (
       </div>
     )}
     <div className="text-sm font-medium truncate">{pet.petName}</div>
-    <div className="text-xs text-gray-600 mt-1">{pet.petGender || "성별 정보 없음"}</div>
-    <div className="text-xs text-gray-600 mt-1 truncate">{pet.petSpecies || "종 정보 없음"}</div>
+    <div className="text-xs text-gray-600 mt-1 truncate">
+      {pet.petType === "cat"
+        ? "고양이"
+        : pet.petType === "dog"
+          ? "강아지"
+          : "종 정보 없음"}
+          <>
+           {' / '}
+          </>
+      {pet.petGender === "female"
+        ? "여아"
+        : pet.petGender === "male"
+          ? "남아"
+          : "성별 정보 없음"}
+    </div>
+
+
   </div>
 );
 

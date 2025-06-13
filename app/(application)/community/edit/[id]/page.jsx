@@ -22,6 +22,22 @@ export default function EditPostPage() {
     const editorRef = useRef(null);
     const quillRef = useRef(null);
 
+    const extractFirstImageSrc = (html) => {
+        if (!html) return null;
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        const img = div.querySelector("img");
+        if (!img) return null;
+
+        const src = img.src;
+        if (src.startsWith("/images/post")) {
+            return src;
+        } else {
+            const baseUrl = process.env.NEXT_PUBLIC_SPRING_SERVER_URL;
+            return src.startsWith("http") ? src : `${baseUrl}${src}`;
+        }
+    };
+
     useEffect(() => {
         async function loadQuill() {
             if (!window.Quill) {
@@ -42,6 +58,40 @@ export default function EditPostPage() {
                         ],
                     },
                 });
+
+                quillRef.current.getModule("toolbar").addHandler("image", () => {
+                    const input = document.createElement("input");
+                    input.setAttribute("type", "file");
+                    input.setAttribute("accept", "image/*");
+                    input.click();
+
+                    input.onchange = async () => {
+                        const file = input.files?.[0];
+                        if (file) {
+                            const formData = new FormData();
+                            formData.append("image", file);
+
+                            try {
+                                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/image-upload`, {
+                                    method: "POST",
+                                    body: formData,
+                                    credentials: "include",
+                                });
+
+                                if (!res.ok) throw new Error("이미지 업로드 실패");
+
+                                const { imageUrl } = await res.json();
+                                const fullUrl = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${imageUrl}`;
+                                const range = quillRef.current.getSelection(true);
+                                quillRef.current.insertEmbed(range.index, "image", fullUrl);
+                                quillRef.current.setSelection(range.index + 1);
+                            } catch (error) {
+                                alert("이미지 업로드 중 오류가 발생했습니다.");
+                            }
+                        }
+                    };
+                });
+
                 const editor = editorRef.current.querySelector(".ql-editor");
                 if (editor) editor.style.minHeight = "300px";
             }
@@ -270,6 +320,7 @@ function loadScript(src) {
         document.body.appendChild(script);
     });
 }
+
 function loadStyle(href) {
     return new Promise((resolve) => {
         const link = document.createElement("link");

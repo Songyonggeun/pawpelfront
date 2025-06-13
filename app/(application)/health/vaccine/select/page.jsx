@@ -10,113 +10,142 @@ export default function VaccineForm() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
   
   const router = useRouter();
 
   useEffect(() => {
-  const fetchPetsWithAllVaccine = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('Unauthorized');
-      const data = await res.json();
-
-      const petsWithLastVaccine = await Promise.all(
-  (data.pets || []).map(async (pet) => {
-    const vaccineRes = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/history?petId=${pet.id}`, {
-      credentials: 'include',
-    });
-    let records = vaccineRes.ok ? await vaccineRes.json() : [];
-
-    // 최신순 정렬
-    records.sort((a, b) => new Date(b.vaccinatedAt) - new Date(a.vaccinatedAt));
-
-    const lastRecord = records.length > 0 ? records[0] : null;
-    const stepSet = new Set(records.map((r) => r.step));
-    const isFullyVaccinated = stepSet.size >= 6; // 1~7단계가 모두 기록됨
-
-    return { ...pet, 
-      lastVaccine: lastRecord,
-      vaccineRecords: records,
-      isFullyVaccinated, // ✅ 백신 완료 여부 추가
+    const checkLogin = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error('unauthorized');
+        const data = await res.json();
+        setUserInfo(data); // 필요 없으면 생략 가능
+        setPets(data.pets || []);
+        setIsAuthChecked(true);
+      } catch (err) {
+        router.replace('/login');
+      }
     };
-  })
-);
 
-      setPets(petsWithLastVaccine); // 여기서 한 번만 pets 설정
-    } catch (err) {
-      router.replace('/login');
+    checkLogin();
+  }, []);
+
+  // 로그인 확인 전에는 아무것도 안 보임
+  if (!isAuthChecked) return null;
+
+  const handleSubmit = async () => {
+    if (!selectedPetId) {
+      alert('반려동물을 선택해주세요.');
+      return;
     }
-  };
 
-  fetchPetsWithAllVaccine();
-}, []);
+    const selectedPet = pets.find((p) => p.id === selectedPetId);
+    const selectedDateObj = new Date(date);
 
-
-const handleSubmit = async () => {
-  if (!selectedPetId) {
-    alert('반려동물을 선택해주세요.');
-    return;
-  }
-
-  const selectedPet = pets.find((p) => p.id === selectedPetId);
-  
-  if (step === 7 && selectedPet?.vaccineRecords) {
-    const lastAnnual = selectedPet.vaccineRecords
-      .filter((r) => r.step === 7)
-      .sort((a, b) => new Date(b.vaccinatedAt) - new Date(a.vaccinatedAt))[0];
-
-    if (lastAnnual) {
-      const diff = new Date() - new Date(lastAnnual.vaccinatedAt);
-      const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
-      if (diffDays < 365) {
-        const confirm = window.confirm(`이 반려동물은 종합백신을 최근에 접종했습니다.\n계속 등록할까요?`);
-        if (!confirm) return;
+    const firstDose = selectedPet?.vaccineRecords?.find((r) => r.step === 1);
+    if (firstDose && step > 1) {
+      const firstDate = new Date(firstDose.vaccinatedAt);
+      if (selectedDateObj <= firstDate) {
+        alert(`${step}차 접종일은 반드시 1차 접종일(${firstDate.toLocaleDateString('ko-KR')}) 이후여야 합니다.`);
+        return;
       }
     }
-  }
 
-  if (step !== 7) {
-  const alreadyExists = selectedPet?.vaccineRecords?.some((record) => record.step === step);
-  
-  if (alreadyExists) {
-    alert(`이미 ${step}차 접종이 저장되어 있습니다.`);
-    return;
-  }
-}
+    // ✅ 누락된 이전 단계 경고
+    if (step > 1 && step <= 6) {
+      for (let prev = 1; prev < step; prev++) {
+        const exists = selectedPet?.vaccineRecords?.some((r) => r.step === prev);
+        if (!exists) {
+          const confirm = window.confirm(`${prev}차 접종 기록이 없습니다.\n접종 단계를 건너뛰면 예정일 계산이 정확하지 않을 수 있습니다.\n계속 진행할까요?`);
+          if (!confirm) return;
+          break; // 한 번만 확인
+        }
+      }
+    }
 
-  setLoading(true);
+    if (step === 7) {
+      // 종합 백신은 모든 접종 이후여야 하고 1차 이후여야 함
+      const last6 = selectedPet?.vaccineRecords?.find((r) => r.step === 6);
+      if (last6) {
+        const last6Date = new Date(last6.vaccinatedAt);
+        if (selectedDateObj <= last6Date) {
+          alert(`종합백신은 6차 접종일(${last6Date.toLocaleDateString('ko-KR')})보다 뒤여야 합니다.`);
+          return;
+        }
+      }
 
-  const formData = new URLSearchParams();
-  formData.append('petId', selectedPetId);
-  formData.append('step', step);
-  formData.append('selectedDate', date);
+      if (firstDose) {
+        const firstDate = new Date(firstDose.vaccinatedAt);
+        if (selectedDateObj <= firstDate) {
+          alert(`종합백신은 반드시 1차 접종일(${firstDate.toLocaleDateString('ko-KR')}) 이후여야 합니다.`);
+          return;
+        }
+      }
 
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/calculate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-      credentials: 'include',
-    });
+      // 종합백신 중복 및 경고
+      const previousAnnual = selectedPet?.vaccineRecords
+        ?.filter((r) => r.step === 7)
+        .sort((a, b) => new Date(b.vaccinatedAt) - new Date(a.vaccinatedAt))[0];
 
-    if (!res.ok) throw new Error('백엔드 오류');
+      if (previousAnnual) {
+        const prevAnnualDate = new Date(previousAnnual.vaccinatedAt);
+        if (selectedDateObj <= prevAnnualDate) {
+          alert(`이번 종합백신은 이전 접종일(${prevAnnualDate.toLocaleDateString('ko-KR')})보다 뒤여야 합니다.`);
+          return;
+        }
 
-    const data = await res.json();
-    localStorage.setItem('vaccineResult', JSON.stringify(data));
-    localStorage.setItem('vaccinePetId', selectedPetId);
-    router.push('/health/vaccine/result');
-  } catch (err) {
-    console.error('백신 저장 실패:', err);
-    alert('예방접종 정보 저장에 실패했습니다.');
-  } finally {
-    setLoading(false);
-  }
-};
+        const diff = new Date() - new Date(previousAnnual.vaccinatedAt);
+        const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+        if (diffDays < 365) {
+          const confirm = window.confirm(`이 반려동물은 종합백신을 최근에 접종했습니다.\n계속 등록할까요?`);
+          if (!confirm) return;
+        }
+      }
+    }
 
+    // ✅ 중복 방지
+    if (step !== 7) {
+      const alreadyExists = selectedPet?.vaccineRecords?.some((record) => record.step === step);
+      if (alreadyExists) {
+        alert(`이미 ${step}차 접종이 저장되어 있습니다.`);
+        return;
+      }
+    }
+
+    // 🔽 이하 저장 로직 유지
+    setLoading(true);
+    const formData = new URLSearchParams();
+    formData.append('petId', selectedPetId);
+    formData.append('step', step);
+    formData.append('selectedDate', date);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/calculate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+        credentials: 'include',
+      });
+
+      if (!res.ok) throw new Error('백엔드 오류');
+
+      const data = await res.json();
+      localStorage.setItem('vaccineResult', JSON.stringify(data));
+      localStorage.setItem('vaccinePetId', selectedPetId);
+      router.push('/health/vaccine/result');
+    } catch (err) {
+      console.error('백신 저장 실패:', err);
+      alert('예방접종 정보 저장에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
 
@@ -156,31 +185,45 @@ const handleSubmit = async () => {
 
       {/* 반려동물 선택 */}
       <div className="flex gap-4 flex-wrap justify-center mb-6">
-        {pets.map((pet) => (
-  <div
-    key={pet.id}
-    onClick={() => setSelectedPetId(pet.id)}
-    className={`w-32 h-48 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
-      ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
-  >
-    <div className="w-12 h-12 bg-gray-200 rounded-full mb-2" />
-    <div className="text-sm font-medium">{pet.petName}</div>
+        {pets.map((pet) => {
+            const species = pet.petType?.toLowerCase() || '';
+            const isCat = species.includes('cat') || species.includes('고양이') || species.includes('냥');
+            const defaultImage = isCat ? '/images/profile/default_cat.jpeg' : '/images/profile/default_dog.jpeg';
+            const isDefaultImage = !pet.imageUrl;
 
-    {/* {pet.isFullyVaccinated ? (
-      <div className="text-[10px] text-green-600 font-semibold mt-1 text-center">
-        모든 백신 접종 완료 🎉
-      </div>
-    ) : pet.lastVaccine ? (
-      <div className="text-[10px] text-gray-500 text-center mt-1">
-        {pet.lastVaccine.vaccineName}<br />
-        {new Date(pet.lastVaccine.vaccinatedAt).toLocaleDateString('ko-KR')}
-      </div>
-    ) : (
-      <div className="text-[10px] text-gray-400 mt-1 text-center">접종 이력 없음</div>
-    )} */}
-
-  </div>
-))}
+            return (
+              <div
+                key={pet.id}
+                onClick={() => setSelectedPetId(pet.id)}
+                className={`w-60 h-60 border border-gray-300 rounded-lg flex flex-col items-center justify-center shadow-sm cursor-pointer
+                  ${selectedPetId === pet.id ? 'bg-blue-100 border-blue-500' : 'bg-white hover:bg-gray-100'}`}
+              >
+                  <div className="w-28 h-28 rounded-full overflow-hidden bg-white flex items-center justify-center mb-5">
+                    <img
+                      src={
+                        pet.thumbnailUrl || pet.imageUrl
+                          ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                              ? pet.thumbnailUrl || pet.imageUrl
+                              : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                          : defaultImage
+                      }
+                      alt={pet.petName}
+                      className={`w-full h-full ${
+                        isDefaultImage
+                          ? isCat
+                            ? 'object-contain p-[10px] filter grayscale brightness-110 opacity-60'
+                            : 'object-contain p-1 filter grayscale brightness-110 opacity-60'
+                          : 'object-cover'
+                      }`}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">
+                  {pet.petType === 'cat' ? '고양이' : pet.petType === 'dog' ? '강아지' : '기타'} / {pet.petAge}년생
+                </div>
+                <div className="text-m font-medium">{pet.petName}</div>
+          </div>
+            )
+        })}
       </div>
 
       {/* 백신 단계 선택 + 안내 버튼 */}
@@ -189,12 +232,23 @@ const handleSubmit = async () => {
           <label className="block text-xs font-medium text-gray-700 text-center">
             백신 단계 선택
           </label>
+
+          {/* 안내 버튼 */}
           <button
             type="button"
             onClick={() => setShowGuide(true)}
             className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
           >
             안내
+          </button>
+
+          {/* 이전기록보기 버튼 */}
+          <button
+            type="button"
+            onClick={() => router.push('/myPage/vaccine')}
+            className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-100"
+          >
+            이전기록보기
           </button>
         </div>
 
@@ -225,6 +279,7 @@ const handleSubmit = async () => {
           {loading ? '저장 중...' : '저장하기'}
         </button>
       </div>
+      <div className="mx-auto mt-6 w-[200px] h-[150px] bg-transparent" />
 
       {/* 모달 */}
       {showGuide && (
