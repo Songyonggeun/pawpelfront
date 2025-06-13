@@ -47,8 +47,8 @@ export default function LifetCommunityUI() {
 
             {/* 중앙 메뉴 */}
             <div className="flex justify-center my-6">
-                <div className="overflow-x-auto px-4 max-w-[1000px] mx-auto">
-                    <div className="flex min-w-max" style={{ gap: "60px" }}>
+                <div className="w-full max-w-[1100px] mx-auto">
+                    <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-4 px-4">
                         {/* 중앙 아이콘 메뉴 6개 */}
                         <a
                             href="/health/guide"
