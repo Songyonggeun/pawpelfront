@@ -78,7 +78,17 @@ export default function CommunityMenu() {
               isActive('/community/map') ? 'text-black font-bold' : ''
             }`}
           >
-            애견 동반 카페
+            반려동물 동반카페
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/rescue"
+            className={`hover:underline block ${
+              isActive('/rescue') ? 'text-black font-bold' : ''
+            }`}
+          >
+            유기동물
           </Link>
         </li>
       </ul>

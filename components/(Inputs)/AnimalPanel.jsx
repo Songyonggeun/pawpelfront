@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 export default function AnimalPanel() {
   const pathname = usePathname();
@@ -9,6 +10,7 @@ export default function AnimalPanel() {
   if (isAdminPage) return null;
 
   const [animals, setAnimals] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal`)
@@ -25,19 +27,17 @@ export default function AnimalPanel() {
         }
       })
       .then((data) => {
-        console.log("🐾 응답 확인:", data.animals); // 확인용 로그
         setAnimals(data.animals || []);
       })
       .catch((err) => {
         console.error("API 호출 오류:", err.message);
-      });
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  // 🐶 강아지 / 🐱 고양이 분리 및 3개씩 추출
   const dogs = animals.filter((a) => a.upkind === 417000).slice(0, 3);
   const cats = animals.filter((a) => a.upkind === 422400).slice(0, 3);
 
-  // 🔁 교차 배치: 강-고-강-고-강-고
   const interleaved = [];
   for (let i = 0; i < 3; i++) {
     if (dogs[i]) interleaved.push(dogs[i]);
@@ -47,37 +47,38 @@ export default function AnimalPanel() {
   return (
     <div>
       <h2 className="text-left text-lg font-semibold mb-4">최근 구조된 동물</h2>
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-
-        {interleaved.map((animal, index) => (
-          <div key={index} className="bg-white rounded-lg p-2 shadow-sm">
-            <img
-              src={animal.popfile || animal.popfile1 || animal.popfile2}
-              alt="동물"
-              className="w-full h-[130px] object-cover rounded mb-1"
-            />
-            <div className="text-center text-sm font-medium">
-              {animal.kindNm || animal.kindCd}
-            </div>
-            <div className="text-center text-xs text-gray-500">
-              {animal.age}
-            </div>
-
-              {animal.desertionNo && (
-                <div className="text-center mt-1">
-                  <a
-                    href="https://www.animal.go.kr/front/awtis/public/publicList.do?menuNo=1000000055"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 text-xs underline hover:text-blue-800"
-                  >
-                    상세정보 보러가기 
-                  </a>
-                  <div className="text-[10px] text-gray-400">(공고번호: {animal.noticeNo})</div>
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-gray-100 animate-pulse rounded-lg p-2 shadow-sm"
+              >
+                <div className="w-full h-[130px] bg-gray-300 rounded mb-2" />
+                <div className="h-4 bg-gray-300 rounded w-3/4 mx-auto mb-1" />
+                <div className="h-3 bg-gray-200 rounded w-1/2 mx-auto" />
+              </div>
+            ))
+          : interleaved.map((animal, index) => (
+              <Link
+                key={index}
+                href={`/rescue/${animal.desertionNo}`}
+                className="bg-white rounded-lg p-2 shadow-sm hover:shadow-md transition duration-200"
+              >
+                <img
+                  src={animal.popfile || animal.popfile1 || animal.popfile2}
+                  alt="동물"
+                  className="w-full h-[130px] object-cover rounded mb-1"
+                />
+                <div className="text-center text-sm font-medium">
+                  {animal.kindNm || animal.kindCd}
                 </div>
-              )}
-          </div>
-        ))}
+                <div className="text-center text-xs text-gray-500">
+                  {animal.age}
+                </div>
+              </Link>
+            ))}
       </div>
     </div>
   );
