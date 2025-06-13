@@ -209,7 +209,9 @@ export default function LifetCommunityUI() {
                     {/* 🔥 인기 급상승 섹션 */}
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900">
-                            인기 급상승 🔥
+                            {activeTab === "popular"
+                                ? "인기 급상승 🔥"
+                                : "따끈한 새글 ✨"}
                         </h2>
                     </div>
 
@@ -242,9 +244,9 @@ export default function LifetCommunityUI() {
                             href={
                                 activeTab === "popular"
                                     ? "/community/best"
-                                    : "/community/latest"
+                                    : "/community/total"
                             }
-                            className="text-sm text-black-500 hover:underline whitespace-nowrap">
+                            className="text-sm text-gray-500 hover:underline whitespace-nowrap">
                             더보기 &gt;
                         </Link>
                     </div>
