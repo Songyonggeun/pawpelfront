@@ -24,7 +24,6 @@ export default function WithdrawPage() {
     setError('');
 
     try {
-      // 비밀번호 검증 & 탈퇴 API 호출 (서버에서 한 번에 처리해도 좋고, 분리해도 됨)
       const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/withdraw`, {
         method: 'DELETE',
         credentials: 'include',
@@ -34,7 +33,15 @@ export default function WithdrawPage() {
 
       if (res.ok) {
         alert('회원 탈퇴가 완료되었습니다.');
-        router.push('/'); // 홈으로 이동 (또는 로그인 페이지)
+
+        // 로그아웃 API 호출 혹은 클라이언트 토큰 삭제 처리
+        await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/logout`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+
+        // 클라이언트 라우터 대신 전체 페이지 새로고침으로 이동
+        window.location.href = '/login';
       } else {
         const data = await res.json();
         setError(data.message || '탈퇴에 실패했습니다.');
@@ -45,6 +52,7 @@ export default function WithdrawPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="max-w-md mx-auto p-6 mt-12 bg-white rounded shadow">
@@ -82,9 +90,8 @@ export default function WithdrawPage() {
         <button
           onClick={handleWithdraw}
           disabled={!agree || !password || loading}
-          className={`flex-1 py-2 rounded text-white font-semibold ${
-            !agree || !password || loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'
-          }`}
+          className={`flex-1 py-2 rounded text-white font-semibold ${!agree || !password || loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'
+            }`}
         >
           {loading ? '처리 중...' : '회원 탈퇴'}
         </button>
