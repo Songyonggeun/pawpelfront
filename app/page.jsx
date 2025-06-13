@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import PetAdBanner from "@/components/(Inputs)/advertisement";
+import AnimalPanel from "@/components/(Inputs)/AnimalPanel";
 import Link from "next/link";
 
 export default function LifetCommunityUI() {
@@ -146,7 +147,7 @@ export default function LifetCommunityUI() {
 
             {/* 인기글 섹션 */}
             <section className="w-full border-gray-200 bg-white">
-                <div className="max-w-[1100px] mx-auto px-6 py-6">
+                <div className="max-w-[1100px] mx-auto px-6 py-2">
                     {/* 📸 사진 갤러리 */}
                     <div className="mb-6">
                         <div className="flex items-center justify-between mb-3">
@@ -252,7 +253,7 @@ export default function LifetCommunityUI() {
                     </div>
 
                     {/* 게시글 리스트 */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-30">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-10">
                         {Array.from({ length: 9 }).map((_, idx) => {
                             const post = posts[idx];
                             return (
@@ -298,6 +299,12 @@ export default function LifetCommunityUI() {
                     </div>
                 </div>
             </section>
+
+            {/* 유기동물 섹션 */}
+            <div className="max-w-[1100px] mx-auto px-6 pb-0 mb-20">
+                <AnimalPanel />
+            </div>
+
         </div>
     );
 }
