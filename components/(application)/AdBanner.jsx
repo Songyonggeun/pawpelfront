@@ -48,7 +48,7 @@ export default function AdBanner() {
   return (
     <div className="w-full mb-6 flex flex-col items-center space-y-2">
       <div
-        className="w-[930px] h-[200px] relative rounded shadow-md overflow-hidden cursor-pointer border border-gray-300"
+        className="w-[830px] h-[150px] relative rounded shadow-md overflow-hidden cursor-pointer border border-gray-300"
         onClick={handleClick}
       >
         <Image

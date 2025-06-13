@@ -167,18 +167,17 @@ export default function OrderListPage() {
         {orders.length === 0 ? (
           <div className="p-6 text-center">주문 내역이 없습니다.</div>
         ) : (
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-center mt-2 border-t border-gray-300 border-collapse">
             <thead>
-              <tr className="bg-gray-100 text-center">
-                <th className="border border-gray-300 px-2 py-2">날짜</th>
-                {/* <th className="border border-gray-300 px-2 py-2">주문번호</th> */}
-                <th className="border border-gray-300 px-2 py-2">상품 이미지</th>
-                <th className="border border-gray-300 px-2 py-2">상품명</th>
-                <th className="border border-gray-300 px-2 py-2">수량</th>
-                <th className="border border-gray-300 px-2 py-2">상품 총액</th>
-                <th className="border border-gray-300 px-2 py-2">총 결제 금액</th>
-                <th className="border border-gray-300 px-2 py-2">상태</th>
-                <th className="border border-gray-300 px-2 py-2">관리</th>
+              <tr className="border-b border-gray-300 text-base text-gray-600 bg-gray-50">
+                <th className="py-2">날짜</th>
+                <th className="py-2">상품 이미지</th>
+                <th className="py-2">상품명</th>
+                <th className="py-2">수량</th>
+                <th className="py-2">상품 총액</th>
+                <th className="py-2">총 결제 금액</th>
+                <th className="py-2">상태</th>
+                <th className="py-2">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -193,24 +192,13 @@ export default function OrderListPage() {
                       : '/images/product/default-product.png';
 
                   return (
-                    <tr key={`${orderIdx}-${itemIdx}`} className="text-center">
+                    <tr key={`${orderIdx}-${itemIdx}`} className="border-b border-gray-300 hover:bg-gray-100 text-sm">
                       {itemIdx === 0 && (
-                        <>
-                          <td
-                            rowSpan={order.items.length}
-                            className="border border-gray-300 px-2 py-2 whitespace-pre-line bg-gray-50"
-                          >
-                            {formatOrderDate(order.orderDate)}
-                          </td>
-                          {/* <td
-                            rowSpan={order.items.length}
-                            className="border border-gray-300 px-2 py-2 font-medium bg-gray-50"
-                          >
-                            {order.orderId || `#${orderIdx + 1}`}
-                          </td> */}
-                        </>
+                        <td rowSpan={order.items.length} className="py-2 whitespace-pre-line bg-gray-50">
+                          {formatOrderDate(order.orderDate)}
+                        </td>
                       )}
-                      <td className="border border-gray-300 px-2 py-2">
+                      <td className="py-2">
                         <img
                           src={imageUrl}
                           alt={product?.name || '상품'}
@@ -220,46 +208,37 @@ export default function OrderListPage() {
                           }}
                         />
                       </td>
-                      <td className="border border-gray-300 px-2 py-2">{product?.name || item.productName}</td>
-                      <td className="border border-gray-300 px-2 py-2">{item.quantity}</td>
-                      <td
-                        rowSpan={order.items.length}
-                        className="border border-gray-300 px-2 py-2 font-bold text-black whitespace-pre-line"
-                      >
-                        {(order.totalAmount + (order.totalAmount <= 35000 ? 3000 : 0)).toLocaleString()}원
-                        {order.totalAmount <= 35000 && (
-                          <div className="text-xs text-gray-500 mt-1">(배송비 3,000원)</div>
-                        )}
-                      </td>
+                      <td className="py-2">{product?.name || item.productName}</td>
+                      <td className="py-2">{item.quantity}</td>
                       {itemIdx === 0 && (
                         <>
                           <td
                             rowSpan={order.items.length}
-                            className="border border-gray-300 px-2 py-2 font-bold text-black"
+                            className="py-2 font-bold text-black whitespace-pre-line"
                           >
+                            {(order.totalAmount + (order.totalAmount <= 35000 ? 3000 : 0)).toLocaleString()}원
+                            {order.totalAmount <= 35000 && (
+                              <div className="text-xs text-gray-500 mt-1">(배송비 3,000원)</div>
+                            )}
+                          </td>
+                          <td rowSpan={order.items.length} className="py-2 font-bold text-black">
                             {order.totalAmount.toLocaleString()}원
                           </td>
-                          <td
-                            rowSpan={order.items.length}
-                            className="border border-gray-300 px-2 py-2 text-gray-600"
-                          >
+                          <td rowSpan={order.items.length} className="py-2 text-gray-600">
                             <div>{order.status}</div>
                           </td>
-                          <td
-                            rowSpan={order.items.length}
-                            className="border border-gray-300 px-2 py-2 text-center align-top"
-                          >
+                          <td rowSpan={order.items.length} className="py-2 text-center align-middle">
                             {order.status === '결제완료' ? (
-                              <div className="flex flex-col items-center space-y-1">
+                              <div className="flex flex-col justify-center items-center h-full space-y-2">
                                 <button
                                   onClick={() => setSelectedOrderForEdit(order)}
-                                  className="bg-gray-300 text-black px-2 py-1 rounded text-sm"
+                                  className="inline-block bg-gray-100 border border-gray-300 text-xs px-2 py-0.5 rounded"
                                 >
                                   배송지수정
                                 </button>
                                 <button
                                   onClick={() => handleCancelOrder(order.id)}
-                                  className="bg-gray-300 text-black px-2 py-1 rounded text-sm"
+                                  className="inline-block bg-gray-100 border border-gray-300 text-xs px-2 py-0.5 rounded"
                                 >
                                   주문취소
                                 </button>
@@ -270,7 +249,6 @@ export default function OrderListPage() {
                           </td>
                         </>
                       )}
-                      
                     </tr>
                   );
                 })
@@ -280,8 +258,9 @@ export default function OrderListPage() {
         )}
       </main>
 
+
       {selectedOrderForEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center ">
           <div className="bg-white rounded-lg shadow-lg w-[350px] p-6">
             <h2 className="text-lg font-bold mb-4">✏️ 배송지</h2>
             <div className="space-y-2 text-sm">

@@ -14,6 +14,11 @@ export default function CommentShow({ postId }) {
   const [replyContent, setReplyContent] = useState("");
   const [mentionUsers, setMentionUsers] = useState([]);
   const [openProfileMenuId, setOpenProfileMenuId] = useState(null);
+  const [showCommentReportModal, setShowCommentReportModal] = useState(false);
+  const [reportedComment, setReportedComment] = useState(null);
+  const [selectedCommentReason, setSelectedCommentReason] = useState("");
+  const [customCommentReason, setCustomCommentReason] = useState("");
+  const [blockedUserIds, setBlockedUserIds] = useState([]);
   const profileMenuRef = useRef(null);
   const [mentionDropdown, setMentionDropdown] = useState({
     visible: false,
@@ -332,15 +337,40 @@ export default function CommentShow({ postId }) {
                 프로필 보기
               </Link>
               <button
+                onClick={async () => {
+                  const isBlocked = blockedUserIds.includes(comment.userId);
+                  const url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/${isBlocked ? "unblock" : "block"}/${comment.userId}`;
+                  try {
+                    const res = await fetch(url, {
+                      method: isBlocked ? "DELETE" : "POST",
+                      credentials: "include",
+                    });
+                    if (!res.ok) throw new Error();
+                    setBlockedUserIds((prev) =>
+                      isBlocked
+                        ? prev.filter((id) => id !== comment.userId)
+                        : [...prev, comment.userId]
+                    );
+                    alert(`"${comment.userName}"님을 ${isBlocked ? "차단 해제" : "차단"}했습니다.`);
+                  } catch {
+                    alert("처리 중 오류가 발생했습니다.");
+                  } finally {
+                    setOpenProfileMenuId(null);
+                  }
+                }}
+                className="block hover:underline"
+              >
+                {blockedUserIds.includes(comment.userId) ? "차단해제하기" : "차단하기"}
+              </button>
+              <button
                 onClick={() => {
+                  setShowCommentReportModal(true);
+                  setReportedComment(comment);
                   setOpenProfileMenuId(null);
-                  alert(`"${comment.userName}"님을 차단했습니다.`);
-                  // 또는 차단 처리 API 호출 가능:
-                  // await fetch(`/api/block/${comment.userId}`, { method: "POST" })
                 }}
                 className="block text-red-500 hover:underline"
               >
-                차단하기
+                신고하기
               </button>
             </div>
           )}
@@ -480,6 +510,25 @@ export default function CommentShow({ postId }) {
     );
   };
 
+  // 차단하기
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/blocked`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json(); // [{ id: 1, name: "홍길동" }, ...]
+        setBlockedUserIds(data.map((u) => u.id));
+      } catch (err) {
+        console.error("차단 유저 목록 불러오기 실패", err);
+        setBlockedUserIds([]);
+      }
+    })();
+  }, []);
+
+
+
 return (
   <div className="space-y-4">
     {comments.length === 0 ? (
@@ -504,6 +553,104 @@ return (
         </button>
       ))}
     </div>
+
+    {showCommentReportModal && reportedComment && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+        <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
+          <h2 className="text-lg font-bold mb-4">댓글 신고</h2>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const reason =
+                selectedCommentReason === "기타"
+                  ? customCommentReason.trim()
+                  : selectedCommentReason;
+              if (!reason) {
+                alert("신고 사유를 입력해주세요.");
+                return;
+              }
+
+              try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/report`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({
+                    reporterId: currentUser?.id,
+                    reportedUserId: reportedComment.userId,
+                    postId: reportedComment.postId,
+                    commentId: reportedComment.id,
+                    reason,
+                    targetType: "COMMENT",
+                    status: "대기중",
+                  }),
+                });
+                if (!res.ok) throw new Error();
+                alert("신고가 접수되었습니다.");
+                setShowCommentReportModal(false);
+                setReportedComment(null);
+                setSelectedCommentReason("");
+                setCustomCommentReason("");
+              } catch {
+                alert("신고 처리 중 오류가 발생했습니다.");
+              }
+            }}
+          >
+            <div className="space-y-2 mb-4">
+              {[
+                "욕설 혹은 폭언",
+                "광고성 컨텐츠",
+                "허위/거짓 정보",
+                "개인정보 노출",
+                "사생활 침해",
+                "명예 훼손",
+                "기타",
+              ].map((reason) => (
+                <label key={reason} className="block">
+                  <input
+                    type="radio"
+                    name="commentReportReason"
+                    value={reason}
+                    checked={selectedCommentReason === reason}
+                    onChange={() => setSelectedCommentReason(reason)}
+                    className="mr-2"
+                  />
+                  {reason}
+                </label>
+              ))}
+            </div>
+            {selectedCommentReason === "기타" && (
+              <textarea
+                placeholder="신고 사유를 입력해주세요"
+                value={customCommentReason}
+                onChange={(e) => setCustomCommentReason(e.target.value)}
+                className="w-full border rounded px-3 py-2 mb-4 text-sm"
+                rows={3}
+              />
+            )}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowCommentReportModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                신고
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+
+
+
+
   </div>
 );
 

@@ -7,7 +7,6 @@ import CommentInput from "@/components/(Inputs)/commentInput";
 import CommentShow from "@/components/(application)/commentShow";
 import LikeCard from "@/components/(application)/postLike";
 import PopularPostsSidebar from "@/components/(application)/PopularPostsSidebar";
-import CommunityMenu from "@/components/(application)/communityMenu";
 import Link from "next/link";
 
 export default function PostDetailPage() {
@@ -23,6 +22,12 @@ export default function PostDetailPage() {
     const [allPosts, setAllPosts] = useState([]);
     const [relatedPopularPosts, setRelatedPopularPosts] = useState([]);
     const [openProfileMenuId, setOpenProfileMenuId] = useState(null);
+    const [blockedUserIds, setBlockedUserIds] = useState([]);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [selectedReason, setSelectedReason] = useState("");
+    const [customReason, setCustomReason] = useState("");
+    const [currentUser, setCurrentUser] = useState(null);
+
     const profileMenuRef = useRef(null);
 
     //페이지네이션
@@ -66,13 +71,22 @@ export default function PostDetailPage() {
                     { credentials: "include" }
                 );
                 if (!res.ok) throw new Error("게시글을 불러오지 못했습니다.");
-                setPost(await res.json());
+
+                const data = await res.json();
+
+                if (data.isPublic === false) {
+                    // 비공개 글이면 404 페이지로 이동
+                    router.replace("/404");
+                    return;
+                }
+
+                setPost(data);
                 setError(null);
             } catch (e) {
                 setError(e.message);
             }
         })();
-    }, [id]);
+    }, [id, router]);
 
     //외부클릭시 나오도록
     useEffect(() => {
@@ -141,6 +155,22 @@ export default function PostDetailPage() {
         })();
     }, []);
 
+    // 로그인 유저 가져오기
+    useEffect(() => {
+        (async () => {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`,
+                {
+                    credentials: "include",
+                }
+            );
+            if (res.ok) {
+                const user = await res.json();
+                setCurrentUser(user); // user.id가 들어 있음
+            }
+        })();
+    }, []);
+
     /* ---------- 같은 Q&A 서브카테고리 인기글 ---------- */
     useEffect(() => {
         if (!post || post.category !== "Q&A" || !post.subCategory) return;
@@ -202,6 +232,50 @@ export default function PostDetailPage() {
         }
     };
 
+    /* ---------- 유저 차단/해제 토글 ---------- */
+    const toggleBlockUser = async () => {
+        const isBlocked = blockedUserIds.includes(post.authorId);
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/${post.authorId}/block`,
+                {
+                    method: isBlocked ? "DELETE" : "POST",
+                    credentials: "include",
+                }
+            );
+            if (!res.ok) throw new Error();
+            alert(isBlocked ? "차단을 해제했습니다." : "차단했습니다.");
+            setBlockedUserIds((prev) =>
+                isBlocked
+                    ? prev.filter((id) => id !== post.authorId)
+                    : [...prev, post.authorId]
+            );
+        } catch {
+            alert("처리 중 오류 발생");
+        } finally {
+            setOpenProfileMenuId(null);
+        }
+    };
+
+    /* ---------- 유저 차단 확인 ---------- */
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/blocked`,
+                    { credentials: "include" }
+                );
+                if (!res.ok) throw new Error();
+                const list = await res.json();
+                // list가 [{ id: 1, name: "홍길동" }, ...] 형식이면 아래와 같이 처리
+                setBlockedUserIds(list.map((u) => u.id));
+            } catch (err) {
+                console.error("차단 유저 목록 불러오기 실패", err);
+                setBlockedUserIds([]);
+            }
+        })();
+    }, []);
+
     /* ---------- 렌더 ---------- */
     if (error)
         return (
@@ -218,7 +292,7 @@ export default function PostDetailPage() {
 
     return (
         /* flex 컨테이너로 메인 + 사이드바 배치 */
-        <div className="flex flex-col md:flex-row gap-8 w-full max-w-[1300px] mx-auto px-6 py-10 text-gray-900 font-sans">
+        <div className="flex flex-col md:flex-row gap-8 w-full max-w-[1200px] mx-auto px-6 py-10 text-gray-900 font-sans">
             {/* ---------- 메인 영역 ---------- */}
             <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)] min-h-[800px]">
                 {/* 카테고리 경로 */}
@@ -290,28 +364,60 @@ export default function PostDetailPage() {
                                 >
                                     프로필 보기
                                 </Link>
+
                                 <button
-                                    onClick={() => {
-                                        setOpenProfileMenuId(null);
-                                        alert(
-                                            `"${post.authorName}"님을 차단했습니다.`
-                                        );
+                                    onClick={async () => {
+                                        const isBlocked =
+                                            blockedUserIds.includes(
+                                                post.authorId
+                                            );
+                                        const url = `${
+                                            process.env
+                                                .NEXT_PUBLIC_SPRING_SERVER_URL
+                                        }/user/${
+                                            isBlocked ? "unblock" : "block"
+                                        }/${post.authorId}`;
+                                        try {
+                                            const res = await fetch(url, {
+                                                method: isBlocked
+                                                    ? "DELETE"
+                                                    : "POST",
+                                                credentials: "include",
+                                            });
+                                            if (!res.ok) throw new Error();
+                                            setBlockedUserIds((prev) =>
+                                                isBlocked
+                                                    ? prev.filter(
+                                                          (id) =>
+                                                              id !==
+                                                              post.authorId
+                                                      )
+                                                    : [...prev, post.authorId]
+                                            );
+                                            alert(
+                                                `"${post.authorName}"님을 ${
+                                                    isBlocked
+                                                        ? "차단 해제"
+                                                        : "차단"
+                                                }했습니다.`
+                                            );
+                                        } catch {
+                                            alert("처리 중 오류 발생");
+                                        } finally {
+                                            setOpenProfileMenuId(null);
+                                        }
                                     }}
-                                    className="block text-red-500 hover:underline mt-1"
                                 >
-                                    차단하기
+                                    {blockedUserIds.includes(post.authorId)
+                                        ? "차단해제하기"
+                                        : "차단하기"}
                                 </button>
-                                {/* <button
-                                    onClick={() => {
-                                        setOpenProfileMenuId(null);
-                                        alert(
-                                            `"${post.authorName}"님을 신고했습니다.`
-                                        );
-                                    }}
-                                    className="block text-green-500 hover:underline mt-1"
+                                <button
+                                    onClick={() => setShowReportModal(true)}
+                                    className="block mt-1 hover:underline"
                                 >
                                     신고하기
-                                </button> */}
+                                </button>
                             </div>
                         )}
                     </div>
@@ -572,26 +678,40 @@ export default function PostDetailPage() {
                                   })
                                 : created.toLocaleDateString();
 
+                            const isBlinded = item.isPublic === false;
+
                             return (
                                 <div
                                     key={item.id}
-                                    onClick={() =>
-                                        item.id !== Number(id) &&
-                                        router.push(
-                                            `/community/detail/${item.id}`
-                                        )
+                                    onClick={() => {
+                                        if (
+                                            !isBlinded &&
+                                            item.id !== Number(id)
+                                        ) {
+                                            router.push(
+                                                `/community/detail/${item.id}`
+                                            );
+                                        }
+                                    }}
+                                    className={`grid grid-cols-12 px-4 py-2 text-sm transition-all items-center
+        ${isCurrent ? "bg-blue-50 font-bold text-blue-700" : "hover:bg-gray-50"}
+        ${
+            isBlinded
+                ? "cursor-not-allowed opacity-60 italic text-red-600"
+                : "cursor-pointer"
+        }
+      `}
+                                    title={
+                                        isBlinded
+                                            ? "비공개 처리된 글입니다."
+                                            : ""
                                     }
-                                    className={`grid grid-cols-12 px-4 py-2 text-sm cursor-pointer transition-all
-                ${
-                    isCurrent
-                        ? "bg-blue-50 font-bold text-blue-700"
-                        : "hover:bg-gray-50"
-                }
-                items-center`}
+                                    aria-disabled={isBlinded}
                                 >
                                     <div className="col-span-1 text-center text-gray-500">
                                         {item.id}
                                     </div>
+
                                     <div className="col-span-6 text-left truncate">
                                         <span className="text-gray-400 mr-1">
                                             [{item.category}
@@ -600,24 +720,37 @@ export default function PostDetailPage() {
                                                 : ""}
                                             ]
                                         </span>
-                                        <span className="hover:underline">
-                                            {item.title}
+                                        <span
+                                            className={
+                                                isBlinded
+                                                    ? ""
+                                                    : "hover:underline"
+                                            }
+                                        >
+                                            {isBlinded
+                                                ? "비공개 처리된 글입니다."
+                                                : item.title}
                                         </span>
-                                        {item.commentCount > 0 && (
-                                            <span className="ml-1 text-red-600 font-semibold">
-                                                [{item.commentCount}]
-                                            </span>
-                                        )}
+                                        {!isBlinded &&
+                                            item.commentCount > 0 && (
+                                                <span className="ml-1 text-red-600 font-semibold">
+                                                    [{item.commentCount}]
+                                                </span>
+                                            )}
                                     </div>
+
                                     <div className="col-span-2 text-center text-gray-700">
                                         {item.authorName}
                                     </div>
-                                    <div className="text-center text-gray-500 w-[90px]">
+
+                                    <div className="col-span-1 text-center text-gray-500 w-[90px]">
                                         {formattedTime}
                                     </div>
+
                                     <div className="col-span-1 text-center text-gray-600">
                                         {item.viewCount}
                                     </div>
+
                                     <div className="col-span-1 text-center text-gray-600">
                                         {item.likeCount}
                                     </div>
@@ -700,6 +833,107 @@ export default function PostDetailPage() {
             <div className="hidden md:block md:w-[260px] md:pl-2">
                 <PopularPostsSidebar />
             </div>
+
+            {/* ---------- 신고하기 ---------- */}
+            {showReportModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
+                        <h2 className="text-lg font-bold mb-4">사용자 신고</h2>
+                        <form
+                            onSubmit={async (e) => {
+                                e.preventDefault();
+                                const reason =
+                                    selectedReason === "기타"
+                                        ? customReason.trim()
+                                        : selectedReason;
+                                if (!reason) {
+                                    alert("신고 사유를 입력해주세요.");
+                                    return;
+                                }
+                                try {
+                                    const res = await fetch(
+                                        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/report`,
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json",
+                                            },
+                                            credentials: "include",
+                                            body: JSON.stringify({
+                                                reporterId: currentUser.id,
+                                                reportedUserId: post.authorId,
+                                                postId: post.id,
+                                                commentId: null,
+                                                reason,
+                                                targetType: "POST",
+                                                status: "대기중",
+                                            }),
+                                        }
+                                    );
+                                    if (!res.ok) throw new Error();
+                                    alert("신고가 접수되었습니다.");
+                                    setShowReportModal(false);
+                                } catch {
+                                    alert("신고 처리 중 오류가 발생했습니다.");
+                                }
+                            }}
+                        >
+                            <div className="space-y-2 mb-4">
+                                {[
+                                    "욕설 혹은 폭언",
+                                    "광고성 컨텐츠",
+                                    "허위/거짓 정보",
+                                    "개인정보 노출",
+                                    "사생활 침해",
+                                    "명예 훼손",
+                                    "기타",
+                                ].map((reason) => (
+                                    <label key={reason} className="block">
+                                        <input
+                                            type="radio"
+                                            name="reportReason"
+                                            value={reason}
+                                            checked={selectedReason === reason}
+                                            onChange={() =>
+                                                setSelectedReason(reason)
+                                            }
+                                            className="mr-2"
+                                        />
+                                        {reason}
+                                    </label>
+                                ))}
+                            </div>
+                            {selectedReason === "기타" && (
+                                <textarea
+                                    placeholder="신고 사유를 입력해주세요"
+                                    value={customReason}
+                                    onChange={(e) =>
+                                        setCustomReason(e.target.value)
+                                    }
+                                    className="w-full border rounded px-3 py-2 mb-4 text-sm"
+                                    rows={3}
+                                />
+                            )}
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowReportModal(false)}
+                                    className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+                                >
+                                    취소
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                >
+                                    신고
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

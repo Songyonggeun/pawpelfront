@@ -50,7 +50,7 @@ export default function CheckoutPage() {
         });
         const data = await res.json();
         setUser(data);
-        setRecipientName(data?.name || '');
+        // setRecipientName(data?.name || '');
       } catch (err) {
         console.error('유저 정보 요청 실패:', err);
       }
@@ -120,6 +120,16 @@ export default function CheckoutPage() {
       <div className="space-y-2 border border-gray-200 rounded p-4">
       <h2 className="text-lg font-semibold">📦 배송 정보</h2>
           
+
+        {/* 주문자 텍스트 출력 (input → 텍스트로 변경) */}
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-700">
+            주문자
+          </label>
+          <div className="border border-gray-200 p-2 rounded bg-gray-100">
+            {user?.name || '정보 없음'}
+          </div>
+        </div>
         {/* 이름 / 연락처 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

@@ -159,7 +159,7 @@ export default function LifetCommunityUI() {
             </div>
 
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-25">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-10">
               {posts
                 .filter((post) => extractAllImageSrcs(post.content).length > 0) // 이미지 있는 글만
                 .flatMap((post) => {
@@ -194,7 +194,7 @@ export default function LifetCommunityUI() {
             </div>
           </div>
 
-
+          {/* <div className="mx-auto max-w-[1050px] border-t border-gray-200 bg-white mb-8"></div> */}
 
           {/* 🔥 인기 급상승 섹션 */}
           <div className="flex items-center justify-between">
