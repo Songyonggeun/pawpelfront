@@ -2,7 +2,7 @@
 // import { ThemeInitializer } from '@/components/public';
 import HeaderComponent from "@/components/(application)/header.server";
 import FooterComponent from "@/components/(application)/footer"
-import AnimalSidePanel from "@/components/(Inputs)/AnimalSidePanel"
+import AnimalSidePanel from "@/components/(Inputs)/AnimalPanel"
 
 import { metadata as meta } from "@/setting/meta";
 import './globals.css';
