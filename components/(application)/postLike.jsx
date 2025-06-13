@@ -6,24 +6,26 @@ export default function LikeCard({ postId, initialLikeCount = 0, initialIsLiked 
   const [loading, setLoading] = useState(false);
 
   // 페이지 로드 시 서버에서 좋아요 상태 불러오기
-  useEffect(() => {
-    async function fetchLikeStatus() {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${postId}/like/status`, {
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error('좋아요 상태를 불러오지 못했습니다.');
-        const data = await res.json();
+useEffect(() => {
+  async function fetchLikeStatus() {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${postId}/like/status`, {
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('좋아요 상태를 불러오지 못했습니다.');
+      const data = await res.json();
 
-        setLikeCount(data.likeCount);
-        setIsLiked(data.isLiked);
-        onLikeCountChange?.(data.likeCount, data.isLiked);
-      } catch (error) {
-        console.error(error);
-      }
+      setLikeCount(data.likeCount);
+      setIsLiked(data.isLiked);
+      // 이건 의도적으로 한 번만 반영
+      onLikeCountChange?.(data.likeCount, data.isLiked);
+    } catch (error) {
+      console.error(error);
     }
-    fetchLikeStatus();
-  }, [postId, onLikeCountChange]);
+  }
+  fetchLikeStatus();
+}, [postId]); // ✅ postId만 넣음
+
 
   const toggleLike = async () => {
     if (loading) return;
