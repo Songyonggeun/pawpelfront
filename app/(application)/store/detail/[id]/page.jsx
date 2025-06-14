@@ -134,7 +134,7 @@ const handleBuyNow = async () => {
             <p className="text-lg font-semibold">🛒 장바구니에 담았습니다!</p>
             <div className="flex gap-4 justify-center">
               <button
-                onClick={() => setShowCartModal(false)}
+                onClick={() => router.push('/store')}
                 className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm"
               >
                 계속 쇼핑하기
