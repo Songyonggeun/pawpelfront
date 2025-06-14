@@ -7,6 +7,7 @@ export default function CommentLike({
     initialLikeCount = 0,
     initialIsLiked = false,
     onLikeToggle,
+    isLoggedIn,
 }) {
     const [likeCount, setLikeCount] = useState(initialLikeCount);
     const [isLiked, setIsLiked] = useState(initialIsLiked);
@@ -15,25 +16,29 @@ export default function CommentLike({
 
     // 로그인 여부를 체크하고, 로그인된 경우에만 like 상태를 가져오도록 수정
     useEffect(() => {
-        const checkLogin = async () => {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
-                    credentials: 'include',
-                });
+        if (isLoggedIn) {
+            const checkLogin = async () => {
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
+                        credentials: "include",
+                    });
 
-                if (res.ok) {
-                    const user = await res.json();
-                    setCurrentUser(user);
-                } else {
-                    setCurrentUser(null);
+                    if (res.ok) {
+                        const user = await res.json();
+                        setCurrentUser(user); // 로그인된 경우 user 정보 설정
+                    } else {
+                        setCurrentUser(null); // 로그인되지 않은 경우 null 설정
+                    }
+                } catch {
+                    setCurrentUser(null); // 에러 발생 시 null 설정
                 }
-            } catch {
-                setCurrentUser(null);
-            }
-        };
+            };
 
-        checkLogin();
-    }, []);
+            checkLogin(); // 로그인 상태 확인
+        } else {
+            setCurrentUser(null); // 로그인하지 않으면 상태를 null로 설정
+        }
+    }, [isLoggedIn]); // 로그인 상태가 바뀔 때마다 실행
 
     // 로그인 상태가 변경되었을 때만 좋아요 상태를 조회
     useEffect(() => {

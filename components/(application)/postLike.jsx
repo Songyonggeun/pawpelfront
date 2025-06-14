@@ -13,6 +13,8 @@ export default function LikeCard({
 
     // 페이지 로드 시 서버에서 좋아요 상태 불러오기
     const fetchLikeStatus = async () => {
+        if (isDisabled) return; // 로그인하지 않으면 상태를 불러오지 않음
+
         try {
             const res = await fetch(
                 `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${postId}/like/status`,
