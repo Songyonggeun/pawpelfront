@@ -60,9 +60,7 @@ export default function LifetCommunityUI() {
 
     return (
         <div>
-            <Link href="/health/check/select" className="block cursor-pointer hover:opacity-90 transition">
-                <PetAdBanner />
-            </Link>
+            <PetAdBanner />
 
             {/* 중앙 메뉴 */}
             <div className="flex justify-center my-6">
