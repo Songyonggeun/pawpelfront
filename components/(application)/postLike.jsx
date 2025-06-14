@@ -5,38 +5,39 @@ export default function LikeCard({
     initialLikeCount = 0,
     initialIsLiked = false,
     onLikeCountChange,
+    isDisabled, 
 }) {
     const [likeCount, setLikeCount] = useState(initialLikeCount);
     const [isLiked, setIsLiked] = useState(initialIsLiked);
     const [loading, setLoading] = useState(false);
 
     // 페이지 로드 시 서버에서 좋아요 상태 불러오기
-    useEffect(() => {
-        async function fetchLikeStatus() {
-            try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${postId}/like/status`,
-                    {
-                        credentials: "include",
-                    }
-                );
-                if (!res.ok)
-                    throw new Error("좋아요 상태를 불러오지 못했습니다.");
-                const data = await res.json();
+    const fetchLikeStatus = async () => {
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${postId}/like/status`,
+                {
+                    credentials: "include",
+                }
+            );
 
-                setLikeCount(data.likeCount);
-                setIsLiked(data.isLiked);
-                // 이건 의도적으로 한 번만 반영
-                onLikeCountChange?.(data.likeCount, data.isLiked);
-            } catch (error) {
-                console.error(error);
+            if (!res.ok) {
+                throw new Error("좋아요 상태를 불러오지 못했습니다.");
             }
+            const data = await res.json();
+            setLikeCount(data.likeCount);
+            setIsLiked(data.isLiked); // 서버에서 받은 값으로 상태 업데이트
+        } catch (error) {
+            console.error("Error:", error);
         }
+    };
+
+    useEffect(() => {
         fetchLikeStatus();
-    }, [postId]); // ✅ postId만 넣음
+    }, [postId]); // postId가 바뀔 때마다 상태를 새로 불러오도록 설정
 
     const toggleLike = async () => {
-        if (loading) return;
+        if (loading || isDisabled) return; // isDisabled가 true일 경우 클릭이 안됨
 
         setLoading(true);
         try {
@@ -68,7 +69,7 @@ export default function LikeCard({
             <button
                 type="button"
                 onClick={toggleLike}
-                disabled={loading}
+                disabled={loading || isDisabled} // isDisabled prop을 disabled 속성으로 전달
                 aria-pressed={isLiked}
                 aria-label={isLiked ? "좋아요 취소" : "좋아요"}
                 className={`p-2 rounded-full transition-colors focus:outline-none ${
