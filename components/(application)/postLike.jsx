@@ -5,17 +5,14 @@ export default function LikeCard({
     initialLikeCount = 0,
     initialIsLiked = false,
     onLikeCountChange,
-    isLoggedIn = false, // ✅ 추가
 }) {
     const [likeCount, setLikeCount] = useState(initialLikeCount);
     const [isLiked, setIsLiked] = useState(initialIsLiked);
     const [loading, setLoading] = useState(false);
 
-    // 로그인한 경우에만 서버에서 좋아요 상태 불러오기
+    // 페이지 로드 시 서버에서 좋아요 상태 불러오기
     useEffect(() => {
         async function fetchLikeStatus() {
-            if (!isLoggedIn) return;
-
             try {
                 const res = await fetch(
                     `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/${postId}/like/status`,
@@ -23,23 +20,23 @@ export default function LikeCard({
                         credentials: "include",
                     }
                 );
-                if (!res.ok) throw new Error("좋아요 상태를 불러오지 못했습니다.");
+                if (!res.ok)
+                    throw new Error("좋아요 상태를 불러오지 못했습니다.");
                 const data = await res.json();
 
                 setLikeCount(data.likeCount);
                 setIsLiked(data.isLiked);
+                // 이건 의도적으로 한 번만 반영
                 onLikeCountChange?.(data.likeCount, data.isLiked);
             } catch (error) {
                 console.error(error);
             }
         }
-
         fetchLikeStatus();
-    }, [postId, isLoggedIn]);
-
+    }, [postId]); // ✅ postId만 넣음
 
     const toggleLike = async () => {
-        if (!isLoggedIn || loading) return;
+        if (loading) return;
 
         setLoading(true);
         try {
@@ -53,8 +50,10 @@ export default function LikeCard({
             if (!res.ok) throw new Error("좋아요 상태 변경 실패");
 
             const data = await res.json();
+
             setLikeCount(data.likeCount);
             setIsLiked(data.isLiked);
+
             onLikeCountChange?.(data.likeCount, data.isLiked);
         } catch (err) {
             console.error(err);
@@ -68,16 +67,15 @@ export default function LikeCard({
         <div className="flex items-center justify-center mb-6 space-x-2">
             <button
                 type="button"
-                onClick={() => {
-                    if (!isLoggedIn || loading) return; // 👈 클릭 무시
-                    toggleLike();
-                }}
+                onClick={toggleLike}
+                disabled={loading}
                 aria-pressed={isLiked}
                 aria-label={isLiked ? "좋아요 취소" : "좋아요"}
                 className={`p-2 rounded-full transition-colors focus:outline-none ${
-                    isLiked ? "text-red-500 hover:text-red-600" : "text-gray-500 hover:text-gray-700"
-                }`}
-            >
+                    isLiked
+                        ? "text-red-500 hover:text-red-600"
+                        : "text-gray-500 hover:text-gray-700"
+                } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}>
                 {isLiked ? (
                     // 채워진 하트 SVG
                     <svg
