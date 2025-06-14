@@ -37,7 +37,7 @@ export default function GalleryPage() {
 
   // 이미지가 있는 게시글만 필터링
   const postsWithImages = posts.filter(
-    (post) => extractAllImageSrcs(post.content).length > 0
+    (post) => post.isPublic != false && extractAllImageSrcs(post.content).length > 0
   );
 
   // 이미지 + 게시글 정보 리스트로 변환

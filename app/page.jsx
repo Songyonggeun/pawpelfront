@@ -11,7 +11,7 @@ export default function LifetCommunityUI() {
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [originalProduct, setOriginalProduct] = useState(null);
 
-    const fetchPosts = async (type) => {
+       const fetchPosts = async (type) => {
         try {
             const url =
                 type === "popular"
@@ -21,13 +21,15 @@ export default function LifetCommunityUI() {
             const res = await fetch(url, { cache: "no-store" });
             if (!res.ok) throw new Error("Failed to fetch posts");
             const data = await res.json();
-            setPosts(data.content || []);
+            const publicPosts = (data.content || []).filter(post => post.isPublic !== false);
+            setPosts(publicPosts);
         } catch (err) {
             console.error("Error fetching posts:", err);
         } finally {
             setLoadingPosts(false);
         }
     };
+
 
     useEffect(() => {
         setLoadingPosts(true);
@@ -44,7 +46,7 @@ export default function LifetCommunityUI() {
 
     const imageGallery = useMemo(() => {
         return posts
-            .filter((post) => extractAllImageSrcs(post.content).length > 0)
+            .filter((post) => post.isPublic !== false && extractAllImageSrcs(post.content).length > 0)
             .flatMap((post) => {
                 const images = extractAllImageSrcs(post.content);
                 return images.map((img, i) => ({
