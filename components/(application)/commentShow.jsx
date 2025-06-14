@@ -27,23 +27,15 @@ export default function CommentShow({ postId }) {
         left: 0,
     });
     const [page, setPage] = useState(1);
-    const pageSize = 5; // 한 페이지에 루트 댓글 몇 개씩 보여줄지
+    const pageSize = 5;
+    const textareaRef = useRef(null);
 
     const totalPages = Math.ceil(comments.length / pageSize);
-
-    const pagedComments = comments.slice(
-        (page - 1) * pageSize,
-        page * pageSize
-    );
-
-    const textareaRef = useRef(null);
+    const pagedComments = comments.slice((page - 1) * pageSize, page * pageSize);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (
-                profileMenuRef.current &&
-                !profileMenuRef.current.contains(e.target)
-            ) {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
                 setOpenProfileMenuId(null);
             }
         };
@@ -55,34 +47,49 @@ export default function CommentShow({ postId }) {
 
     useEffect(() => {
         fetchComments();
-        fetchCurrentUser();
         fetchMentionUsers();
     }, [postId]);
 
-    const fetchCurrentUser = async () => {
-        try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`,
-                {
-                    credentials: "include",
-                }
-            );
-            if (!res.ok) throw new Error("사용자 정보 불러오기 실패");
-            const user = await res.json();
-            console.log("받아온 유저 정보:", user);
-            setCurrentUser(user);
-        } catch (err) {
-            console.error(err);
+    useEffect(() => {
+        const hasJwt = () => {
+            if (typeof document === "undefined") return false;
+            return document.cookie
+                .split(";")
+                .some((cookie) =>
+                    cookie.trim().startsWith(`${process.env.NEXT_PUBLIC_JWT_COOKIE_NAME}=`)
+                );
+        };
+
+        if (!hasJwt()) {
+            setCurrentUser(null); // 로그인 안 되어 있어도 댓글은 그대로 보여야 하므로 여기서 return만
+            return;
         }
-    };
+
+        const fetchCurrentUser = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
+                    credentials: "include",
+                });
+                if (res.ok) {
+                    const user = await res.json();
+                    setCurrentUser(user);
+                } else {
+                    setCurrentUser(null);
+                }
+            } catch (err) {
+                console.error("로그인 상태 확인 실패", err);
+                setCurrentUser(null);
+            }
+        };
+
+        fetchCurrentUser();
+    }, []);
 
     const fetchMentionUsers = async () => {
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/mentionable`
-            );
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/mentionable`);
             const data = await res.json();
-            setMentionUsers(data); // [{ id, nickname }]
+            setMentionUsers(data);
         } catch (err) {
             console.error("멘션 사용자 불러오기 실패", err);
         }
@@ -90,22 +97,9 @@ export default function CommentShow({ postId }) {
 
     const fetchComments = async () => {
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/post/${postId}`
-            );
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/post/${postId}`);
             const data = await res.json();
-            const tree = buildCommentTree(data);
-
-            console.log("댓글 데이터:", data);
-            data.forEach((comment, idx) => {
-                console.log(
-                    `[#${idx}] ID: ${comment.id}, 이름: ${comment.userName}, ` +
-                        `썸네일: ${comment.userThumbnailUrl}, 이미지: ${comment.userImageUrl}` +
-                        `좋아요 여부: ${comment.likedByCurrentUser}, 좋아요 수: ${comment.likeCount}`
-                );
-            });
-
-            setComments(tree);
+            setComments(buildCommentTree(data));
         } catch (err) {
             console.error(err);
         }
@@ -114,27 +108,17 @@ export default function CommentShow({ postId }) {
     const buildCommentTree = (flatComments) => {
         const map = {};
         const roots = [];
-
-        flatComments.forEach((comment) => {
-            comment.children = [];
-            map[comment.id] = comment;
+        flatComments.forEach((c) => { c.children = []; map[c.id] = c; });
+        flatComments.forEach((c) => {
+            if (c.parentId) {
+                const p = map[c.parentId];
+                p ? p.children.push(c) : roots.push(c);
+            } else roots.push(c);
         });
-
-        flatComments.forEach((comment) => {
-            if (comment.parentId) {
-                const parent = map[comment.parentId];
-                if (parent) {
-                    parent.children.push(comment);
-                } else {
-                    roots.push(comment);
-                }
-            } else {
-                roots.push(comment);
-            }
-        });
-
         return roots;
     };
+
+    const handleReply = (id) => { setReplyTo(id); setReplyContent(""); };
 
     const handleReplyContentChange = (e) => {
         const value = e.target.value;
@@ -187,51 +171,33 @@ export default function CommentShow({ postId }) {
         }, 0);
     };
 
-    const handleReply = (id) => {
-        setReplyTo(id);
-        setReplyContent("");
-    };
-
     const handleSubmitReply = async (parentId) => {
-        if (!replyContent.trim()) return;
+        if (!replyContent.trim() || !currentUser) return;
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments`,
-                {
-                    method: "POST",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        content: replyContent,
-                        postId,
-                        parentId,
-                    }),
-                }
-            );
-            if (!res.ok) throw new Error("댓글 등록 실패");
-            setReplyTo(null);
-            setReplyContent("");
-            fetchComments();
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments`, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: replyContent, postId, parentId }),
+            });
+            if (!res.ok) throw new Error();
+            setReplyTo(null); setReplyContent(""); fetchComments();
         } catch (err) {
-            alert("댓글 등록 중 오류 발생");
-            console.error(err);
+            alert("댓글 등록 실패");
         }
     };
 
     const handleLike = async (commentId) => {
+        if (!currentUser) return;
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`,
-                {
-                    method: "POST",
-                    credentials: "include",
-                }
-            );
-            if (!res.ok) throw new Error("좋아요 처리 실패");
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`, {
+                method: "POST",
+                credentials: "include",
+            });
+            if (!res.ok) throw new Error();
             fetchComments();
-        } catch (err) {
-            alert("좋아요 처리 중 오류");
-            console.error(err);
+        } catch {
+            alert("좋아요 처리 실패");
         }
     };
 
@@ -287,16 +253,11 @@ export default function CommentShow({ postId }) {
         })}`;
     };
 
+
     const highlightMentions = (text) => {
         const regex = /@(\w+)/g;
         return text.split(regex).map((part, i) =>
-            i % 2 === 1 ? (
-                <span key={i} className="text-blue-500">
-                    @{part}
-                </span>
-            ) : (
-                part
-            )
+            i % 2 === 1 ? <span key={i} className="text-gray-400">@{part}</span> : part
         );
     };
 
@@ -347,66 +308,70 @@ export default function CommentShow({ postId }) {
                         <div
                             ref={profileMenuRef}
                             className="absolute z-10 bg-white border border-gray-300 rounded shadow px-3 py-2 text-sm top-0 left-full ml-2 whitespace-nowrap w-fit space-y-1">
+                            
                             <Link
                                 href={`/profile/${comment.userId}`}
                                 className="block text-blue-600 hover:underline"
                                 onClick={() => setOpenProfileMenuId(null)}>
                                 프로필 보기
                             </Link>
-                            <button
-                                onClick={async () => {
-                                    const isBlocked = blockedUserIds.includes(
-                                        comment.userId
-                                    );
-                                    const url = `${
-                                        process.env
-                                            .NEXT_PUBLIC_SPRING_SERVER_URL
-                                    }/user/${isBlocked ? "unblock" : "block"}/${
-                                        comment.userId
-                                    }`;
-                                    try {
-                                        const res = await fetch(url, {
-                                            method: isBlocked
-                                                ? "DELETE"
-                                                : "POST",
-                                            credentials: "include",
-                                        });
-                                        if (!res.ok) throw new Error();
-                                        setBlockedUserIds((prev) =>
-                                            isBlocked
-                                                ? prev.filter(
-                                                      (id) =>
-                                                          id !== comment.userId
-                                                  )
-                                                : [...prev, comment.userId]
-                                        );
-                                        alert(
-                                            `"${comment.userName}"님을 ${
-                                                isBlocked ? "차단 해제" : "차단"
-                                            }했습니다.`
-                                        );
-                                    } catch {
-                                        alert("처리 중 오류가 발생했습니다.");
-                                    } finally {
+
+                            {/* ✅ 차단하기 버튼 */}
+                            {currentUser ? (
+                                <button
+                                    onClick={async () => {
+                                        const isBlocked = blockedUserIds.includes(comment.userId);
+                                        const url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/${isBlocked ? "unblock" : "block"}/${comment.userId}`;
+                                        try {
+                                            const res = await fetch(url, {
+                                                method: isBlocked ? "DELETE" : "POST",
+                                                credentials: "include",
+                                            });
+                                            if (!res.ok) throw new Error();
+                                            setBlockedUserIds((prev) =>
+                                                isBlocked
+                                                    ? prev.filter((id) => id !== comment.userId)
+                                                    : [...prev, comment.userId]
+                                            );
+                                            alert(`"${comment.userName}"님을 ${isBlocked ? "차단 해제" : "차단"}했습니다.`);
+                                        } catch {
+                                            alert("처리 중 오류가 발생했습니다.");
+                                        } finally {
+                                            setOpenProfileMenuId(null);
+                                        }
+                                    }}
+                                    className="block hover:underline"
+                                >
+                                    {blockedUserIds.includes(comment.userId)
+                                        ? "차단해제하기"
+                                        : "차단하기"}
+                                </button>
+                            ) : (
+                                <span className="block text-gray-400 cursor-default">
+                                    차단하기
+                                </span>
+                            )}
+
+                            {/* ✅ 신고하기 버튼 */}
+                            {currentUser ? (
+                                <button
+                                    onClick={() => {
+                                        setShowCommentReportModal(true);
+                                        setReportedComment(comment);
                                         setOpenProfileMenuId(null);
-                                    }
-                                }}
-                                className="block hover:underline">
-                                {blockedUserIds.includes(comment.userId)
-                                    ? "차단해제하기"
-                                    : "차단하기"}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setShowCommentReportModal(true);
-                                    setReportedComment(comment);
-                                    setOpenProfileMenuId(null);
-                                }}
-                                className="block text-red-500 hover:underline">
-                                신고하기
-                            </button>
+                                    }}
+                                    className="block text-red-500 hover:underline"
+                                >
+                                    신고하기
+                                </button>
+                            ) : (
+                                <span className="block text-gray-400 cursor-default">
+                                    신고하기
+                                </span>
+                            )}
                         </div>
                     )}
+
                 </div>
 
                 <div className="flex-1">
@@ -430,6 +395,7 @@ export default function CommentShow({ postId }) {
                             initialLikeCount={comment.likeCount}
                             initialIsLiked={comment.likedByCurrentUser}
                             onLikeToggle={fetchComments}
+                            isLoggedIn={!!currentUser} // 👈 로그인 안 되어 있으면 비활성화
                         />
                     </div>
 
@@ -475,11 +441,13 @@ export default function CommentShow({ postId }) {
                             </p>
 
                             <div className="mt-1 flex gap-2 text-sm">
-                                <button
-                                    onClick={() => handleReply(comment.id)}
-                                    className="text-blue-500">
-                                    답글
-                                </button>
+                                {currentUser && (
+                                    <button
+                                        onClick={() => handleReply(comment.id)}
+                                        className="text-blue-500">
+                                        답글
+                                    </button>
+                                )}
                                 {Number(currentUser?.id) ===
                                     Number(comment.userId) && (
                                     <>
@@ -555,8 +523,10 @@ export default function CommentShow({ postId }) {
         );
     };
 
-    // 차단하기
+    // 차단 정보 가져오기 (✅ 로그인된 경우에만 실행)
     useEffect(() => {
+        if (!currentUser) return;
+
         (async () => {
             try {
                 const res = await fetch(
@@ -573,7 +543,8 @@ export default function CommentShow({ postId }) {
                 setBlockedUserIds([]);
             }
         })();
-    }, []);
+    }, [currentUser]); // ✅ currentUser가 존재할 때만 실행
+
 
     return (
         <div className="space-y-4">
