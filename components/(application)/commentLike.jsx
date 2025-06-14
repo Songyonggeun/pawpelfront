@@ -13,76 +13,81 @@ export default function CommentLike({
     const [loading, setLoading] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
 
-
-useEffect(() => {
-  const checkLogin = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
-        credentials: 'include',
-      });
-
-      if (res.ok) {
-        const user = await res.json();
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
-      }
-    } catch {
-      setCurrentUser(null);
-    }
-  };
-
-  checkLogin();
-}, []);
-
-
-    // 새로고침 시 서버에서 상태를 조회해서 초기 상태를 동기화
+    // 로그인 여부를 체크하고, 로그인된 경우에만 like 상태를 가져오도록 수정
     useEffect(() => {
-        const fetchLikeStatus = async () => {
+        const checkLogin = async () => {
             try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like/status`,
-                    { credentials: "include" }
-                );
-                if (!res.ok) throw new Error("좋아요 상태 조회 실패");
-                const data = await res.json();
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
+                    credentials: 'include',
+                });
 
-                setLikeCount(data.likeCount);
-                setIsLiked(data.isLiked);
-            } catch (err) {
-                console.error(err);
+                if (res.ok) {
+                    const user = await res.json();
+                    setCurrentUser(user);
+                } else {
+                    setCurrentUser(null);
+                }
+            } catch {
+                setCurrentUser(null);
             }
         };
 
-        fetchLikeStatus();
-    }, [commentId]);
-    
-    const toggleLike = async () => {
-    if (!currentUser || loading) return; // ❗ 로그인 안 했으면 클릭 무시
+        checkLogin();
+    }, []);
 
-    setLoading(true);
-    try {
-        const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`,
-        {
-            method: "POST",
-            credentials: "include",
+    // 로그인 상태가 변경되었을 때만 좋아요 상태를 조회
+    useEffect(() => {
+        if (currentUser) {
+            fetchLikeStatus();  // 로그인 시에만 좋아요 상태를 가져옴
+        } else {
+            setLikeCount(initialLikeCount); // 로그인 안 했으면 초기값 그대로 사용
         }
-        );
+    }, [currentUser]);
 
-        if (!res.ok) throw new Error("좋아요 처리 실패");
+    // 좋아요 상태를 가져오는 함수
+    const fetchLikeStatus = async () => {
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like/status`,
+                { credentials: "include" }
+            );
+            if (!res.ok) throw new Error("좋아요 상태 조회 실패");
+            const data = await res.json();
 
-        const data = await res.json();
-        setLikeCount(data.likeCount);
-        setIsLiked(data.isLiked);
+            setLikeCount(data.likeCount);
+            setIsLiked(data.isLiked);
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
-        if (onLikeToggle) onLikeToggle(data.likeCount, data.isLiked);
-    } catch (err) {
-        console.error(err);
-        alert("좋아요 처리 중 오류가 발생했습니다.");
-    } finally {
-        setLoading(false);
-    }
+    // 좋아요 토글 처리
+    const toggleLike = async () => {
+        if (!currentUser || loading) return; // 로그인 안 했으면 클릭 무시
+
+        setLoading(true);
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                }
+            );
+
+            if (!res.ok) throw new Error("좋아요 처리 실패");
+
+            const data = await res.json();
+            setLikeCount(data.likeCount);
+            setIsLiked(data.isLiked);
+
+            if (onLikeToggle) onLikeToggle(data.likeCount, data.isLiked);
+        } catch (err) {
+            console.error(err);
+            alert("좋아요 처리 중 오류가 발생했습니다.");
+        } finally {
+            setLoading(false);
+        }
     };
 
 
