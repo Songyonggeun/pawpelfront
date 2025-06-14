@@ -45,8 +45,8 @@ export default function PostDetailPage() {
                 searchType === "title"
                     ? post.title
                     : searchType === "content"
-                    ? post.content
-                    : post.authorName;
+                        ? post.content
+                        : post.authorName;
 
             return value?.toLowerCase().includes(query);
         });
@@ -59,6 +59,25 @@ export default function PostDetailPage() {
         currentPage * pageSize,
         (currentPage + 1) * pageSize
     );
+
+    function formatDateRelative(dateString) {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        const seconds = Math.floor(diff / 1000);
+
+        if (seconds < 60) return "방금 전";
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}분 전`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}시간 전`;
+        const days = Math.floor(hours / 24);
+        if (days === 1) return "어제";
+        if (days < 7) return `${days}일 전`;
+        return date.toLocaleDateString("ko-KR");
+    }
+
 
     // 게시글
     useEffect(() => {
@@ -149,7 +168,7 @@ export default function PostDetailPage() {
                 setCurrentUser(user); // id, nickname 등 포함
             } catch {
                 setCurrentUser(null);
-            }   
+            }
         })();
     }, []);
 
@@ -314,14 +333,12 @@ export default function PostDetailPage() {
                                             post.authorImageUrl
                                         ).startsWith("/images/profile/")
                                             ? post.authorThumbnailUrl ||
-                                              post.authorImageUrl
-                                            : `${
-                                                  process.env
-                                                      .NEXT_PUBLIC_SPRING_SERVER_URL
-                                              }/uploads${
-                                                  post.authorThumbnailUrl ||
-                                                  post.authorImageUrl
-                                              }`
+                                            post.authorImageUrl
+                                            : `${process.env
+                                                .NEXT_PUBLIC_SPRING_SERVER_URL
+                                            }/uploads${post.authorThumbnailUrl ||
+                                            post.authorImageUrl
+                                            }`
                                     }
                                     alt={post.authorName}
                                     className="w-8 h-8 rounded-full object-cover border border-gray-300"
@@ -350,54 +367,50 @@ export default function PostDetailPage() {
                                 <button
                                     onClick={
                                         currentUser
-                                        ? async () => {
-                                            const isBlocked = blockedUserIds.includes(post.authorId);
-                                            const url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/${
-                                                isBlocked ? "unblock" : "block"
-                                            }/${post.authorId}`;
-                                            try {
-                                                const res = await fetch(url, {
-                                                method: isBlocked ? "DELETE" : "POST",
-                                                credentials: "include",
-                                                });
-                                                if (!res.ok) throw new Error();
-                                                setBlockedUserIds((prev) =>
-                                                isBlocked
-                                                    ? prev.filter((id) => id !== post.authorId)
-                                                    : [...prev, post.authorId]
-                                                );
-                                                alert(
-                                                `"${post.authorName}"님을 ${
-                                                    isBlocked ? "차단 해제" : "차단"
-                                                }했습니다.`
-                                                );
-                                            } catch {
-                                                alert("처리 중 오류 발생");
-                                            } finally {
-                                                setOpenProfileMenuId(null);
+                                            ? async () => {
+                                                const isBlocked = blockedUserIds.includes(post.authorId);
+                                                const url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/${isBlocked ? "unblock" : "block"
+                                                    }/${post.authorId}`;
+                                                try {
+                                                    const res = await fetch(url, {
+                                                        method: isBlocked ? "DELETE" : "POST",
+                                                        credentials: "include",
+                                                    });
+                                                    if (!res.ok) throw new Error();
+                                                    setBlockedUserIds((prev) =>
+                                                        isBlocked
+                                                            ? prev.filter((id) => id !== post.authorId)
+                                                            : [...prev, post.authorId]
+                                                    );
+                                                    alert(
+                                                        `"${post.authorName}"님을 ${isBlocked ? "차단 해제" : "차단"
+                                                        }했습니다.`
+                                                    );
+                                                } catch {
+                                                    alert("처리 중 오류 발생");
+                                                } finally {
+                                                    setOpenProfileMenuId(null);
+                                                }
                                             }
-                                            }
-                                        : undefined  // 아예 클릭 방지
+                                            : undefined  // 아예 클릭 방지
                                     }
                                     disabled={!currentUser}
-                                    className={`mt-1 ${
-                                        currentUser
-                                        ? "text-black hover:underline cursor-pointer"
-                                        : "text-gray-400 cursor-default hover:no-underline"
-                                    }`}
-                                    >
+                                    className={`mt-1 ${currentUser
+                                            ? "text-black hover:underline cursor-pointer"
+                                            : "text-gray-400 cursor-default hover:no-underline"
+                                        }`}
+                                >
                                     {blockedUserIds.includes(post.authorId) ? "차단해제하기" : "차단하기"}
                                 </button>
 
                                 <button
                                     onClick={currentUser ? () => setShowReportModal(true) : undefined}
                                     disabled={!currentUser}
-                                    className={`block mt-1 ${
-                                        currentUser
-                                        ? "text-black hover:underline cursor-pointer"
-                                        : "text-gray-400 cursor-default hover:no-underline"
-                                    }`}
-                                    >
+                                    className={`block mt-1 ${currentUser
+                                            ? "text-black hover:underline cursor-pointer"
+                                            : "text-gray-400 cursor-default hover:no-underline"
+                                        }`}
+                                >
                                     신고하기
                                 </button>
 
@@ -429,14 +442,12 @@ export default function PostDetailPage() {
                                             post.pet.imageUrl
                                         ).startsWith("/images/profile/")
                                             ? post.pet.thumbnailUrl ||
-                                              post.pet.imageUrl
-                                            : `${
-                                                  process.env
-                                                      .NEXT_PUBLIC_SPRING_SERVER_URL
-                                              }/uploads${
-                                                  post.pet.thumbnailUrl ||
-                                                  post.pet.imageUrl
-                                              }`
+                                            post.pet.imageUrl
+                                            : `${process.env
+                                                .NEXT_PUBLIC_SPRING_SERVER_URL
+                                            }/uploads${post.pet.thumbnailUrl ||
+                                            post.pet.imageUrl
+                                            }`
                                     }
                                     alt={post.pet.petName}
                                     className="w-16 h-16 rounded-full object-cover"
@@ -454,14 +465,14 @@ export default function PostDetailPage() {
                                     {post.pet.petType === "dog"
                                         ? "강아지"
                                         : post.pet.petType === "cat"
-                                        ? "고양이"
-                                        : "반려동물"}{" "}
+                                            ? "고양이"
+                                            : "반려동물"}{" "}
                                     /{" "}
                                     {post.pet.petGender === "female"
                                         ? "여아"
                                         : post.pet.petGender === "male"
-                                        ? "남아"
-                                        : "성별 정보 없음"}
+                                            ? "남아"
+                                            : "성별 정보 없음"}
                                 </div>
                                 <div className="text-sm text-gray-600">
                                     {post.pet.petAge !== null
@@ -476,6 +487,20 @@ export default function PostDetailPage() {
                 <article
                     className="prose prose-lg max-w-none mb-10"
                     dangerouslySetInnerHTML={{ __html: post.content }}
+                />
+                 {/* 좋아요 */}
+                <LikeCard
+                    postId={post.id}
+                    initialLikeCount={post.likeCount}
+                    initialIsLiked={post.isLiked}
+                    onLikeCountChange={(cnt, liked) =>
+                        setPost((p) => ({
+                            ...p,
+                            likeCount: cnt,
+                            isLiked: liked,
+                        }))
+                    }
+                    isDisabled={!currentUser}
                 />
                 {/* 이전/다음글/목록/수정/삭제 */}
                 <div className="mt-70 border-t border-gray-300 divide-y divide-gray-200 text-sm text-gray-800">
@@ -522,7 +547,6 @@ export default function PostDetailPage() {
                             </span>
                         )}
                     </div>
-
                     {/* 버튼 영역 */}
                     <div className="flex justify-center gap-2 px-4 py-4">
                         <button
@@ -532,35 +556,21 @@ export default function PostDetailPage() {
                         </button>
                         {currentUser?.nickname?.trim().toLowerCase() ===
                             post.authorName?.trim().toLowerCase() && (
-                            <>
-                                <button
-                                    onClick={handleEdit}
-                                    className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white">
-                                    수정
-                                </button>
-                                <button
-                                    onClick={handleDelete}
-                                    className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white">
-                                    삭제
-                                </button>
-                            </>
-                        )}
+                                <>
+                                    <button
+                                        onClick={handleEdit}
+                                        className="px-4 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white">
+                                        수정
+                                    </button>
+                                    <button
+                                        onClick={handleDelete}
+                                        className="px-4 py-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white">
+                                        삭제
+                                    </button>
+                                </>
+                            )}
                     </div>
                 </div>
-                {/* 좋아요 */}
-                <LikeCard
-                    postId={post.id}
-                    initialLikeCount={post.likeCount}
-                    initialIsLiked={post.isLiked}
-                    onLikeCountChange={(cnt, liked) =>
-                        setPost((p) => ({
-                            ...p,
-                            likeCount: cnt,
-                            isLiked: liked,
-                        }))
-                    }
-                    isDisabled={!currentUser}
-                />
                 {/* 댓글 */}
                 <section className="mt-10">
                     <h2 className="text-lg font-semibold mb-4">댓글</h2>
@@ -571,10 +581,10 @@ export default function PostDetailPage() {
                         />
                     )}
                     {/* currentUser를 CommentShow로 전달 */}
-                    <CommentShow 
-                        key={refreshCommentsFlag} 
-                        postId={post.id} 
-                        currentUser={currentUser} 
+                    <CommentShow
+                        key={refreshCommentsFlag}
+                        postId={post.id}
+                        currentUser={currentUser}
                     />
                 </section>
                 {/* 연관 Q&A 게시글 */}
@@ -595,11 +605,10 @@ export default function PostDetailPage() {
                                         {list.map((r, i) => (
                                             <tr
                                                 key={r.id}
-                                                className={`hover:bg-gray-50 cursor-pointer ${
-                                                    i !== list.length - 1
+                                                className={`hover:bg-gray-50 cursor-pointer ${i !== list.length - 1
                                                         ? "border-b"
                                                         : ""
-                                                }`}
+                                                    }`}
                                                 onClick={() =>
                                                     router.push(
                                                         `/community/detail/${r.id}`
@@ -647,96 +656,63 @@ export default function PostDetailPage() {
                         </div>
 
                         {/* 목록 */}
-                        {pagedPosts.map((item) => {
-                            const isCurrent = item.id === Number(id);
-                            const created = new Date(item.createdAt);
-                            const now = new Date();
-                            const isToday =
-                                created.toDateString() === now.toDateString();
-                            const formattedTime = isToday
-                                ? created.toLocaleTimeString("ko-KR", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                  })
-                                : created.toLocaleDateString();
+                        {pagedPosts
+                            .filter((item) => item.isPublic !== false) // 비공개 글 제외
+                            .map((item) => {
+                                const isCurrent = item.id === Number(id);
+                                const formattedTime = formatDateRelative(item.createdAt);
 
-                            const isBlinded = item.isPublic === false;
+                                return (
+                                    <div
+                                        key={item.id}
+                                        onClick={() => {
+                                            if (item.id !== Number(id)) {
+                                                router.push(`/community/detail/${item.id}`);
+                                            }
+                                        }}
+                                        className={`grid grid-cols-12 px-4 py-2 text-sm transition-all items-center
+          ${isCurrent ? "bg-blue-50 font-bold text-blue-700" : "hover:bg-gray-50"}
+          cursor-pointer`}
+                                    >
+                                        {/* 번호 */}
+                                        <div className="col-span-1 text-center text-gray-500">{item.id}</div>
 
-                            return (
-                                <div
-                                    key={item.id}
-                                    onClick={() => {
-                                        if (
-                                            !isBlinded &&
-                                            item.id !== Number(id)
-                                        ) {
-                                            router.push(
-                                                `/community/detail/${item.id}`
-                                            );
-                                        }
-                                    }}
-                                    className={`grid grid-cols-12 px-4 py-2 text-sm transition-all items-center
-        ${isCurrent ? "bg-blue-50 font-bold text-blue-700" : "hover:bg-gray-50"}
-        ${
-            isBlinded
-                ? "cursor-not-allowed opacity-60 italic text-red-600"
-                : "cursor-pointer"
-        }
-      `}
-                                    title={
-                                        isBlinded
-                                            ? "비공개 처리된 글입니다."
-                                            : ""
-                                    }
-                                    aria-disabled={isBlinded}>
-                                    <div className="col-span-1 text-center text-gray-500">
-                                        {item.id}
-                                    </div>
-
-                                    <div className="col-span-6 text-left truncate">
-                                        <span className="text-gray-400 mr-1">
-                                            [{item.category}
-                                            {item.subCategory
-                                                ? ` > ${item.subCategory}`
-                                                : ""}
-                                            ]
-                                        </span>
-                                        <span
-                                            className={
-                                                isBlinded
-                                                    ? ""
-                                                    : "hover:underline"
-                                            }>
-                                            {isBlinded
-                                                ? "비공개 처리된 글입니다."
-                                                : item.title}
-                                        </span>
-                                        {!isBlinded &&
-                                            item.commentCount > 0 && (
+                                        {/* 제목 */}
+                                        <div className="col-span-6 text-left truncate">
+                                            <span className="text-gray-400 mr-1">
+                                                [{item.category}
+                                                {item.subCategory ? ` > ${item.subCategory}` : ""}]
+                                            </span>
+                                            <span className="hover:underline">{item.title}</span>
+                                            {item.commentCount > 0 && (
                                                 <span className="ml-1 text-red-600 font-semibold">
                                                     [{item.commentCount}]
                                                 </span>
                                             )}
-                                    </div>
+                                        </div>
 
-                                    <div className="col-span-2 text-center text-gray-700">
-                                        {item.authorName}
-                                    </div>
+                                        {/* 작성자 */}
+                                        <div className="col-span-2 text-center text-gray-700">
+                                            {item.authorName}
+                                        </div>
 
-                                    <div className="col-span-1 text-center text-gray-500 w-[90px]">
-                                        {formattedTime}
-                                    </div>
+                                        {/* 등록일 */}
+                                        <div className="col-span-1 text-center text-gray-500 w-[90px]">
+                                            {formattedTime}
+                                        </div>
 
-                                    <div className="col-span-1 text-center text-gray-600">
-                                        {item.viewCount}
-                                    </div>
+                                        {/* 조회수 */}
+                                        <div className="col-span-1 text-center text-gray-600">
+                                            {item.viewCount}
+                                        </div>
 
-                                    <div className="col-span-1 text-center text-gray-600">
-                                        {item.likeCount}
+                                        {/* 추천수 */}
+                                        <div className="col-span-1 text-center text-gray-600">
+                                            {item.likeCount}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
                     </div>
 
                     {/* 페이지네이션 */}
@@ -753,11 +729,10 @@ export default function PostDetailPage() {
                             <button
                                 key={i}
                                 onClick={() => setCurrentPage(i)}
-                                className={`px-3 py-1 rounded ${
-                                    currentPage === i
+                                className={`px-3 py-1 rounded ${currentPage === i
                                         ? "bg-blue-500 text-white"
                                         : "bg-gray-200"
-                                }`}>
+                                    }`}>
                                 {i + 1}
                             </button>
                         ))}
