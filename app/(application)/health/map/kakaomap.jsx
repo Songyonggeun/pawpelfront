@@ -8,6 +8,7 @@ export default function KakaoMap() {
     const [selectedDistrict, setSelectedDistrict] = useState("전체");
     const infoWindowRef = useRef(null);
     const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
+    const [pageGroup, setPageGroup] = useState(1); // 현재 페이지 그룹 (1-10, 11-20, 등)
     const hospitalsPerPage = 9; // 한 페이지에 표시할 병원 수
 
     const districts = {
@@ -600,6 +601,7 @@ export default function KakaoMap() {
             addr: "서울 중구 난계로 197",
             link: "https://place.map.kakao.com/1584755450",
         },
+        
     ];
 
     const [selectedMarker, setSelectedMarker] = useState(null);
@@ -610,30 +612,27 @@ export default function KakaoMap() {
     );
 
     const totalPages = Math.ceil(filteredHospitals.length / hospitalsPerPage);
+    const totalPageGroups = Math.ceil(totalPages / 10); // 페이지 그룹의 총 수
 
-    const currentHospitals =
-        filteredHospitals.length <= hospitalsPerPage
-            ? filteredHospitals // 9개 미만이면 페이징 없이 병원 표시
-            : filteredHospitals.slice(
-                  (currentPage - 1) * hospitalsPerPage,
-                  currentPage * hospitalsPerPage
-              );
-
+    const currentHospitals = filteredHospitals.slice(
+        (currentPage - 1) * hospitalsPerPage,
+        currentPage * hospitalsPerPage
+    );
 
     useEffect(() => {
         const script = document.createElement("script");
         script.src =
-            "https://dapi.kakao.com/v2/maps/sdk.js?appkey=01e9946fcf20493c466a249e0a77d49b&autoload=false";
+        "https://dapi.kakao.com/v2/maps/sdk.js?appkey=01e9946fcf20493c466a249e0a77d49b&autoload=false";
         script.async = true;
 
         script.onload = () => {
-            window.kakao.maps.load(() => {
-                const mapInstance = new window.kakao.maps.Map(mapRef.current, {
-                    center: new window.kakao.maps.LatLng(37.5665, 126.978),
-                    level: 6,
-                });
-                setMap(mapInstance);
+        window.kakao.maps.load(() => {
+            const mapInstance = new window.kakao.maps.Map(mapRef.current, {
+            center: new window.kakao.maps.LatLng(37.5665, 126.978),
+            level: 6,
             });
+            setMap(mapInstance);
+        });
         };
 
         document.head.appendChild(script);
@@ -703,11 +702,26 @@ export default function KakaoMap() {
         };
     }, [map, selectedDistrict, currentPage]);
 
-const handlePageChange = (page) => {
-    if (page < 1) return;
-    if (page > totalPages) return setCurrentPage(totalPages); // totalPages보다 큰 페이지로 넘어가지 않도록 설정
-    setCurrentPage(page);
-};
+    const handlePageChange = (page) => {
+        if (page < 1 || page > totalPages) return; // 페이지 범위 체크
+        setCurrentPage(page);
+
+        // 페이지 그룹을 새롭게 설정합니다.
+        const newPageGroup = Math.ceil(page / 10);
+        setPageGroup(newPageGroup);
+    };
+
+    const handlePageGroupChange = (direction) => {
+        let newGroup = pageGroup + direction;
+
+        if (newGroup < 1) newGroup = 1;
+        if (newGroup > totalPageGroups) newGroup = totalPageGroups;
+
+        setPageGroup(newGroup);
+
+        // 첫 번째 페이지로 이동
+        setCurrentPage((newGroup - 1) * 10 + 1);
+    };
 
 
     return (
@@ -746,75 +760,79 @@ const handlePageChange = (page) => {
                 ref={mapRef}
                 className="w-full h-[400px] border border-gray-300 rounded-md"
             />
-            {/* 카드 리스트 */}
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {currentHospitals.map((h, i) => (
-                    <div
-                        key={i}
-                        className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition text-sm"
-                        onClick={() => {
-                            const pos = new window.kakao.maps.LatLng(h.lat, h.lng);
-                            map.setCenter(pos);
-                            map.setLevel(5);
 
-                            if (selectedMarker) selectedMarker.setMap(null);
-                            if (infoWindowRef.current) infoWindowRef.current.setMap(null);
 
-                            const marker = new window.kakao.maps.Marker({ map, position: pos });
+      {/* 카드 리스트 */}
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {currentHospitals.map((h, i) => (
+          <div
+            key={i}
+            className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition text-sm"
+            onClick={() => {
+              const pos = new window.kakao.maps.LatLng(h.lat, h.lng);
+              map.setCenter(pos);
+              map.setLevel(5);
+            }}
+          >
+            <h3 className="font-semibold text-base mb-1">🏥 {h.name}</h3>
+            <p className="text-gray-700 mb-1">📍 {h.addr}</p>
+            <p className="text-gray-600">📞 {h.tel}</p>
+            <a
+              href={h.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-2 text-blue-500 hover:underline text-xs"
+            >
+              카카오맵에서 보기
+            </a>
+          </div>
+        ))}
+      </div>
 
-                            const overlayContent = `
-                                <div style="padding: 14px; font-size: 14px; background: white;
-                                    border-radius: 10px; border: 1px solid #d1d5db; box-shadow: 0 2px 6px rgba(0,0,0,0.1); white-space: nowrap;">
-                                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">🏥 ${h.name}</div>
-                                    <div>📍 ${h.addr}</div>
-                                    <div>📞 <a href="tel:${h.tel}" style="color:#2563eb; text-decoration:none;">${h.tel}</a></div>
-                                </div>`;
+      {/* 페이징 */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          {/* "이전" 버튼 */}
+          {pageGroup > 1 && (
+            <button
+              onClick={() => handlePageGroupChange(-1)}
+              className="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+            >
+              이전
+            </button>
+          )}
 
-                            const overlay = new window.kakao.maps.CustomOverlay({
-                                content: overlayContent,
-                                position: pos,
-                                yAnchor: 1,
-                                zIndex: 3,
-                            });
+          {/* 페이지 번호 */}
+          {Array.from(
+            {
+              length: Math.min(10, totalPages - (pageGroup - 1) * 10),
+            },
+            (_, index) => (
+              <button
+                key={index}
+                onClick={() => handlePageChange((pageGroup - 1) * 10 + index + 1)}
+                className={`px-3 py-1 rounded ${
+                  currentPage === (pageGroup - 1) * 10 + index + 1
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {(pageGroup - 1) * 10 + index + 1}
+              </button>
+            )
+          )}
 
-                            overlay.setMap(map);
-                            infoWindowRef.current = overlay;
-                            setSelectedMarker(marker);
-                        }}
-                    >
-                        <h3 className="font-semibold text-base mb-1">🏥 {h.name}</h3>
-                        <p className="text-gray-700 mb-1">📍 {h.addr}</p>
-                        <p className="text-gray-600">📞 {h.tel}</p>
-                        <a
-                            href={h.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block mt-2 text-blue-500 hover:underline text-xs"
-                        >
-                            카카오맵에서 보기
-                        </a>
-                    </div>
-                ))}
-            </div>
-
-            {/* 페이징 */}
-            {totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-6">
-                    {Array.from({ length: totalPages }, (_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setCurrentPage(index + 1)}
-                            className={`px-3 py-1 rounded ${
-                                currentPage === index + 1
-                                    ? "bg-blue-500 text-white"
-                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                            }`}
-                        >
-                            {index + 1}
-                        </button>
-                    ))}
-                </div>
-            )}
+          {/* "다음" 버튼 */}
+          {pageGroup < totalPageGroups && (
+            <button
+              onClick={() => handlePageGroupChange(1)}
+              className="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+            >
+              다음
+            </button>
+          )}
+        </div>
+      )}
 
         </div>
     );
