@@ -100,6 +100,16 @@ export default function HealthCareMenu() {
             24시동물병원
           </Link>
         </li>
+        <li>
+          <Link
+            href="/health/vet"
+            className={`block hover:underline ${
+              isActive('/health/vet') ? 'text-black font-bold' : 'text-gray-600 hover:text-blue-500'
+            }`}
+          >
+            수의사 소개
+          </Link>
+        </li>
       </ul>
     </div>
   );

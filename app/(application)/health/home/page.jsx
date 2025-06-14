@@ -28,7 +28,7 @@ export default function HealthHome() {
                 return res.json();
             })
             .then((data) => {
-                if (!data) return;
+                if (!data || data.length === 0 ) return;
                 setPets(data);
                 setIsLoggedIn(true);
                 setIsAuthChecked(true);
@@ -254,7 +254,7 @@ export default function HealthHome() {
                             </p>
                         </a>
                         <img
-                            src="/images/vet-consult.png"
+                            src="/images/vet-consult.jpg"
                             alt="수의사 이미지"
                             className="w-32 h-auto mx-auto md:mx-0"
                         />
