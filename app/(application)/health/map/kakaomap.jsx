@@ -7,6 +7,9 @@ export default function KakaoMap() {
     const [map, setMap] = useState(null);
     const [selectedDistrict, setSelectedDistrict] = useState("전체");
     const infoWindowRef = useRef(null);
+    const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
+    const hospitalsPerPage = 9; // 한 페이지에 표시할 병원 수
+
     const districts = {
         강남구: { lat: 37.5172, lng: 127.0473 },
         강동구: { lat: 37.5302, lng: 127.1238 },
@@ -602,10 +605,20 @@ export default function KakaoMap() {
     const [selectedMarker, setSelectedMarker] = useState(null);
     const [selectedInfoWindow, setSelectedInfoWindow] = useState(null);
 
-    const filteredHospitals =
-        selectedDistrict === "전체"
-            ? hospitals
-            : hospitals.filter((h) => h.district === selectedDistrict);
+    const filteredHospitals = hospitals.filter(
+        (h) => selectedDistrict === "전체" || h.district === selectedDistrict
+    );
+
+    const totalPages = Math.ceil(filteredHospitals.length / hospitalsPerPage);
+
+    const currentHospitals =
+        filteredHospitals.length <= hospitalsPerPage
+            ? filteredHospitals // 9개 미만이면 페이징 없이 병원 표시
+            : filteredHospitals.slice(
+                  (currentPage - 1) * hospitalsPerPage,
+                  currentPage * hospitalsPerPage
+              );
+
 
     useEffect(() => {
         const script = document.createElement("script");
@@ -632,7 +645,7 @@ export default function KakaoMap() {
         const markers = [];
         const bounds = new window.kakao.maps.LatLngBounds();
 
-        filteredHospitals.forEach((hospital) => {
+        currentHospitals.forEach((hospital) => {
             const position = new window.kakao.maps.LatLng(hospital.lat, hospital.lng);
             bounds.extend(position);
 
@@ -684,11 +697,18 @@ export default function KakaoMap() {
                 infoWindowRef.current = null;
             }
         });
-        
+
         return () => {
             markers.forEach((m) => m.setMap(null));
         };
-    }, [map, selectedDistrict]);
+    }, [map, selectedDistrict, currentPage]);
+
+const handlePageChange = (page) => {
+    if (page < 1) return;
+    if (page > totalPages) return setCurrentPage(totalPages); // totalPages보다 큰 페이지로 넘어가지 않도록 설정
+    setCurrentPage(page);
+};
+
 
     return (
         <div className="max-w-[1100px] p-4 mx-auto mb-20">
@@ -726,10 +746,9 @@ export default function KakaoMap() {
                 ref={mapRef}
                 className="w-full h-[400px] border border-gray-300 rounded-md"
             />
-
             {/* 카드 리스트 */}
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {filteredHospitals.map((h, i) => (
+                {currentHospitals.map((h, i) => (
                     <div
                         key={i}
                         className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition text-sm"
@@ -777,6 +796,26 @@ export default function KakaoMap() {
                     </div>
                 ))}
             </div>
+
+            {/* 페이징 */}
+            {totalPages > 1 && (
+                <div className="flex justify-center gap-2 mt-6">
+                    {Array.from({ length: totalPages }, (_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setCurrentPage(index + 1)}
+                            className={`px-3 py-1 rounded ${
+                                currentPage === index + 1
+                                    ? "bg-blue-500 text-white"
+                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
+                </div>
+            )}
+
         </div>
     );
 }
