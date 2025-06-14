@@ -22,8 +22,23 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   const [notifications, setNotifications] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const dropdownRef = useRef(null); // 드롭다운 요소 참조
 
   useEffect(() => setIsClient(true), []);
+
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setDropdownOpen(false);
+    }
+  };
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
+
+useEffect(() => {
+  setDropdownOpen(false);
+}, [pathname]);
 
   useEffect(() => {
     if (pathname.startsWith("/community")) {
@@ -71,23 +86,28 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   }, []);
 
   useEffect(() => {
+    if (!isLoggedIn) return; 
+
     const fetchNotifications = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications`,
-          {
-            credentials: "include",
-          }
-        );
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/notifications`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("알림 실패 상태:", res.status, text);
+          return;
+        }
+
         const data = await res.json();
         setNotifications(data);
       } catch (err) {
-        console.error("알림 불러오기 실패:", err);
+        console.error("알림 패치 중 네트워크 오류:", err);
       }
     };
 
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000);
+    fetchNotifications(); // 초기 1회 호출
+    const interval = setInterval(fetchNotifications, 10000); // 이후 10초마다 반복
     return () => clearInterval(interval);
   }, []);
 
@@ -247,7 +267,9 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl border border-gray-200 rounded-lg z-50 max-h-96 overflow-y-auto custom-scrollbar">
+                    <div 
+                    ref={dropdownRef}
+                    className="absolute right-0 mt-2 w-80 bg-white shadow-xl border border-gray-200 rounded-lg z-50 max-h-96 overflow-y-auto custom-scrollbar">
                       <div className="p-4 font-semibold text-gray-800 border-b text-sm flex justify-between items-center">
                         <span>새 알림</span>
                         {notifications.length > 0 && (
@@ -301,6 +323,8 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                                   })}
                                 </span>
                               </div>
+
+                              
                               <button
                                 className="text-xs text-blue-500 hover:underline whitespace-nowrap"
                                 onClick={async (e) => {

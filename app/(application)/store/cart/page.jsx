@@ -8,26 +8,9 @@ export default function CartPage() {
   const [cart, setCart] = useState([]);
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null); // ✅ 유저 상태 추가
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const router = useRouter();
   
-  // 유저 정보 가져오기
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error('유저 정보 요청 실패');
-        const data = await res.json();
-        setUser(data);
-      } catch (err) {
-        console.error('❗ 유저 정보 불러오기 실패:', err);
-      }
-    };
-    fetchUser();
-  }, []);
-
   useEffect(() => {
     fetchCart();
   }, []);
@@ -48,9 +31,17 @@ export default function CartPage() {
     }
   };
 
-  const handleSingleItemPayment = (item) => {
+  const handleSingleItemPayment = async (item) => {
+    const loginCheck = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+      credentials: 'include',
+    });
+
+    if (!loginCheck.ok) {
+      setShowLoginModal(true); 
+      return;
+    }
+
     const orderDto = {
-      userId: user?.id || null,
       totalAmount: item.price * item.quantity,
       status: '결제대기',
       items: [
@@ -64,15 +55,23 @@ export default function CartPage() {
     };
 
     localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
-
-    // ✅ 상품 ID를 쿼리로 넘기면서 이동 (단일상품 주문 처리인 경우)
     router.push(`/store/checkout?id=${item.id}`);
   };
-  
-  const handleSelectedItemsPayment = () => {
+
+
+  const handleSelectedItemsPayment = async () => {
     const selectedProducts = cart.filter(item => selectedItems.has(item.id));
     if (selectedProducts.length === 0) {
       alert("결제할 항목을 선택하세요.");
+      return;
+    }
+
+    const loginCheck = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+      credentials: 'include',
+    });
+
+    if (!loginCheck.ok) {
+      setShowLoginModal(true); 
       return;
     }
 
@@ -81,7 +80,6 @@ export default function CartPage() {
     const finalAmount = totalAmount + deliveryFee;
 
     const orderDto = {
-      userId: user?.id || null,
       totalAmount: finalAmount,
       status: '결제대기',
       items: selectedProducts.map(item => ({
@@ -93,11 +91,8 @@ export default function CartPage() {
     };
 
     localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
-
-    // ✅ 여러 상품일 경우에는 단일 ID 전달 없이 이동
     router.push('/store/checkout');
   };
-
 
   const toggleSelectAll = () => {
     if (selectedItems.size === cart.length) {
@@ -257,6 +252,29 @@ export default function CartPage() {
           </button>
         </div>
       </div>
+
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="bg-white border border-gray-300 shadow-lg rounded-xl px-6 py-5 w-[340px] text-center">
+            <p className="text-gray-800 font-semibold mb-5 text-base">로그인이 필요합니다.</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="px-4 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100"
+              >
+                닫기
+              </button>
+              <button
+                onClick={() => router.push('/login')}
+                className="px-4 py-1 text-sm bg-black text-white rounded hover:bg-gray-800"
+              >
+                로그인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }

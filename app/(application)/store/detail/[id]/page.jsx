@@ -10,7 +10,18 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [showCartModal, setShowCartModal] = useState(false);
-  const [user, setUser] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const checkLogin = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+        credentials: 'include',
+      });
+      return res.ok;
+    } catch (err) {
+      return false;
+    }
+  };
 
   // 상품 정보 불러오기
   useEffect(() => {
@@ -41,24 +52,6 @@ export default function ProductDetailPage() {
     }
   }, [product]);
 
-  // 유저 정보 불러오기 (/user/info로 변경)
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error('유저 정보 가져오기 실패');
-        const data = await res.json();
-        setUser(data);
-      } catch (err) {
-        console.error('❗ 유저 정보 요청 실패:', err);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
   const totalPrice = product?.price * quantity;
 
   const addToCart = async () => {
@@ -84,47 +77,48 @@ export default function ProductDetailPage() {
     }
   };
 
-  const handleBuyNow = async () => {
-    try {
-      // 장바구니에 먼저 추가
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          ...product,
+const handleBuyNow = async () => {
+  const isLoggedIn = await checkLogin();
+  if (!isLoggedIn) {
+    setShowLoginModal(true);
+    return;
+  }
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart/add`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        ...product,
+        quantity,
+      }),
+    });
+
+    if (!response.ok) throw new Error('장바구니 추가 실패');
+
+    const orderDto = {
+      totalAmount: totalPrice,
+      status: '결제대기',
+      items: [
+        {
+          productId: product.id,
+          productName: product.name,
           quantity,
-        }),
-      });
+          price: product.price,
+        },
+      ],
+    };
 
-      if (!response.ok) throw new Error('장바구니 추가 실패');
-
-      // orderDto를 localStorage에 저장 (이건 유지)
-      const orderDto = {
-        userId: user?.id || null,
-        totalAmount: totalPrice,
-        status: '결제대기',
-        items: [
-          {
-            productId: product.id,
-            productName: product.name,
-            quantity,
-            price: product.price,
-          },
-        ],
-      };
-
-      localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
-
-      // ✅ checkout 페이지로 product ID를 쿼리로 넘김
-      router.push(`/store/checkout?id=${product.id}`);
-    } catch (err) {
-      console.error('❗ 바로구매 실패:', err);
-      alert('바로구매 중 오류가 발생했습니다.');
-    }
-  };
+    localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
+    router.push(`/store/checkout?id=${product.id}`);
+  } catch (err) {
+    console.error('❗ 바로구매 실패:', err);
+    alert('바로구매 중 오류가 발생했습니다.');
+  }
+};
 
 
   if (!product) return <div className="p-6">로딩 중...</div>;
@@ -140,7 +134,7 @@ export default function ProductDetailPage() {
             <p className="text-lg font-semibold">🛒 장바구니에 담았습니다!</p>
             <div className="flex gap-4 justify-center">
               <button
-                onClick={() => setShowCartModal(false)}
+                onClick={() => router.push('/store')}
                 className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm"
               >
                 계속 쇼핑하기
@@ -223,6 +217,29 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="bg-white border border-gray-300 shadow-lg rounded-xl px-6 py-5 w-[340px] text-center">
+            <p className="text-gray-800 font-semibold mb-5 text-base">로그인이 필요합니다.</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="px-4 py-1 text-sm border border-gray-300 rounded hover:bg-gray-100"
+              >
+                닫기
+              </button>
+              <button
+                onClick={() => router.push('/login')}
+                className="px-4 py-1 text-sm bg-black text-white rounded hover:bg-gray-800"
+              >
+                로그인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -47,11 +47,13 @@ export default function BlindPost({
                         isRead
                             ? "text-gray-500 font-normal"
                             : "text-black font-bold"
-                    } ${isBlinded ? "italic text-red-600 font-semibold" : ""}`}>
+                    } ${
+                        isBlinded ? "italic text-gray-600 font-semibold" : ""
+                    }`}>
                     {isBlinded ? "비공개 처리된 글입니다." : post.title}
                     {!isBlinded && post.commentCount > 0 && (
                         <>
-                            <span className="ml-1 text-red-500 text-sm font-semibold">
+                            <span className="ml-1 text-gray-500 text-sm font-semibold">
                                 ({post.commentCount})
                             </span>
                             {isNewPost && (
@@ -70,17 +72,20 @@ export default function BlindPost({
                 </div>
             )}
 
-            <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-2">
-                <span>{post.authorName}</span>
-                <span>· {formatDateRelative(post.createdAt)}</span>
-                <span>· 조회수 {post.viewCount}</span>
-                {!isBlinded && post.commentCount > 0 && (
-                    <span>· 💬 {post.commentCount}</span>
-                )}
-                {!isBlinded && post.likeCount > 0 && (
-                    <span>· ❤️ {post.likeCount}</span>
-                )}
-            </div>
+            {/* 작성자 / 시간 / 조회수 / 댓글 / 좋아요 */}
+            {isBlinded ? (
+                <div className="text-xs text-gray-500 mt-1 " />
+            ) : (
+                <div className="text-xs text-gray-500 mt-1 flex flex-wrap gap-2">
+                    <span>{post.authorName}</span>
+                    <span>· {formatDateRelative(post.createdAt)}</span>
+                    <span>· 조회수 {post.viewCount}</span>
+                    {post.commentCount > 0 && (
+                        <span>· 💬 {post.commentCount}</span>
+                    )}
+                    {post.likeCount > 0 && <span>· ❤️ {post.likeCount}</span>}
+                </div>
+            )}
         </div>
     );
 }

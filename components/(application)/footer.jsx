@@ -1,7 +1,7 @@
 
 export default function Footer() {
   return (
-<footer className="mt-20 bg-gray-100 text-sm text-gray-600 py-10 px-4">
+<footer className="bg-gray-100 text-sm text-gray-600 py-10 px-4">
   <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start space-y-6 md:space-y-0">
     {/* 왼쪽: 로고 및 회사 정보 */}
     <div className="flex flex-col space-y-2">

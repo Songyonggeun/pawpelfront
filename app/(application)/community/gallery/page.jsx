@@ -70,7 +70,7 @@ export default function GalleryPage() {
   };
 
   return (
-    <div className="max-w-[1100px] mx-auto px-6 py-8">
+    <div className="max-w-[1100px] mx-auto px-6 py-8 mb-20">
       <h1 className="text-[22px] font-bold mb-13">사진 갤러리</h1>
       <div className="border-b border-gray-300 my-4 mb-8" />
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-8">
