@@ -488,7 +488,7 @@ export default function PostDetailPage() {
                     className="prose prose-lg max-w-none mb-10"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                 />
-                 {/* 좋아요 */}
+                 <div className="mt-70">
                 <LikeCard
                     postId={post.id}
                     initialLikeCount={post.likeCount}
@@ -502,8 +502,9 @@ export default function PostDetailPage() {
                     }
                     isDisabled={!currentUser}
                 />
+                </div>              
                 {/* 이전/다음글/목록/수정/삭제 */}
-                <div className="mt-70 border-t border-gray-300 divide-y divide-gray-200 text-sm text-gray-800">
+                <div className="mt-4 border-t border-gray-300 divide-y divide-gray-200 text-sm text-gray-800">
                     {/* 이전글 */}
                     <div className="flex items-center justify-between px-4 py-3">
                         <div className="font-semibold w-[60px] text-gray-600">
