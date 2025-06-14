@@ -22,8 +22,23 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
   const [notifications, setNotifications] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
+  const dropdownRef = useRef(null); // 드롭다운 요소 참조
 
   useEffect(() => setIsClient(true), []);
+
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setDropdownOpen(false);
+    }
+  };
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
+}, []);
+
+useEffect(() => {
+  setDropdownOpen(false);
+}, [pathname]);
 
   useEffect(() => {
     if (pathname.startsWith("/community")) {
@@ -252,7 +267,9 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-80 bg-white shadow-xl border border-gray-200 rounded-lg z-50 max-h-96 overflow-y-auto custom-scrollbar">
+                    <div 
+                    ref={dropdownRef}
+                    className="absolute right-0 mt-2 w-80 bg-white shadow-xl border border-gray-200 rounded-lg z-50 max-h-96 overflow-y-auto custom-scrollbar">
                       <div className="p-4 font-semibold text-gray-800 border-b text-sm flex justify-between items-center">
                         <span>새 알림</span>
                         {notifications.length > 0 && (
@@ -306,6 +323,8 @@ export default function HeaderClient({ isLoggedIn, userRoles }) {
                                   })}
                                 </span>
                               </div>
+
+                              
                               <button
                                 className="text-xs text-blue-500 hover:underline whitespace-nowrap"
                                 onClick={async (e) => {
