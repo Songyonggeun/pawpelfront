@@ -104,7 +104,7 @@ export default function TopicPage() {
 
     const fetchPopularPosts = async () => {
       try {
-        const res = await fetch(`${baseUrl}/posts/popular/views?page=0&size=10`, {
+        const res = await fetch(`${baseUrl}/posts/views/public?page=0&size=10`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error("Failed to fetch popular posts");

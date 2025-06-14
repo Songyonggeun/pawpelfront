@@ -89,7 +89,7 @@ export default function DailyPage() {
         const fetchPopularPosts = async () => {
             try {
                 const response = await fetch(
-                    `${baseUrl}/posts/popular/views?page=0&size=10`,
+                    `${baseUrl}/posts/views/public?page=0&size=10`,
                     { credentials: "include" }
                 );
                 if (!response.ok)
