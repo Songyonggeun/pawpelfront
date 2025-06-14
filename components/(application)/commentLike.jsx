@@ -11,6 +11,30 @@ export default function CommentLike({
     const [likeCount, setLikeCount] = useState(initialLikeCount);
     const [isLiked, setIsLiked] = useState(initialIsLiked);
     const [loading, setLoading] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+
+
+useEffect(() => {
+  const checkLogin = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
+        credentials: 'include',
+      });
+
+      if (res.ok) {
+        const user = await res.json();
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
+      }
+    } catch {
+      setCurrentUser(null);
+    }
+  };
+
+  checkLogin();
+}, []);
+
 
     // 새로고침 시 서버에서 상태를 조회해서 초기 상태를 동기화
     useEffect(() => {
@@ -32,48 +56,48 @@ export default function CommentLike({
 
         fetchLikeStatus();
     }, [commentId]);
-
+    
     const toggleLike = async () => {
-        if (loading) return;
-        setLoading(true);
+    if (!currentUser || loading) return; // ❗ 로그인 안 했으면 클릭 무시
 
-        try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`,
-                {
-                    method: "POST",
-                    credentials: "include",
-                }
-            );
-
-            if (!res.ok) throw new Error("좋아요 처리 실패");
-
-            const data = await res.json();
-
-            setLikeCount(data.likeCount);
-            setIsLiked(data.isLiked);
-
-            if (onLikeToggle) onLikeToggle(data.likeCount, data.isLiked);
-        } catch (err) {
-            console.error(err);
-            alert("좋아요 처리 중 오류가 발생했습니다.");
-        } finally {
-            setLoading(false);
+    setLoading(true);
+    try {
+        const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/comments/${commentId}/like`,
+        {
+            method: "POST",
+            credentials: "include",
         }
+        );
+
+        if (!res.ok) throw new Error("좋아요 처리 실패");
+
+        const data = await res.json();
+        setLikeCount(data.likeCount);
+        setIsLiked(data.isLiked);
+
+        if (onLikeToggle) onLikeToggle(data.likeCount, data.isLiked);
+    } catch (err) {
+        console.error(err);
+        alert("좋아요 처리 중 오류가 발생했습니다.");
+    } finally {
+        setLoading(false);
+    }
     };
 
+
     return (
-        <button
-            type="button"
-            onClick={toggleLike}
-            disabled={loading}
-            aria-label={isLiked ? "좋아요 취소" : "좋아요"}
-            aria-pressed={isLiked}
-            className={`ml-2 text-sm font-semibold flex items-center gap-1 transition-colors ${
-                isLiked
+            <button
+                type="button"
+                onClick={toggleLike}
+                aria-label={isLiked ? "좋아요 취소" : "좋아요"}
+                aria-pressed={isLiked}
+                className={`ml-2 text-sm font-semibold flex items-center gap-1 transition-colors ${
+                    isLiked
                     ? "text-red-500 hover:text-red-600"
                     : "text-gray-400 hover:text-red-500"
-            } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}>
+                } ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+            >
             {isLiked ? (
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

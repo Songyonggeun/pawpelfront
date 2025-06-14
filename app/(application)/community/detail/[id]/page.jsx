@@ -15,7 +15,6 @@ export default function PostDetailPage() {
 
     const [post, setPost] = useState(null);
     const [error, setError] = useState(null);
-    const [currentUserName, setCurrentUserName] = useState(null);
     const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
     const [prevPost, setPrevPost] = useState(null);
     const [nextPost, setNextPost] = useState(null);
@@ -139,37 +138,21 @@ export default function PostDetailPage() {
     }, [id]);
 
     /* ---------- 로그인 사용자 ---------- */
-    useEffect(() => {
-        (async () => {
-            try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`,
-                    { credentials: "include" }
-                );
-                if (!res.ok) throw new Error();
-                const user = await res.json();
-                setCurrentUserName(user.nickname);
-            } catch {
-                setCurrentUserName(null);
-            }
-        })();
-    }, []);
+useEffect(() => {
+    (async () => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
+                credentials: "include",
+            });
+            if (!res.ok) throw new Error();
+            const user = await res.json();
+            setCurrentUser(user); // id, nickname 등 포함
+        } catch {
+            setCurrentUser(null);
+        }   
+    })();
+}, []);
 
-    // 로그인 유저 가져오기
-    useEffect(() => {
-        (async () => {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`,
-                {
-                    credentials: "include",
-                }
-            );
-            if (res.ok) {
-                const user = await res.json();
-                setCurrentUser(user); // user.id가 들어 있음
-            }
-        })();
-    }, []);
 
     /* ---------- 같은 Q&A 서브카테고리 인기글 ---------- */
     useEffect(() => {
@@ -259,6 +242,8 @@ export default function PostDetailPage() {
 
     /* ---------- 유저 차단 확인 ---------- */
     useEffect(() => {
+        if (!currentUser) return; // 🔒 로그인한 경우에만 호출
+
         (async () => {
             try {
                 const res = await fetch(
@@ -266,15 +251,15 @@ export default function PostDetailPage() {
                     { credentials: "include" }
                 );
                 if (!res.ok) throw new Error();
+
                 const list = await res.json();
-                // list가 [{ id: 1, name: "홍길동" }, ...] 형식이면 아래와 같이 처리
                 setBlockedUserIds(list.map((u) => u.id));
             } catch (err) {
                 console.error("차단 유저 목록 불러오기 실패", err);
                 setBlockedUserIds([]);
             }
         })();
-    }, []);
+    }, [currentUser]);
 
     /* ---------- 렌더 ---------- */
     if (error)
@@ -363,56 +348,60 @@ export default function PostDetailPage() {
                                 </Link>
 
                                 <button
-                                    onClick={async () => {
-                                        const isBlocked =
-                                            blockedUserIds.includes(
-                                                post.authorId
-                                            );
-                                        const url = `${
-                                            process.env
-                                                .NEXT_PUBLIC_SPRING_SERVER_URL
-                                        }/user/${
-                                            isBlocked ? "unblock" : "block"
-                                        }/${post.authorId}`;
-                                        try {
-                                            const res = await fetch(url, {
-                                                method: isBlocked
-                                                    ? "DELETE"
-                                                    : "POST",
+                                    onClick={
+                                        currentUser
+                                        ? async () => {
+                                            const isBlocked = blockedUserIds.includes(post.authorId);
+                                            const url = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/${
+                                                isBlocked ? "unblock" : "block"
+                                            }/${post.authorId}`;
+                                            try {
+                                                const res = await fetch(url, {
+                                                method: isBlocked ? "DELETE" : "POST",
                                                 credentials: "include",
-                                            });
-                                            if (!res.ok) throw new Error();
-                                            setBlockedUserIds((prev) =>
+                                                });
+                                                if (!res.ok) throw new Error();
+                                                setBlockedUserIds((prev) =>
                                                 isBlocked
-                                                    ? prev.filter(
-                                                          (id) =>
-                                                              id !==
-                                                              post.authorId
-                                                      )
+                                                    ? prev.filter((id) => id !== post.authorId)
                                                     : [...prev, post.authorId]
-                                            );
-                                            alert(
+                                                );
+                                                alert(
                                                 `"${post.authorName}"님을 ${
-                                                    isBlocked
-                                                        ? "차단 해제"
-                                                        : "차단"
+                                                    isBlocked ? "차단 해제" : "차단"
                                                 }했습니다.`
-                                            );
-                                        } catch {
-                                            alert("처리 중 오류 발생");
-                                        } finally {
-                                            setOpenProfileMenuId(null);
-                                        }
-                                    }}>
-                                    {blockedUserIds.includes(post.authorId)
-                                        ? "차단해제하기"
-                                        : "차단하기"}
+                                                );
+                                            } catch {
+                                                alert("처리 중 오류 발생");
+                                            } finally {
+                                                setOpenProfileMenuId(null);
+                                            }
+                                            }
+                                        : undefined  // 아예 클릭 방지
+                                    }
+                                    disabled={!currentUser}
+                                    className={`mt-1 ${
+                                        currentUser
+                                        ? "text-black hover:underline cursor-pointer"
+                                        : "text-gray-400 cursor-default hover:no-underline"
+                                    }`}
+                                    >
+                                    {blockedUserIds.includes(post.authorId) ? "차단해제하기" : "차단하기"}
                                 </button>
+
                                 <button
-                                    onClick={() => setShowReportModal(true)}
-                                    className="block mt-1 hover:underline">
+                                    onClick={currentUser ? () => setShowReportModal(true) : undefined}
+                                    disabled={!currentUser}
+                                    className={`block mt-1 ${
+                                        currentUser
+                                        ? "text-black hover:underline cursor-pointer"
+                                        : "text-gray-400 cursor-default hover:no-underline"
+                                    }`}
+                                    >
                                     신고하기
                                 </button>
+
+
                             </div>
                         )}
                     </div>
@@ -541,7 +530,7 @@ export default function PostDetailPage() {
                             className="px-4 py-2 border border-gray-500 text-gray-700 rounded hover:bg-gray-100">
                             목록으로
                         </button>
-                        {currentUserName?.trim().toLowerCase() ===
+                        {currentUser?.nickname?.trim().toLowerCase() ===
                             post.authorName?.trim().toLowerCase() && (
                             <>
                                 <button
@@ -570,11 +559,12 @@ export default function PostDetailPage() {
                             isLiked: liked,
                         }))
                     }
+                    isDisabled={!currentUser}
                 />
                 {/* 댓글 */}
                 <section className="mt-10">
                     <h2 className="text-lg font-semibold mb-4">댓글</h2>
-                    {currentUserName && (
+                    {currentUser && (
                         <CommentInput
                             postId={post.id}
                             onCommentAdded={() =>
@@ -843,7 +833,7 @@ export default function PostDetailPage() {
                                             },
                                             credentials: "include",
                                             body: JSON.stringify({
-                                                reporterId: currentUser.id,
+                                                reporterId: currentUser?.id,
                                                 reportedUserId: post.authorId,
                                                 postId: post.id,
                                                 commentId: null,
