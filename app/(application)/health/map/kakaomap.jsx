@@ -764,30 +764,36 @@ export default function KakaoMap() {
 
       {/* 카드 리스트 */}
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {currentHospitals.map((h, i) => (
-          <div
-            key={i}
-            className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition text-sm"
-            onClick={() => {
-              const pos = new window.kakao.maps.LatLng(h.lat, h.lng);
-              map.setCenter(pos);
-              map.setLevel(5);
-            }}
-          >
-            <h3 className="font-semibold text-base mb-1">🏥 {h.name}</h3>
-            <p className="text-gray-700 mb-1">📍 {h.addr}</p>
-            <p className="text-gray-600">📞 {h.tel}</p>
-            <a
-              href={h.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block mt-2 text-blue-500 hover:underline text-xs"
+        {currentHospitals.length === 0 ? (
+            <div className="col-span-full text-center text-gray-500">
+            해당 지역에 병원이 없습니다
+            </div>
+        ) : (
+            currentHospitals.map((h, i) => (
+            <div
+                key={i}
+                className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition text-sm"
+                onClick={() => {
+                const pos = new window.kakao.maps.LatLng(h.lat, h.lng);
+                map.setCenter(pos);
+                map.setLevel(5);
+                }}
             >
-              카카오맵에서 보기
-            </a>
-          </div>
-        ))}
-      </div>
+                <h3 className="font-semibold text-base mb-1">🏥 {h.name}</h3>
+                <p className="text-gray-700 mb-1">📍 {h.addr}</p>
+                <p className="text-gray-600">📞 {h.tel}</p>
+                <a
+                href={h.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block mt-2 text-blue-500 hover:underline text-xs"
+                >
+                카카오맵에서 보기
+                </a>
+            </div>
+            ))
+        )}
+        </div>
 
       {/* 페이징 */}
       {totalPages > 1 && (
