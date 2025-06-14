@@ -5,9 +5,8 @@ import CommentLike from "./commentLike";
 import UserIcon from "../(icon)/userIcon";
 import Link from "next/link";
 
-export default function CommentShow({ postId }) {
+export default function CommentShow({ postId, currentUser }) {
     const [comments, setComments] = useState([]);
-    const [currentUser, setCurrentUser] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [editContents, setEditContents] = useState({});
     const [replyTo, setReplyTo] = useState(null);
@@ -49,41 +48,16 @@ export default function CommentShow({ postId }) {
         fetchComments();
         fetchMentionUsers();
     }, [postId]);
-
+    
     useEffect(() => {
-        const hasJwt = () => {
-            if (typeof document === "undefined") return false;
-            return document.cookie
-                .split(";")
-                .some((cookie) =>
-                    cookie.trim().startsWith(`${process.env.NEXT_PUBLIC_JWT_COOKIE_NAME}=`)
-                );
-        };
-
-        if (!hasJwt()) {
-            setCurrentUser(null); // 로그인 안 되어 있어도 댓글은 그대로 보여야 하므로 여기서 return만
+        if (!currentUser) {
+            console.log("로그인되지 않은 상태");
             return;
         }
 
-        const fetchCurrentUser = async () => {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
-                    credentials: "include",
-                });
-                if (res.ok) {
-                    const user = await res.json();
-                    setCurrentUser(user);
-                } else {
-                    setCurrentUser(null);
-                }
-            } catch (err) {
-                console.error("로그인 상태 확인 실패", err);
-                setCurrentUser(null);
-            }
-        };
-
-        fetchCurrentUser();
-    }, []);
+        // `currentUser`가 있을 때만 실행할 코드
+        console.log("로그인된 상태", currentUser);
+    }, [currentUser]);
 
     const fetchMentionUsers = async () => {
         try {
@@ -118,7 +92,10 @@ export default function CommentShow({ postId }) {
         return roots;
     };
 
-    const handleReply = (id) => { setReplyTo(id); setReplyContent(""); };
+    const handleReply = (id) => {
+        setReplyTo(id);
+        setReplyContent("");
+    };
 
     const handleReplyContentChange = (e) => {
         const value = e.target.value;
@@ -263,10 +240,8 @@ export default function CommentShow({ postId }) {
 
     const renderComment = (comment, parentUser = null, depth = 0) => {
         return (
-            <div
-                key={comment.id}
-                className="pl-3 my-2 flex gap-2 items-start"
-                style={{ marginLeft: depth * 4 }}>
+            <div key={comment.id} className="pl-3 my-2 flex gap-2 items-start">
+                {/* 프로필 이미지 및 메뉴 */}
                 <div className="flex-shrink-0 relative">
                     <div
                         onClick={() =>
@@ -279,21 +254,7 @@ export default function CommentShow({ postId }) {
                         className="cursor-pointer">
                         {comment.userThumbnailUrl || comment.userImageUrl ? (
                             <img
-                                src={
-                                    (
-                                        comment.userThumbnailUrl ||
-                                        comment.userImageUrl
-                                    ).startsWith("/images/profile/")
-                                        ? comment.userThumbnailUrl ||
-                                          comment.userImageUrl
-                                        : `${
-                                              process.env
-                                                  .NEXT_PUBLIC_SPRING_SERVER_URL
-                                          }/uploads${
-                                              comment.userThumbnailUrl ||
-                                              comment.userImageUrl
-                                          }`
-                                }
+                                src={comment.userThumbnailUrl || comment.userImageUrl}
                                 alt={comment.userName}
                                 className="w-8 h-8 rounded-full object-cover border border-gray-300"
                             />
@@ -304,11 +265,11 @@ export default function CommentShow({ postId }) {
                         )}
                     </div>
 
+                    {/* 프로필 메뉴 */}
                     {openProfileMenuId === comment.id && (
                         <div
                             ref={profileMenuRef}
                             className="absolute z-10 bg-white border border-gray-300 rounded shadow px-3 py-2 text-sm top-0 left-full ml-2 whitespace-nowrap w-fit space-y-1">
-                            
                             <Link
                                 href={`/profile/${comment.userId}`}
                                 className="block text-blue-600 hover:underline"
@@ -316,7 +277,7 @@ export default function CommentShow({ postId }) {
                                 프로필 보기
                             </Link>
 
-                            {/* ✅ 차단하기 버튼 */}
+                            {/* 차단하기 버튼 */}
                             {currentUser ? (
                                 <button
                                     onClick={async () => {
@@ -340,19 +301,14 @@ export default function CommentShow({ postId }) {
                                             setOpenProfileMenuId(null);
                                         }
                                     }}
-                                    className="block hover:underline"
-                                >
-                                    {blockedUserIds.includes(comment.userId)
-                                        ? "차단해제하기"
-                                        : "차단하기"}
+                                    className="block hover:underline">
+                                    {blockedUserIds.includes(comment.userId) ? "차단해제하기" : "차단하기"}
                                 </button>
                             ) : (
-                                <span className="block text-gray-400 cursor-default">
-                                    차단하기
-                                </span>
+                                <span className="block text-gray-400 cursor-default">차단하기</span>
                             )}
 
-                            {/* ✅ 신고하기 버튼 */}
+                            {/* 신고하기 버튼 */}
                             {currentUser ? (
                                 <button
                                     onClick={() => {
@@ -360,33 +316,19 @@ export default function CommentShow({ postId }) {
                                         setReportedComment(comment);
                                         setOpenProfileMenuId(null);
                                     }}
-                                    className="block text-red-500 hover:underline"
-                                >
+                                    className="block text-red-500 hover:underline">
                                     신고하기
                                 </button>
                             ) : (
-                                <span className="block text-gray-400 cursor-default">
-                                    신고하기
-                                </span>
+                                <span className="block text-gray-400 cursor-default">신고하기</span>
                             )}
                         </div>
                     )}
-
                 </div>
 
                 <div className="flex-1">
                     <div className="flex justify-start items-center text-xs text-gray-500 mb-1 gap-3">
-                        <span
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setOpenProfileMenuId(
-                                    openProfileMenuId === comment.id
-                                        ? null
-                                        : comment.id
-                                );
-                            }}
-                            className="text-gray-700 font-medium hover:underline cursor-pointer">
+                        <span className="text-gray-700 font-medium hover:underline cursor-pointer">
                             {comment.userName}
                         </span>
                         <span>{formatDateRelative(comment.createdAt)}</span>
@@ -395,10 +337,11 @@ export default function CommentShow({ postId }) {
                             initialLikeCount={comment.likeCount}
                             initialIsLiked={comment.likedByCurrentUser}
                             onLikeToggle={fetchComments}
-                            isLoggedIn={!!currentUser} // 👈 로그인 안 되어 있으면 비활성화
+                            isLoggedIn={!!currentUser} // 로그인 상태에 따라 좋아요 기능 활성화/비활성화
                         />
                     </div>
 
+                    {/* 댓글 수정/삭제 */}
                     {editingId === comment.id ? (
                         <>
                             <textarea
@@ -429,18 +372,11 @@ export default function CommentShow({ postId }) {
                     ) : (
                         <>
                             <p className="text-sm">
-                                {parentUser &&
-                                    !comment.content.includes(
-                                        `@${parentUser}`
-                                    ) && (
-                                        <span className="text-gray-400">
-                                            @{parentUser}{" "}
-                                        </span>
-                                    )}
                                 {highlightMentions(comment.content)}
                             </p>
 
                             <div className="mt-1 flex gap-2 text-sm">
+                                {/* 로그인된 사용자에게만 답글 작성/수정/삭제 버튼 표시 */}
                                 {currentUser && (
                                     <button
                                         onClick={() => handleReply(comment.id)}
@@ -448,23 +384,17 @@ export default function CommentShow({ postId }) {
                                         답글
                                     </button>
                                 )}
-                                {Number(currentUser?.id) ===
-                                    Number(comment.userId) && (
+                                {Number(currentUser?.id) === Number(comment.userId) && (
                                     <>
                                         <button
                                             onClick={() =>
-                                                handleEdit(
-                                                    comment.id,
-                                                    comment.content
-                                                )
+                                                handleEdit(comment.id, comment.content)
                                             }
                                             className="text-gray-500">
                                             수정
                                         </button>
                                         <button
-                                            onClick={() =>
-                                                handleDelete(comment.id)
-                                            }
+                                            onClick={() => handleDelete(comment.id)}
                                             className="text-red-500">
                                             삭제
                                         </button>
@@ -522,6 +452,7 @@ export default function CommentShow({ postId }) {
             </div>
         );
     };
+
 
     // 차단 정보 가져오기 (✅ 로그인된 경우에만 실행)
     useEffect(() => {

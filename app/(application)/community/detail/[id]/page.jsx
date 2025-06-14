@@ -138,20 +138,20 @@ export default function PostDetailPage() {
     }, [id]);
 
     /* ---------- 로그인 사용자 ---------- */
-useEffect(() => {
-    (async () => {
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
-                credentials: "include",
-            });
-            if (!res.ok) throw new Error();
-            const user = await res.json();
-            setCurrentUser(user); // id, nickname 등 포함
-        } catch {
-            setCurrentUser(null);
-        }   
-    })();
-}, []);
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
+                    credentials: "include",
+                });
+                if (!res.ok) throw new Error();
+                const user = await res.json();
+                setCurrentUser(user); // id, nickname 등 포함
+            } catch {
+                setCurrentUser(null);
+            }   
+        })();
+    }, []);
 
 
     /* ---------- 같은 Q&A 서브카테고리 인기글 ---------- */
@@ -567,12 +567,15 @@ useEffect(() => {
                     {currentUser && (
                         <CommentInput
                             postId={post.id}
-                            onCommentAdded={() =>
-                                setRefreshCommentsFlag((flag) => flag + 1)
-                            }
+                            onCommentAdded={() => setRefreshCommentsFlag((flag) => flag + 1)}
                         />
                     )}
-                    <CommentShow key={refreshCommentsFlag} postId={post.id} />
+                    {/* currentUser를 CommentShow로 전달 */}
+                    <CommentShow 
+                        key={refreshCommentsFlag} 
+                        postId={post.id} 
+                        currentUser={currentUser} 
+                    />
                 </section>
                 {/* 연관 Q&A 게시글 */}
                 {post.category === "Q&A" &&
