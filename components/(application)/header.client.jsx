@@ -54,36 +54,46 @@ useEffect(() => {
   }, [pathname]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY < 50) {
-        setHeaderVisible(true);
-      } else if (currentScrollY > lastScrollY.current) {
-        setHeaderVisible(false);
-      } else {
-        setHeaderVisible(true);
-      }
-      lastScrollY.current = currentScrollY;
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const handleScroll = () => {
+    if (mobileMenuOpen) {
+      // 모바일 메뉴 열려있으면 헤더 무조건 보이게
+      setHeaderVisible(true);
+      return;
+    }
+    const currentScrollY = window.scrollY;
+    if (currentScrollY < 50) {
+      setHeaderVisible(true);
+    } else if (currentScrollY > lastScrollY.current) {
+      setHeaderVisible(false);
+    } else {
+      setHeaderVisible(true);
+    }
+    lastScrollY.current = currentScrollY;
+  };
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, [mobileMenuOpen]);
 
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (e.clientY < 50) {
-        setMouseAtTop(true);
-        setHeaderVisible(true);
-      } else {
-        setMouseAtTop(false);
-        if (window.scrollY > lastScrollY.current) {
-          setHeaderVisible(false);
-        }
+ useEffect(() => {
+  const handleMouseMove = (e) => {
+    if (mobileMenuOpen) {
+      setHeaderVisible(true);
+      return;
+    }
+    if (e.clientY < 50) {
+      setMouseAtTop(true);
+      setHeaderVisible(true);
+    } else {
+      setMouseAtTop(false);
+      if (window.scrollY > lastScrollY.current) {
+        setHeaderVisible(false);
       }
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+    }
+  };
+  window.addEventListener("mousemove", handleMouseMove);
+  return () => window.removeEventListener("mousemove", handleMouseMove);
+}, [mobileMenuOpen]);
+
 
   useEffect(() => {
     if (!isLoggedIn) return; 
@@ -467,37 +477,6 @@ useEffect(() => {
                 스토어
               </Link>
             </li>
-            {isLoggedIn ? (
-              <>
-                {userRoles.includes("ADMIN") ? (
-                  <li>
-                    <Link href="/admin" className="block hover:text-blue-500">
-                      관리자페이지
-                    </Link>
-                  </li>
-                ) : (
-                  <li>
-                    <Link href="/myPage" className="block hover:text-blue-500">
-                      마이페이지
-                    </Link>
-                  </li>
-                )}
-                <li>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left hover:text-blue-500"
-                  >
-                    로그아웃
-                  </button>
-                </li>
-              </>
-            ) : (
-              <li>
-                <Link href="/login" className="block hover:text-blue-500">
-                  로그인
-                </Link>
-              </li>
-            )}
           </ul>
         </nav>
       )}

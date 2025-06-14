@@ -92,15 +92,25 @@ export default function CommunityMenu() {
         </li>
       </ul>
       
-      {/* 글쓰기 버튼을 absolute로 띄워서 레이아웃에 영향 없게 */}
-      <div className="absolute top-3 right-6">
-        <Link
-          href="/community/write"
-          className="inline-block text-center px-4 py-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-500 hover:text-white text-xs border-gray-800 font-semibold shadow-md hover:shadow-lg"
-        >
-          글쓰기
-        </Link>
-      </div>
-    </div>
+     {/* PC에서는 absolute, 모바일에서는 아래쪽에 고정된 글쓰기 버튼 */}
+  <div className="absolute top-3 right-6 hidden md:block">
+    <Link
+      href="/community/write"
+      className="inline-block text-center px-4 py-3 bg-gray-200 text-gray-800 rounded hover:bg-gray-500 hover:text-white text-xs border-gray-800 font-semibold shadow-md hover:shadow-lg"
+    >
+      글쓰기
+    </Link>
+  </div>
+
+  {/* 모바일에서는 메뉴 아래에 글쓰기 버튼 표시 */}
+  <div className="mt-6 md:hidden flex justify-center">
+    <Link
+      href="/community/write"
+      className="inline-block bg-blue-500 text-white rounded px-6 py-3 shadow-md hover:bg-blue-600 text-sm font-semibold"
+    >
+      글쓰기
+    </Link>
+  </div>
+</div>
   );
 }
