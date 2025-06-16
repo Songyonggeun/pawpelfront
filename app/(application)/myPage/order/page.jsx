@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function OrderListPage() {
   const [user, setUser] = useState(null);
@@ -240,7 +241,11 @@ useEffect(() => {
                         />
                       </td>
                       <td className="py-2">
-                        <div>{product?.name || item.productName}</div>
+                        <div><Link
+                            href={`/store/detail/${item.productId}`}
+                            className="hover:underline">
+                            {item.productName}
+                          </Link></div>
                         <div className="text-xs text-gray-500 mt-1">
                           {item.price.toLocaleString()}원
                         </div>
