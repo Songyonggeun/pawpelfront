@@ -161,20 +161,20 @@ export default function PostDetailPage() {
 
     /* ---------- 로그인 사용자 ---------- */
     useEffect(() => {
-        (async () => {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`, {
-                    credentials: "include",
-                });
-                if (!res.ok) throw new Error();
-                const user = await res.json();
-                setCurrentUser(user); // id, nickname 등 포함
-            } catch {
-                setCurrentUser(null);
-            }
-        })();
-    }, []);
+    (async () => {
+        try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+            credentials: "include",
+        });
+        if (!res.ok) throw new Error("유저 정보 불러오기 실패");
 
+        const user = await res.json();
+        setCurrentUser(user); // user.name, user.socialName, user.id 등 포함
+        } catch {
+        setCurrentUser(null);
+        }
+    })();
+    }, []);
 
     /* ---------- 같은 Q&A 서브카테고리 인기글 ---------- */
     useEffect(() => {
@@ -577,7 +577,7 @@ export default function PostDetailPage() {
                             className="px-4 py-2 border border-gray-500 text-gray-700 rounded hover:bg-gray-100">
                             목록으로
                         </button>
-                        {currentUser?.nickname?.trim().toLowerCase() ===
+                        {currentUser?.name?.trim().toLowerCase() ===
                             post.authorName?.trim().toLowerCase() && (
                                 <>
                                     <button
