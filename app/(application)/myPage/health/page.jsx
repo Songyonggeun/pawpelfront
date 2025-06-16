@@ -55,6 +55,17 @@ export default function PetHealthSection() {
     fetchData();
   }, []);
 
+useEffect(() => {
+  const handleEsc = (e) => {
+    if (e.key === 'Escape') {
+      setDetailModalRecord(null);
+      setSelectedRecord(null);
+    }
+  };
+  window.addEventListener('keydown', handleEsc);
+  return () => window.removeEventListener('keydown', handleEsc);
+}, []);
+
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
@@ -64,6 +75,8 @@ export default function PetHealthSection() {
     return <div className="text-center py-10">로딩 중...</div>;
   }
 
+
+  
   return (
     <>
 
@@ -147,7 +160,7 @@ export default function PetHealthSection() {
                                 <td className="text-center whitespace-nowrap">
                                   <button
                                     onClick={() => {
-                                      console.log("선택된 기록:", record); // ✅ 여기에 details가 들어 있는지 확인
+                                      console.log("선택된 기록:", record); // 여기에 details가 들어 있는지 확인
                                       setDetailModalRecord(record);
                                     }}
                                     className="text-blue-500 hover:underline"
@@ -190,7 +203,7 @@ export default function PetHealthSection() {
 
 
           {selectedRecord && (
-            <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30">
               <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
                 <h3 className="text-lg font-bold mb-4">건강검진 결과</h3>
                 <p><strong>총점:</strong> {selectedRecord.totalScore}</p>
@@ -209,7 +222,10 @@ export default function PetHealthSection() {
           )}
 
           {detailModalRecord && (
-            <div className="fixed inset-0 flex justify-center items-center z-50">
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
+            onClick={(e) => {
+      if (e.target === e.currentTarget) setDetailModalRecord(null);
+    }}>
               <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
                 <h3 className="text-lg font-bold mb-4">건강검진 상세 결과</h3>
                 <p className="mb-2"><strong>검진일:</strong> {formatDate(detailModalRecord.checkedAt)}</p>
