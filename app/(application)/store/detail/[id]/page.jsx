@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Script from 'next/script';
+import ProductReview from '@/components/(application)/ProductReview';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -77,49 +78,48 @@ export default function ProductDetailPage() {
     }
   };
 
-const handleBuyNow = async () => {
-  const isLoggedIn = await checkLogin();
-  if (!isLoggedIn) {
-    setShowLoginModal(true);
-    return;
-  }
+  const handleBuyNow = async () => {
+    const isLoggedIn = await checkLogin();
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
 
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart/add`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        ...product,
-        quantity,
-      }),
-    });
-
-    if (!response.ok) throw new Error('장바구니 추가 실패');
-
-    const orderDto = {
-      totalAmount: totalPrice,
-      status: '결제대기',
-      items: [
-        {
-          productId: product.id,
-          productName: product.name,
-          quantity,
-          price: product.price,
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      ],
-    };
+        credentials: 'include',
+        body: JSON.stringify({
+          ...product,
+          quantity,
+        }),
+      });
 
-    localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
-    router.push(`/store/checkout?id=${product.id}`);
-  } catch (err) {
-    console.error('❗ 바로구매 실패:', err);
-    alert('바로구매 중 오류가 발생했습니다.');
-  }
-};
+      if (!response.ok) throw new Error('장바구니 추가 실패');
 
+      const orderDto = {
+        totalAmount: totalPrice,
+        status: '결제대기',
+        items: [
+          {
+            productId: product.id,
+            productName: product.name,
+            quantity,
+            price: product.price,
+          },
+        ],
+      };
+
+      localStorage.setItem('pendingOrder', JSON.stringify(orderDto));
+      router.push(`/store/checkout?id=${product.id}`);
+    } catch (err) {
+      console.error('❗ 바로구매 실패:', err);
+      alert('바로구매 중 오류가 발생했습니다.');
+    }
+  };
 
   if (!product) return <div className="p-6">로딩 중...</div>;
 
@@ -127,32 +127,9 @@ const handleBuyNow = async () => {
     <>
       <Script src="https://js.tosspayments.com/v1/payment" strategy="afterInteractive" />
 
-      {/* 모달 */}
-      {showCartModal && (
-        <div className="fixed inset-0 bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-md text-center space-y-4 max-w-sm w-full">
-            <p className="text-lg font-semibold">🛒 장바구니에 담았습니다!</p>
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => router.push('/store')}
-                className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm"
-              >
-                계속 쇼핑하기
-              </button>
-              <button
-                onClick={() => router.push('/store/cart')}
-                className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded text-sm"
-              >
-                장바구니 가기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 본문 */}
+      {/* 상품 상세 */}
       <div className="max-w-[1100px] mx-auto p-8 flex flex-col lg:flex-row">
-        {/* 이미지 */}
+        {/* 이미지 및 상품 정보 */}
         <div className="w-full lg:w-1/2 flex justify-center">
           <div className="border border-gray-200 rounded-lg p-4">
             <img
@@ -172,7 +149,7 @@ const handleBuyNow = async () => {
           </div>
         </div>
 
-        {/* 정보 */}
+        {/* 상품 정보 */}
         <div className="w-full lg:w-1/2 space-y-4 pl-4">
           <p className="text-sm text-gray-500">{product.brand}</p>
           <h1 className="text-3xl font-bold">{product.name}</h1>
@@ -218,7 +195,10 @@ const handleBuyNow = async () => {
         </div>
       </div>
 
+      {/* 리뷰 */}
+      <ProductReview productId={id} />
 
+      {/* 로그인 모달 */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="bg-white border border-gray-300 shadow-lg rounded-xl px-6 py-5 w-[340px] text-center">
