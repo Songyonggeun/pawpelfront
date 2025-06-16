@@ -11,6 +11,8 @@ export default function OrderListPage() {
   const [newRecipientName, setNewRecipientName] = useState('');
   const [newRecipientPhone, setNewRecipientPhone] = useState('');
   const [newAddress, setNewAddress] = useState('');
+  const [selectedReviewProductId, setSelectedReviewProductId] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5); // 기본 별점 5
 
   const formatOrderDate = (datetimeStr) => {
     if (!datetimeStr) return '날짜 없음\n--:--';
@@ -29,48 +31,71 @@ export default function OrderListPage() {
   const [selectedOrderForReview, setSelectedOrderForReview] = useState(null);
   const [reviewContent, setReviewContent] = useState('');
 
-const handleSubmitReview = async () => {
-  if (!reviewContent.trim()) {
-    alert('후기를 입력해주세요.');
-    return;
-  }
+  const handleSubmitReview = async () => {
+    if (!reviewContent.trim()) {
+      alert('후기를 입력해주세요.');
+      return;
+    }
+    if (!selectedReviewProductId) {
+      alert('후기 작성할 상품을 선택해주세요.');
+      return;
+    }
 
-  try {
-    await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/review`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId: user.id,
-        orderId: selectedOrderForReview.id,
-        content: reviewContent,
-      }),
-    });
-    alert('후기가 등록되었습니다!');
-    setSelectedOrderForReview(null);
-    setReviewContent('');
-  } catch (err) {
-    console.error('❗ 후기 등록 실패:', err);
-    alert('후기 등록에 실패했습니다.');
-  }
-};
+    const payload = {
+      userId: user.id,
+      productId: selectedReviewProductId,
+      nickname: user.socialName || user.name || '비회원',
+      isPublic: '공개',
+      content: reviewContent,
+      rating: reviewRating,
+      image: null,
+    };
 
+    console.log("📦 후기 전송 요청 데이터:", payload);
 
-useEffect(() => {
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      setSelectedOrderDetail(null);
-      setSelectedOrderForEdit(null);
+    try {
+      // ✅ fetch 결과를 변수에 담기
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/reviews`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json().catch(() => null);
+      console.log("📨 서버 응답:", response.status, result);
+
+      if (!response.ok) {
+        alert('서버 오류로 후기 등록에 실패했습니다.');
+        return;
+      }
+
+      alert('후기가 등록되었습니다!');
+      setSelectedOrderForReview(null);
+      setReviewContent('');
+      setSelectedReviewProductId(null);
+    } catch (err) {
+      console.error('❗ 후기 등록 실패:', err);
+      alert('후기 등록에 실패했습니다.');
     }
   };
 
-  document.addEventListener('keydown', handleKeyDown);
-  return () => {
-    document.removeEventListener('keydown', handleKeyDown);
-  };
-}, [selectedOrderDetail, selectedOrderForEdit]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setSelectedOrderDetail(null);
+        setSelectedOrderForEdit(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedOrderDetail, selectedOrderForEdit]);
 
 
 
@@ -286,6 +311,11 @@ useEffect(() => {
                                 onClick={() => {
                                   setSelectedOrderForReview(order);
                                   setReviewContent('');
+                                  if (order.items.length === 1) {
+                                    setSelectedReviewProductId(order.items[0].productId); // 자동 설정
+                                  } else {
+                                    setSelectedReviewProductId(null); // 선택 유도
+                                  }
                                 }}
                                 className="inline-block bg-gary-300 border border-gray-300 text-xs px-2 py-0.5 rounded"
                               >
@@ -365,104 +395,140 @@ useEffect(() => {
       )}
 
       {/* 상세보기 모달 */}
-{selectedOrderDetail && (
-  <div
-    className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
-    onClick={() => setSelectedOrderDetail(null)} // 배경 클릭 시 닫기
-  >
-    <div
-      className="bg-white rounded-lg shadow-lg w-[400px] max-h-[90vh] overflow-y-auto p-6"
-      onClick={(e) => e.stopPropagation()} // 모달 내부 클릭 시 이벤트 전파 방지
-    >
-      <h2 className="text-lg font-bold mb-4">💰 결제 상세 정보</h2>
+      {selectedOrderDetail && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
+          onClick={() => setSelectedOrderDetail(null)} // 배경 클릭 시 닫기
+        >
+          <div
+            className="bg-white rounded-lg shadow-lg w-[400px] max-h-[90vh] overflow-y-auto p-6"
+            onClick={(e) => e.stopPropagation()} // 모달 내부 클릭 시 이벤트 전파 방지
+          >
+            <h2 className="text-lg font-bold mb-4">💰 결제 상세 정보</h2>
 
-      <div className="space-y-3 text-sm">
-        {selectedOrderDetail.items.map((item, idx) => {
-          const productName = item.product?.name || item.productName;
-          const itemTotal = item.price * item.quantity;
-          return (
-            <div key={idx} className="flex justify-between border-b pb-1">
-              <div>
-                <div className="font-medium">{productName}</div>
-                <div className="text-xs text-gray-500">
-                  {item.price.toLocaleString()}원 × {item.quantity}개
-                </div>
+            <div className="space-y-3 text-sm">
+              {selectedOrderDetail.items.map((item, idx) => {
+                const productName = item.product?.name || item.productName;
+                const itemTotal = item.price * item.quantity;
+                return (
+                  <div key={idx} className="flex justify-between border-b pb-1">
+                    <div>
+                      <div className="font-medium">{productName}</div>
+                      <div className="text-xs text-gray-500">
+                        {item.price.toLocaleString()}원 × {item.quantity}개
+                      </div>
+                    </div>
+                    <div className="text-right font-semibold">
+                      {itemTotal.toLocaleString()}원
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="border-t mt-4 pt-4 text-sm space-y-1">
+              <div className="flex justify-between font-semibold">
+                <span>상품 총액</span>
+                <span>
+                  {selectedOrderDetail.items
+                    .reduce((sum, item) => sum + item.price * item.quantity, 0)
+                    .toLocaleString()}
+                  원
+                </span>
               </div>
-              <div className="text-right font-semibold">
-                {itemTotal.toLocaleString()}원
+              <div className="flex justify-between">
+                <span>배송비</span>
+                <span>
+                  {selectedOrderDetail.totalAmount <= 35000 ? '3,000원' : '배송비 무료'}
+                </span>
+              </div>
+              <div className="flex justify-between font-bold text-base mt-2">
+                <span>총 결제 금액</span>
+                <span>{selectedOrderDetail.totalAmount.toLocaleString()}원</span>
               </div>
             </div>
-          );
-        })}
-      </div>
 
-      <div className="border-t mt-4 pt-4 text-sm space-y-1">
-        <div className="flex justify-between font-semibold">
-          <span>상품 총액</span>
-          <span>
-            {selectedOrderDetail.items
-              .reduce((sum, item) => sum + item.price * item.quantity, 0)
-              .toLocaleString()}
-            원
-          </span>
+            <button
+              onClick={() => setSelectedOrderDetail(null)}
+              className="px-4 py-2 bg-blue-500 text-white rounded w-full mt-6"
+            >
+              닫기
+            </button>
+          </div>
         </div>
-        <div className="flex justify-between">
-          <span>배송비</span>
-          <span>
-            {selectedOrderDetail.totalAmount <= 35000 ? '3,000원' : '배송비 무료'}
-          </span>
-        </div>
-        <div className="flex justify-between font-bold text-base mt-2">
-          <span>총 결제 금액</span>
-          <span>{selectedOrderDetail.totalAmount.toLocaleString()}원</span>
-        </div>
-      </div>
+      )}
 
-      <button
-        onClick={() => setSelectedOrderDetail(null)}
-        className="px-4 py-2 bg-blue-500 text-white rounded w-full mt-6"
-      >
-        닫기
-      </button>
-    </div>
-  </div>
-)}
-
-{/* 후기 작성 모달  */}
-{selectedOrderForReview && (
-  <div
-    className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
-    onClick={() => setSelectedOrderForReview(null)}
-  >
-    <div
-      className="bg-white rounded-lg shadow-lg w-[400px] p-6"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <h2 className="text-lg font-bold mb-4">📝 후기 작성</h2>
-      <textarea
-        value={reviewContent}
-        onChange={(e) => setReviewContent(e.target.value)}
-        rows={5}
-        className="w-full border rounded p-2 text-sm"
-        placeholder="상품에 대한 후기를 작성해주세요."
-      />
-      <div className="flex justify-end mt-4 space-x-2">
-        <button
+      {/* 후기 작성 모달  */}
+      {selectedOrderForReview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
           onClick={() => setSelectedOrderForReview(null)}
-          className="px-4 py-2 bg-gray-300 text-black rounded"
         >
-          취소
-        </button>
-        <button
-          onClick={handleSubmitReview}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          등록
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+          <div
+            className="bg-white rounded-lg shadow-lg w-[400px] p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-bold mb-4">📝 후기 작성</h2>
+
+            {selectedOrderForReview.items.length > 1 && (
+              <div className="mb-3">
+                <label className="block mb-1 text-sm font-medium">상품 선택</label>
+                <select
+                  className="w-full border rounded px-2 py-1 text-sm"
+                  value={selectedReviewProductId || ''}
+                  onChange={(e) => {
+                    const selected = Number(e.target.value);
+                    console.log("📌 드롭다운에서 선택된 productId:", selected);
+                    setSelectedReviewProductId(selected);
+                  }}
+                >
+                  <option value="">상품을 선택하세요</option>
+                  {selectedOrderForReview.items.map((item, idx) => (
+                    <option key={idx} value={item.productId}>
+                      {item.product?.name || item.productName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="mb-3">
+              <label className="block mb-1 text-sm font-medium">평점 (1~5)</label>
+              <select
+                value={reviewRating}
+                onChange={(e) => setReviewRating(Number(e.target.value))}
+                className="w-full border rounded px-2 py-1 text-sm"
+              >
+                {[5, 4, 3, 2, 1].map((v) => (
+                  <option key={v} value={v}>
+                    ⭐ {v}점
+                  </option>
+                ))}
+              </select>
+            </div>
+            <textarea
+              value={reviewContent}
+              onChange={(e) => setReviewContent(e.target.value)}
+              rows={5}
+              className="w-full border rounded p-2 text-sm"
+              placeholder="상품에 대한 후기를 작성해주세요."
+            />
+            <div className="flex justify-end mt-4 space-x-2">
+              <button
+                onClick={() => setSelectedOrderForReview(null)}
+                className="px-4 py-2 bg-gray-300 text-black rounded"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSubmitReview}
+                className="px-4 py-2 bg-blue-500 text-white rounded"
+              >
+                등록
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </>
   );
