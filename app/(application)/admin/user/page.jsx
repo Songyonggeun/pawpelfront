@@ -245,7 +245,13 @@ export default function UserPage() {
                 <div key={pet.id ?? `${pet.petName}-${index}`} className="flex flex-col items-center border p-2 rounded w-36">
                   {pet.imageUrl ? (
                     <img
-                      src={`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`}
+                      src={
+                          pet.thumbnailUrl || pet.imageUrl
+                              ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                              ? pet.thumbnailUrl || pet.imageUrl
+                              : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                              : defaultImage
+                      } 
                       alt={pet.petName}
                       className="w-20 h-20 object-cover rounded-full mb-2"
                       onError={(e) => { e.currentTarget.src = "/default-pet.png"; }}
