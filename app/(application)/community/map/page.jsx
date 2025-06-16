@@ -226,6 +226,12 @@ function MapInformation() {
             ))}
           </ul>
 
+          {currentPage === totalPages && (
+          <div className="mt-6 text-center text-gray-500 text-sm">
+            추후 업데이트 될 예정입니다
+          </div>
+        )}
+
           {/* ✅ 페이지네이션 버튼 */}
           {totalPages > 1 && (
             <div className="flex justify-center gap-2 mt-6">
@@ -244,10 +250,13 @@ function MapInformation() {
               ))}
             </div>
           )}
+          
         </div>
       </div>
     </div>
   );
 }
+
+
 
 export default MapInformation;
