@@ -86,12 +86,15 @@ export default function ConsultDetailPage() {
         <div className="text-xs text-gray-500 mb-4">{consult.username} · {consult.createdAt?.split('T')[0]}</div>
         {consult.petName && (
           <div className="bg-gray-50 rounded-md px-3 py-3 mt-3 text-xs text-gray-600 space-y-1">
-            <div>🐾 <strong>{consult.petName}</strong> / {consult.petType}, {consult.breed}, {consult.gender}, {consult.birthYear}년생</div>
-
+              🐾 <strong>{consult.petName}</strong>&nbsp;/&nbsp;
+              {consult.petType === 'dog' ? '강아지' : consult.petType === 'cat' ? '고양이' : consult.petType},&nbsp;
+              {consult.breed},&nbsp;
+              {consult.gender === 'male' ? '남아' : consult.gender === 'female' ? '여아' : consult.gender},&nbsp;
+              {consult.birthYear}년생&nbsp;/&nbsp;
             {(currentUserId === consult.userId || userRoles.includes('VET')) && consult.latestHealthRecord && (
               <button
                 onClick={() => setDetailModalRecord(consult.latestHealthRecord)}
-                className="text-blue-500 underline hover:text-blue-600 text-xs mt-1"
+                className="hover:text-blue-600 text-xs mt-1"
               >
                 최근 건강체크 기록 보기
               </button>
