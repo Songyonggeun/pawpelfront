@@ -104,7 +104,7 @@ useEffect(() => {
           <Link href="/admin/report" className="bg-red-100 hover:bg-red-200 transition p-6 rounded-xl shadow text-center w-full">
             <h3 className="text-xl font-semibold text-red-900">신고 관리</h3>
             <p className="text-sm mt-1 text-gray-700">신고내역 확인</p>
-          </Link><Link href="/admin/review" className="bg-red-100 hover:bg-red-200 transition p-6 rounded-xl shadow text-center w-full">
+          </Link><Link href="/admin/review" className="bg-blue-100 hover:bg-blue-200 transition p-6 rounded-xl shadow text-center w-full">
             <h3 className="text-xl font-semibold text-red-900">리뷰 관리</h3>
             <p className="text-sm mt-1 text-gray-700">리뷰내역 확인</p>
           </Link>
