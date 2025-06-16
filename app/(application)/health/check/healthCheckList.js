@@ -2,7 +2,7 @@ export const healthCheckList = [
   {
     category: "1. 심장",
     options: [
-      "심장박동이 불규칙해요",
+      "심장박동이 불규칙해요", 
       "숨이 가빠요",
       "기절한 적이 있어요",
       "쉽게 지쳐요",
