@@ -22,6 +22,19 @@ export default function PetVaccineSection() {
   const [newDate, setNewDate] = useState('');
   const router = useRouter();
 
+// 모달 공통: ESC 닫기 이벤트 처리
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setEditModal({ open: false, petId: null, step: null, oldDate: null });
+      setDeleteModal({ open: false, petId: null, vaccinatedAt: null });
+    }
+  };
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+}, []);
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -137,81 +150,98 @@ export default function PetVaccineSection() {
 
       {/* ✅ 수정 모달 */}
       {editModal.open && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
-          <div className="bg-white p-6 rounded shadow-md w-[300px]">
-            <h3 className="text-lg font-semibold mb-4">접종일 수정</h3>
-            <input
-              type="date"
-              className="w-full border p-2 mb-4"
-              value={newDate}
-              onChange={(e) => setNewDate(e.target.value)}
-            />
-            <div className="flex justify-end space-x-2">
-              <button
-                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                onClick={() => setEditModal({ open: false, petId: null, step: null, oldDate: null })}
-              >
-                취소
-              </button>
-              <button
-                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                onClick={async () => {
-                  const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/update?petId=${editModal.petId}&vaccinatedAt=${editModal.oldDate}&step=${editModal.step}&selectedDate=${newDate}`,
-                    {
-                      method: 'PUT',
-                      credentials: 'include',
-                    }
-                  );
-                  if (res.ok) {
-                    alert('수정 완료');
-                    location.reload();
-                  } else {
-                    alert('수정 실패');
-                  }
-                }}
-                disabled={!newDate}
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
+    onClick={() => setEditModal({ open: false, petId: null, step: null, oldDate: null })}
+  >
+    <div
+      className="bg-white p-6 rounded shadow-md w-[300px]"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3 className="text-lg font-semibold mb-4">접종일 수정</h3>
+      <input
+        type="date"
+        className="w-full border p-2 mb-4"
+        value={newDate}
+        onChange={(e) => setNewDate(e.target.value)}
+      />
+      <div className="flex justify-end space-x-2">
+        <button
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          onClick={() => setEditModal({ open: false, petId: null, step: null, oldDate: null })}
+        >
+          취소
+        </button>
+        <button
+          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+          onClick={async () => {
+            const res = await fetch(
+              `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/update?petId=${editModal.petId}&vaccinatedAt=${editModal.oldDate}&step=${editModal.step}&selectedDate=${newDate}`,
+              {
+                method: 'PUT',
+                credentials: 'include',
+              }
+            );
+            if (res.ok) {
+              alert('수정 완료');
+              location.reload();
+            } else {
+              alert('수정 실패');
+            }
+          }}
+          disabled={!newDate}
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
-      {/* ✅ 삭제 모달 */}
+
+      {/* 삭제 모달 */}
       {deleteModal.open && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-md w-[300px]">
-            <h3 className="text-lg font-semibold mb-4">정말 삭제하시겠습니까?</h3>
-            <div className="flex justify-end space-x-2">
-              <button
-                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                onClick={() => setDeleteModal({ open: false, petId: null, vaccinatedAt: null })}
-              >
-                취소
-              </button>
-              <button
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                onClick={async () => {
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/vaccine/delete?petId=${deleteModal.petId}&vaccinatedAt=${deleteModal.vaccinatedAt}`, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                  });
-                  if (res.ok) {
-                    alert('삭제 완료');
-                    location.reload();
-                  } else {
-                    alert('삭제 실패');
-                  }
-                }}
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div
+    className="fixed inset-0 flex items-center justify-center z-50 bg-white/30 backdrop-blur-sm"
+    onClick={() => setDeleteModal({ open: false, petId: null, vaccinatedAt: null })}
+  >
+    <div
+      className="bg-white p-6 rounded shadow-md w-[300px]"
+      onClick={(e) => e.stopPropagation()} // 내부 클릭 시 닫힘 방지
+    >
+      <h3 className="text-lg font-semibold mb-4">정말 삭제하시겠습니까?</h3>
+      <div className="flex justify-end space-x-2">
+        <button
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          onClick={() => setDeleteModal({ open: false, petId: null, vaccinatedAt: null })}
+        >
+          취소
+        </button>
+        <button
+          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={async () => {
+            const res = await fetch(
+              `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/vaccine/delete?petId=${deleteModal.petId}&vaccinatedAt=${deleteModal.vaccinatedAt}`,
+              {
+                method: 'DELETE',
+                credentials: 'include',
+              }
+            );
+            if (res.ok) {
+              alert('삭제 완료');
+              location.reload();
+            } else {
+              alert('삭제 실패');
+            }
+          }}
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       <main className="flex-1 order-1 md:order-2">
         <section>
