@@ -64,59 +64,58 @@ export default function VaccineForm() {
     }
 
     const selectedPet = pets.find((p) => p.id === selectedPetId);
-    const selectedDateObj = new Date(date);
-    console.log('selectedPet:', selectedPet);
-console.log('healthRecords:', selectedPet.healthRecords);
-console.log('selectedPet keys:', Object.keys(selectedPet));
 
-    const firstDose = vaccineRecords.find((r) => r.step === 1);
-    if (firstDose && step > 1) {
-      const firstDate = new Date(firstDose.vaccinatedAt);
-      if (selectedDateObj <= firstDate) {
-        alert(`${step}차 접종일은 반드시 1차 접종일(${firstDate.toLocaleDateString('ko-KR')}) 이후여야 합니다.`);
-        return;
-      }
-    }
-
-    if (step > 1 && step <= 6) {
-      for (let prev = 1; prev < step; prev++) {
-        const exists = vaccineRecords.some((r) => r.step === prev);
-        if (!exists) {
-          const confirm = window.confirm(`${prev}차 접종 기록이 없습니다. 계속 진행할까요?`);
-          if (!confirm) return;
-          break;
-        }
-      }
-    }
-
-    if (step === 7) {
-      const last6 = vaccineRecords.find((r) => r.step === 6);
-      if (last6 && selectedDateObj <= new Date(last6.vaccinatedAt)) {
-        alert(`종합백신은 6차 접종일 이후여야 합니다.`);
-        return;
-      }
-      if (firstDose && selectedDateObj <= new Date(firstDose.vaccinatedAt)) {
-        alert(`종합백신은 반드시 1차 접종일 이후여야 합니다.`);
-        return;
-      }
-      const previousAnnual = vaccineRecords.filter((r) => r.step === 7).sort((a, b) => new Date(b.vaccinatedAt) - new Date(a.vaccinatedAt))[0];
-      if (previousAnnual) {
-        if (selectedDateObj <= new Date(previousAnnual.vaccinatedAt)) {
-          alert(`이번 종합백신은 이전 접종일보다 뒤여야 합니다.`);
-          return;
-        }
-        const diffDays = Math.floor((new Date() - new Date(previousAnnual.vaccinatedAt)) / (1000 * 60 * 60 * 24));
-        if (diffDays < 365) {
-          const confirm = window.confirm(`이 반려동물은 종합백신을 최근에 접종했습니다. 계속 등록할까요?`);
-          if (!confirm) return;
-        }
-      }
-    }
-
-    if (step !== 7) {
+    // 중복 검사
+    if (step >= 1 && step <= 6) {
       const alreadyExists = vaccineRecords.some((record) => record.step === step);
       if (alreadyExists) {
-        alert(`이미 ${step}차 접종이 저장되어 있습니다.`);
+        alert(`${step}차 접종은 이미 등록되어 있습니다.`);
+        return;
+      }
+    }
+
+    // 누락된 이전 단계 감지
+    if (step >= 2 && step <= 7) {
+      const requiredSteps = step === 7 ? [1, 2, 3, 4, 5, 6] : Array.from({ length: step - 1 }, (_, i) => i + 1);
+      const missingSteps = requiredSteps.filter(
+        (required) => !vaccineRecords.some((record) => record.step === required)
+      );
+
+      if (missingSteps.length > 0) {
+        const confirm = window.confirm(
+          `${missingSteps.map((s) => `${s}차`).join(', ')} 단계의 기록이 없습니다:\n그래도 등록하시겠습니까?`
+        );
+        if (!confirm) return;
+      }
+    }
+
+    const selectedDateObj = new Date(date);
+
+    // 모든 이전 단계의 날짜보다 뒤인지 검사
+    const blockingRecord = vaccineRecords
+      .filter((r) => {
+        // 종합백신은 모든 이전 접종보다 뒤여야 함
+        if (step === 7) return r.step >= 1 && r.step <= 7;
+        return r.step < step;
+      })
+      .find((r) => selectedDateObj <= new Date(r.vaccinatedAt));
+
+    if (blockingRecord) {
+      alert(
+        `${step === 7 ? '종합백신' : `${step}차 접종`}은 ${
+          blockingRecord.step === 7 ? '마지막 종합백신' : `${blockingRecord.step}차 접종`
+        }일(${new Date(blockingRecord.vaccinatedAt).toLocaleDateString('ko-KR')}) 이후로 선택해주세요.`
+      );
+      return;
+    }
+
+    // 종합백신(step === 7) 추가 검사: 같은 날짜 저장 방지
+    if (step === 7) {
+      const sameDateRecord = vaccineRecords.find(
+        (r) => r.step === 7 && new Date(r.vaccinatedAt).toISOString().split('T')[0] === date
+      );
+      if (sameDateRecord) {
+        alert('해당 날짜에 이미 종합백신이 저장되어 있습니다.');
         return;
       }
     }
