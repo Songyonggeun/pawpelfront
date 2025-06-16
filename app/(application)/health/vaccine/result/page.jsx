@@ -16,7 +16,18 @@ export default function VaccineResult() {
       credentials: 'include',
     })
       .then((res) => res.json())
-      .then((data) => setHistory(data))
+      .then((data) => {
+        const sorted = [...data]
+          .sort((a, b) => {
+            if (a.step !== b.step) return a.step - b.step;
+            if (a.step === 7) {
+              return new Date(a.vaccinatedAt) - new Date(b.vaccinatedAt);
+            }
+            return 0;
+          });
+
+        setHistory(sorted);
+      })
       .catch((err) => {
         console.error('이력 불러오기 실패:', err);
       })

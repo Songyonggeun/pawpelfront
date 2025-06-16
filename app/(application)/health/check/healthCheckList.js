@@ -1,6 +1,6 @@
 export const healthCheckList = [
   {
-    category: "1. 심장",
+    category: "심장",
     options: [
       "심장박동이 불규칙해요",
       "숨이 가빠요",
@@ -10,7 +10,7 @@ export const healthCheckList = [
     ]
   },
   {
-    category: "2. 위/장",
+    category: "위/장",
     options: [
       "구토를 자주 해요",
       "설사를 자주 해요",
@@ -20,7 +20,7 @@ export const healthCheckList = [
     ]
   },
   {
-    category: "3. 피부/귀",
+    category: "피부/귀",
     options: [
       "피부에서 냄새가 나요",
       "귀에서 분비물이 나와요",
@@ -30,7 +30,7 @@ export const healthCheckList = [
     ]
   },
   {
-    category: "4. 신장/방광",
+    category: "신장/방광",
     options: [
       "소변을 자주 봐요",
       "소변 냄새가 강해요",
@@ -40,7 +40,7 @@ export const healthCheckList = [
     ]
   },
   {
-    category: "5. 면역력/호흡기",
+    category: "면역력/호흡기",
     options: [
       "기침을 자주 해요",
       "콧물이 나고 코를 자주 문질러요",
@@ -50,7 +50,7 @@ export const healthCheckList = [
     ]
   },
   {
-    category: "6. 치아",
+    category: "치아",
     options: [
       "입에서 냄새가 나요",
       "딱딱한 사료를 잘 못 씹어요",
@@ -60,7 +60,7 @@ export const healthCheckList = [
     ]
   },
   {
-    category: "7. 뼈/관절",
+    category: "뼈/관절",
     options: [
       "다리를 절뚝거려요",
       "계단을 오르기 힘들어해요",
@@ -70,7 +70,7 @@ export const healthCheckList = [
     ]
   },
   {
-    category: "8. 눈",
+    category: "눈",
     options: [
       "눈꼽이 많이 껴요",
       "눈이 빨개요",
@@ -80,7 +80,7 @@ export const healthCheckList = [
     ]
   },
   {
-    category: "9. 행동",
+    category: "행동",
     options: [
       "기운이 없어요",
       "짖는 횟수가 줄었어요",
@@ -90,7 +90,7 @@ export const healthCheckList = [
     ]
   },
   {
-    category: "10. 체중 및 비만도",
+    category: "체중 및 비만도",
     options: [
       "최근 강아지의 체중이 눈에 띄게 늘었거나 줄었어요",
       "허리 라인이 잘 안 보이거나 만져지지 않아요",
