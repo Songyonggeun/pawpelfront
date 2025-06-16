@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function HealthCareMenu() {
   const pathname = usePathname();
   const [userRoles, setUserRoles] = useState([]);
-
+  
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -21,13 +21,12 @@ export default function HealthCareMenu() {
     };
     fetchUserInfo();
   }, []);
-
+  
   const isVetOrAdmin = userRoles.includes('VET') || userRoles.includes('ADMIN');
   const isActive = (path) => pathname === path || pathname.startsWith(path + '/');
-
+  
   return (
-    <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center justify-between flex-wrap gap-6 text-sm text-gray-600 p-6">
-      {/* max-w-5xl : 최대 너비 약 80rem (1280px), 가변 너비로 px 대신 */}
+    <div className="max-w-5xl mx-auto text-sm text-gray-600 p-6">
       <ul className="flex flex-col md:flex-row gap-8">
         <li>
           <Link
@@ -99,6 +98,16 @@ export default function HealthCareMenu() {
             }`}
           >
             24시동물병원
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/health/vet"
+            className={`block hover:underline ${
+              isActive('/health/vet') ? 'text-black font-bold' : 'text-gray-600 hover:text-blue-500'
+            }`}
+          >
+            수의사 소개
           </Link>
         </li>
       </ul>

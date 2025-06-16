@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import CommentInput from "@/components/(Inputs)/commentInput";
 import CommentShow from "@/components/(application)/commentShow";
 import LikeCard from "@/components/(application)/postLike";
-import PopularPostsSidebar from "@/components/(application)/PopularPostsSidebar";
+import PopularPostList from "@/components/(application)/PopularPostList";
 import Link from "next/link";
 
 export default function PostDetailPage() {
@@ -15,11 +15,13 @@ export default function PostDetailPage() {
 
     const [post, setPost] = useState(null);
     const [error, setError] = useState(null);
-    const [currentUserName, setCurrentUserName] = useState(null);
     const [refreshCommentsFlag, setRefreshCommentsFlag] = useState(0);
     const [prevPost, setPrevPost] = useState(null);
     const [nextPost, setNextPost] = useState(null);
     const [allPosts, setAllPosts] = useState([]);
+    const [popularTotalPages, setPopularTotalPages] = useState(0);
+    const [popularPosts, setPopularPosts] = useState([]);
+    const [popularPage, setPopularPage] = useState(0);
     const [relatedPopularPosts, setRelatedPopularPosts] = useState([]);
     const [openProfileMenuId, setOpenProfileMenuId] = useState(null);
     const [blockedUserIds, setBlockedUserIds] = useState([]);
@@ -60,6 +62,26 @@ export default function PostDetailPage() {
         currentPage * pageSize,
         (currentPage + 1) * pageSize
     );
+
+    function formatDateRelative(dateString) {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        const seconds = Math.floor(diff / 1000);
+
+        if (seconds < 60) return "방금 전";
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}분 전`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}시간 전`;
+        const days = Math.floor(hours / 24);
+        if (days === 1) return "어제";
+        if (days < 7) return `${days}일 전`;
+        return date.toLocaleDateString("ko-KR");
+    }
+
+    const data = res.json();
 
     // 게시글
     useEffect(() => {
@@ -144,29 +166,15 @@ export default function PostDetailPage() {
             try {
                 const res = await fetch(
                     `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`,
-                    { credentials: "include" }
+                    {
+                        credentials: "include",
+                    }
                 );
                 if (!res.ok) throw new Error();
                 const user = await res.json();
-                setCurrentUserName(user.nickname);
+                setCurrentUser(user); // id, nickname 등 포함
             } catch {
-                setCurrentUserName(null);
-            }
-        })();
-    }, []);
-
-    // 로그인 유저 가져오기
-    useEffect(() => {
-        (async () => {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`,
-                {
-                    credentials: "include",
-                }
-            );
-            if (res.ok) {
-                const user = await res.json();
-                setCurrentUser(user); // user.id가 들어 있음
+                setCurrentUser(null);
             }
         })();
     }, []);
@@ -259,6 +267,8 @@ export default function PostDetailPage() {
 
     /* ---------- 유저 차단 확인 ---------- */
     useEffect(() => {
+        if (!currentUser) return; // 🔒 로그인한 경우에만 호출
+
         (async () => {
             try {
                 const res = await fetch(
@@ -266,15 +276,35 @@ export default function PostDetailPage() {
                     { credentials: "include" }
                 );
                 if (!res.ok) throw new Error();
+
                 const list = await res.json();
-                // list가 [{ id: 1, name: "홍길동" }, ...] 형식이면 아래와 같이 처리
                 setBlockedUserIds(list.map((u) => u.id));
             } catch (err) {
                 console.error("차단 유저 목록 불러오기 실패", err);
                 setBlockedUserIds([]);
             }
         })();
-    }, []);
+    }, [currentUser]);
+
+    useEffect(() => {
+        if (!`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}`) return;
+        (async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/posts/views/public?page=${popularPage}&size=10`,
+                    {
+                        credentials: "include",
+                    }
+                );
+                if (!res.ok) throw new Error(`status: ${res.status}`);
+                const data = await res.json();
+                setPopularPosts(data.content || []);
+                setPopularTotalPages(data.totalPages || 0);
+            } catch (e) {
+                console.error("Popular posts fetch failed:", e);
+            }
+        })();
+    }, [popularPage, `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}`]);
 
     /* ---------- 렌더 ---------- */
     if (error)
@@ -366,55 +396,92 @@ export default function PostDetailPage() {
                                 </Link>
 
                                 <button
-                                    onClick={async () => {
-                                        const isBlocked =
-                                            blockedUserIds.includes(
-                                                post.authorId
-                                            );
-                                        const url = `${
-                                            process.env
-                                                .NEXT_PUBLIC_SPRING_SERVER_URL
-                                        }/user/${
-                                            isBlocked ? "unblock" : "block"
-                                        }/${post.authorId}`;
-                                        try {
-                                            const res = await fetch(url, {
-                                                method: isBlocked
-                                                    ? "DELETE"
-                                                    : "POST",
-                                                credentials: "include",
-                                            });
-                                            if (!res.ok) throw new Error();
-                                            setBlockedUserIds((prev) =>
-                                                isBlocked
-                                                    ? prev.filter(
-                                                          (id) =>
-                                                              id !==
-                                                              post.authorId
-                                                      )
-                                                    : [...prev, post.authorId]
-                                            );
-                                            alert(
-                                                `"${post.authorName}"님을 ${
-                                                    isBlocked
-                                                        ? "차단 해제"
-                                                        : "차단"
-                                                }했습니다.`
-                                            );
-                                        } catch {
-                                            alert("처리 중 오류 발생");
-                                        } finally {
-                                            setOpenProfileMenuId(null);
-                                        }
-                                    }}
+                                    onClick={
+                                        currentUser
+                                            ? async () => {
+                                                  const isBlocked =
+                                                      blockedUserIds.includes(
+                                                          post.authorId
+                                                      );
+                                                  const url = `${
+                                                      process.env
+                                                          .NEXT_PUBLIC_SPRING_SERVER_URL
+                                                  }/user/${
+                                                      isBlocked
+                                                          ? "unblock"
+                                                          : "block"
+                                                  }/${post.authorId}`;
+                                                  try {
+                                                      const res = await fetch(
+                                                          url,
+                                                          {
+                                                              method: isBlocked
+                                                                  ? "DELETE"
+                                                                  : "POST",
+                                                              credentials:
+                                                                  "include",
+                                                          }
+                                                      );
+                                                      if (!res.ok)
+                                                          throw new Error();
+                                                      setBlockedUserIds(
+                                                          (prev) =>
+                                                              isBlocked
+                                                                  ? prev.filter(
+                                                                        (id) =>
+                                                                            id !==
+                                                                            post.authorId
+                                                                    )
+                                                                  : [
+                                                                        ...prev,
+                                                                        post.authorId,
+                                                                    ]
+                                                      );
+                                                      alert(
+                                                          `"${
+                                                              post.authorName
+                                                          }"님을 ${
+                                                              isBlocked
+                                                                  ? "차단 해제"
+                                                                  : "차단"
+                                                          }했습니다.`
+                                                      );
+                                                  } catch {
+                                                      alert(
+                                                          "처리 중 오류 발생"
+                                                      );
+                                                  } finally {
+                                                      setOpenProfileMenuId(
+                                                          null
+                                                      );
+                                                  }
+                                              }
+                                            : undefined // 아예 클릭 방지
+                                    }
+                                    disabled={!currentUser}
+                                    className={`mt-1 ${
+                                        currentUser
+                                            ? "text-black hover:underline cursor-pointer"
+                                            : "text-gray-400 cursor-default hover:no-underline"
+                                    }`}
                                 >
                                     {blockedUserIds.includes(post.authorId)
                                         ? "차단해제하기"
                                         : "차단하기"}
                                 </button>
+
                                 <button
-                                    onClick={() => setShowReportModal(true)}
-                                    className="block mt-1 hover:underline"
+                                    onClick={
+                                        currentUser
+                                            ? () => setShowReportModal(true)
+                                            : undefined
+                                    }
+                                    disabled={!currentUser}
+                                    className={`block mt-1 ${
+                                        currentUser
+                                            ? "text-black hover:underline cursor-pointer"
+                                            : "text-gray-400 cursor-default hover:no-underline"
+                                    }`}
                                 >
                                     신고하기
                                 </button>
@@ -493,8 +560,23 @@ export default function PostDetailPage() {
                     className="prose prose-lg max-w-none mb-10"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                 />
+                <div className="mt-70">
+                    <LikeCard
+                        postId={post.id}
+                        initialLikeCount={post.likeCount}
+                        initialIsLiked={post.isLiked}
+                        onLikeCountChange={(cnt, liked) =>
+                            setPost((p) => ({
+                                ...p,
+                                likeCount: cnt,
+                                isLiked: liked,
+                            }))
+                        }
+                        isDisabled={!currentUser}
+                    />
+                </div>
                 {/* 이전/다음글/목록/수정/삭제 */}
-                <div className="mt-70 border-t border-gray-300 divide-y divide-gray-200 text-sm text-gray-800">
+                <div className="mt-4 border-t border-gray-300 divide-y divide-gray-200 text-sm text-gray-800">
                     {/* 이전글 */}
                     <div className="flex items-center justify-between px-4 py-3">
                         <div className="font-semibold w-[60px] text-gray-600">
@@ -540,7 +622,6 @@ export default function PostDetailPage() {
                             </span>
                         )}
                     </div>
-
                     {/* 버튼 영역 */}
                     <div className="flex justify-center gap-2 px-4 py-4">
                         <button
@@ -549,7 +630,7 @@ export default function PostDetailPage() {
                         >
                             목록으로
                         </button>
-                        {currentUserName?.trim().toLowerCase() ===
+                        {currentUser?.nickname?.trim().toLowerCase() ===
                             post.authorName?.trim().toLowerCase() && (
                             <>
                                 <button
@@ -568,23 +649,10 @@ export default function PostDetailPage() {
                         )}
                     </div>
                 </div>
-                {/* 좋아요 */}
-                <LikeCard
-                    postId={post.id}
-                    initialLikeCount={post.likeCount}
-                    initialIsLiked={post.isLiked}
-                    onLikeCountChange={(cnt, liked) =>
-                        setPost((p) => ({
-                            ...p,
-                            likeCount: cnt,
-                            isLiked: liked,
-                        }))
-                    }
-                />
                 {/* 댓글 */}
                 <section className="mt-10">
                     <h2 className="text-lg font-semibold mb-4">댓글</h2>
-                    {currentUserName && (
+                    {currentUser && (
                         <CommentInput
                             postId={post.id}
                             onCommentAdded={() =>
@@ -592,61 +660,91 @@ export default function PostDetailPage() {
                             }
                         />
                     )}
-                    <CommentShow key={refreshCommentsFlag} postId={post.id} />
+                    {/* currentUser를 CommentShow로 전달 */}
+                    <CommentShow
+                        key={refreshCommentsFlag}
+                        postId={post.id}
+                        currentUser={currentUser}
+                    />
                 </section>
                 {/* 연관 Q&A 게시글 */}
-                {post.category === "Q&A" &&
-                    post.subCategory &&
-                    (() => {
-                        const list = relatedPopularPosts.filter(
-                            (p) => p.id !== post.id
-                        );
-                        if (!list.length) return null;
-                        return (
-                            <div className="mt-12">
-                                <h3 className="text-lg font-bold mb-4 text-gray-800">
-                                    연관 게시글
-                                </h3>
-                                <table className="w-full text-sm text-left text-gray-700">
-                                    <tbody>
-                                        {list.map((r, i) => (
-                                            <tr
-                                                key={r.id}
-                                                className={`hover:bg-gray-50 cursor-pointer ${
-                                                    i !== list.length - 1
-                                                        ? "border-b"
-                                                        : ""
-                                                }`}
-                                                onClick={() =>
-                                                    router.push(
-                                                        `/community/detail/${r.id}`
-                                                    )
-                                                }
-                                            >
-                                                <td className="py-2 px-3 w-1/2 font-medium text-gray-900">
-                                                    [{r.subCategory}] {r.title}
-                                                </td>
-                                                <td className="py-2 px-2">
-                                                    {r.authorName}
-                                                </td>
-                                                <td className="py-2 px-2">
-                                                    조회 {r.viewCount}
-                                                </td>
-                                                <td className="py-2 px-2">
-                                                    좋아요 {r.likeCount}
-                                                </td>
-                                                <td className="py-2 px-2">
-                                                    {new Date(
-                                                        r.createdAt
-                                                    ).toLocaleString()}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        );
-                    })()}
+                {relatedPopularPosts.length > 0 && (
+                    <div className="w-full rounded-md overflow-hidden mt-10">
+                        {/* 헤더 */}
+                        <div className="grid grid-cols-12 text-sm font-semibold bg-gray-100 px-4 py-2 text-center text-gray-700">
+                            <div className="col-span-1">번호</div>
+                            <div className="col-span-6 text-left">제목</div>
+                            <div className="col-span-2">글쓴이</div>
+                            <div className="col-span-1">등록일</div>
+                            <div className="col-span-1">조회</div>
+                            <div className="col-span-1">추천</div>
+                        </div>
+
+                        {/* 목록 */}
+                        {relatedPopularPosts
+                            .filter((item) => item.isPublic !== false)
+                            .slice(0, 3)
+                            .map((item) => {
+                                const isCurrent = item.id === Number(id);
+                                const formattedTime = formatDateRelative(
+                                    item.createdAt
+                                );
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        onClick={() => {
+                                            if (item.id !== Number(id)) {
+                                                router.push(
+                                                    `/community/detail/${item.id}`
+                                                );
+                                            }
+                                        }}
+                                        className={`grid grid-cols-12 px-4 py-2 text-sm transition-all items-center
+              ${
+                  isCurrent
+                      ? "bg-blue-50 font-bold text-blue-700"
+                      : "hover:bg-gray-50"
+              }
+              cursor-pointer`}
+                                    >
+                                        <div className="col-span-1 text-center text-gray-500">
+                                            {item.id}
+                                        </div>
+                                        <div className="col-span-6 text-left truncate">
+                                            <span className="text-gray-400 mr-1">
+                                                [{item.category}
+                                                {item.subCategory
+                                                    ? ` > ${item.subCategory}`
+                                                    : ""}
+                                                ]
+                                            </span>
+                                            <span className="hover:underline">
+                                                {item.title}
+                                            </span>
+                                            {item.commentCount > 0 && (
+                                                <span className="ml-1 text-red-600 font-semibold">
+                                                    [{item.commentCount}]
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="col-span-2 text-center text-gray-700">
+                                            {item.authorName}
+                                        </div>
+                                        <div className="col-span-1 text-center text-gray-500 w-[90px]">
+                                            {formattedTime}
+                                        </div>
+                                        <div className="col-span-1 text-center text-gray-600">
+                                            {item.viewCount}
+                                        </div>
+                                        <div className="col-span-1 text-center text-gray-600">
+                                            {item.likeCount}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                    </div>
+                )}
                 <div className="mt-10">
                     <h3 className="text-lg font-bold mb-4 text-gray-800">
                         전체 게시글 목록
@@ -665,98 +763,78 @@ export default function PostDetailPage() {
                         </div>
 
                         {/* 목록 */}
-                        {pagedPosts.map((item) => {
-                            const isCurrent = item.id === Number(id);
-                            const created = new Date(item.createdAt);
-                            const now = new Date();
-                            const isToday =
-                                created.toDateString() === now.toDateString();
-                            const formattedTime = isToday
-                                ? created.toLocaleTimeString("ko-KR", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                  })
-                                : created.toLocaleDateString();
+                        {pagedPosts
+                            .filter((item) => item.isPublic !== false) // 비공개 글 제외
+                            .map((item) => {
+                                const isCurrent = item.id === Number(id);
+                                const formattedTime = formatDateRelative(
+                                    item.createdAt
+                                );
 
-                            const isBlinded = item.isPublic === false;
-
-                            return (
-                                <div
-                                    key={item.id}
-                                    onClick={() => {
-                                        if (
-                                            !isBlinded &&
-                                            item.id !== Number(id)
-                                        ) {
-                                            router.push(
-                                                `/community/detail/${item.id}`
-                                            );
-                                        }
-                                    }}
-                                    className={`grid grid-cols-12 px-4 py-2 text-sm transition-all items-center
-        ${isCurrent ? "bg-blue-50 font-bold text-blue-700" : "hover:bg-gray-50"}
-        ${
-            isBlinded
-                ? "cursor-not-allowed opacity-60 italic text-red-600"
-                : "cursor-pointer"
-        }
-      `}
-                                    title={
-                                        isBlinded
-                                            ? "비공개 처리된 글입니다."
-                                            : ""
-                                    }
-                                    aria-disabled={isBlinded}
-                                >
-                                    <div className="col-span-1 text-center text-gray-500">
-                                        {item.id}
-                                    </div>
-
-                                    <div className="col-span-6 text-left truncate">
-                                        <span className="text-gray-400 mr-1">
-                                            [{item.category}
-                                            {item.subCategory
-                                                ? ` > ${item.subCategory}`
-                                                : ""}
-                                            ]
-                                        </span>
-                                        <span
-                                            className={
-                                                isBlinded
-                                                    ? ""
-                                                    : "hover:underline"
+                                return (
+                                    <div
+                                        key={item.id}
+                                        onClick={() => {
+                                            if (item.id !== Number(id)) {
+                                                router.push(
+                                                    `/community/detail/${item.id}`
+                                                );
                                             }
-                                        >
-                                            {isBlinded
-                                                ? "비공개 처리된 글입니다."
-                                                : item.title}
-                                        </span>
-                                        {!isBlinded &&
-                                            item.commentCount > 0 && (
+                                        }}
+                                        className={`grid grid-cols-12 px-4 py-2 text-sm transition-all items-center
+          ${
+              isCurrent
+                  ? "bg-blue-50 font-bold text-blue-700"
+                  : "hover:bg-gray-50"
+          }
+          cursor-pointer`}
+                                    >
+                                        {/* 번호 */}
+                                        <div className="col-span-1 text-center text-gray-500">
+                                            {item.id}
+                                        </div>
+
+                                        {/* 제목 */}
+                                        <div className="col-span-6 text-left truncate">
+                                            <span className="text-gray-400 mr-1">
+                                                [{item.category}
+                                                {item.subCategory
+                                                    ? ` > ${item.subCategory}`
+                                                    : ""}
+                                                ]
+                                            </span>
+                                            <span className="hover:underline">
+                                                {item.title}
+                                            </span>
+                                            {item.commentCount > 0 && (
                                                 <span className="ml-1 text-red-600 font-semibold">
                                                     [{item.commentCount}]
                                                 </span>
                                             )}
-                                    </div>
+                                        </div>
 
-                                    <div className="col-span-2 text-center text-gray-700">
-                                        {item.authorName}
-                                    </div>
+                                        {/* 작성자 */}
+                                        <div className="col-span-2 text-center text-gray-700">
+                                            {item.authorName}
+                                        </div>
 
-                                    <div className="col-span-1 text-center text-gray-500 w-[90px]">
-                                        {formattedTime}
-                                    </div>
+                                        {/* 등록일 */}
+                                        <div className="col-span-1 text-center text-gray-500 w-[90px]">
+                                            {formattedTime}
+                                        </div>
 
-                                    <div className="col-span-1 text-center text-gray-600">
-                                        {item.viewCount}
-                                    </div>
+                                        {/* 조회수 */}
+                                        <div className="col-span-1 text-center text-gray-600">
+                                            {item.viewCount}
+                                        </div>
 
-                                    <div className="col-span-1 text-center text-gray-600">
-                                        {item.likeCount}
+                                        {/* 추천수 */}
+                                        <div className="col-span-1 text-center text-gray-600">
+                                            {item.likeCount}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
                     </div>
 
                     {/* 페이지네이션 */}
@@ -830,9 +908,7 @@ export default function PostDetailPage() {
             </main>
 
             {/* ---------- 오른쪽 인기글 사이드바 ---------- */}
-            <div className="hidden md:block md:w-[260px] md:pl-2">
-                <PopularPostsSidebar />
-            </div>
+            <PopularPostList popularPosts={popularPosts} />
 
             {/* ---------- 신고하기 ---------- */}
             {showReportModal && (
@@ -861,7 +937,7 @@ export default function PostDetailPage() {
                                             },
                                             credentials: "include",
                                             body: JSON.stringify({
-                                                reporterId: currentUser.id,
+                                                reporterId: currentUser?.id,
                                                 reportedUserId: post.authorId,
                                                 postId: post.id,
                                                 commentId: null,

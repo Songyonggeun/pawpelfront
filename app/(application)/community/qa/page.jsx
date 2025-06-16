@@ -101,7 +101,7 @@ export default function QnaPage() {
     if (!baseUrl) return;
     (async () => {
       try {
-        const res = await fetch(`${baseUrl}/posts/popular/views?page=${popularPage}&size=10`, {
+        const res = await fetch(`${baseUrl}/posts/views/public?page=${popularPage}&size=10`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error(`status: ${res.status}`);
@@ -115,7 +115,7 @@ export default function QnaPage() {
   }, [popularPage, baseUrl]);
 
   return (
-    <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
+    <div className="bg-white text-black min-h-screen w-full mx-auto px-6 mb-20">
       <div className="max-w-[1200px] mx-auto pt-10 px-4">
         <div className="flex flex-col md:flex-row gap-8 overflow-visible">
           {/* 메인 콘텐츠 */}

@@ -104,7 +104,7 @@ export default function TopicPage() {
 
     const fetchPopularPosts = async () => {
       try {
-        const res = await fetch(`${baseUrl}/posts/popular/views?page=0&size=10`, {
+        const res = await fetch(`${baseUrl}/posts/views/public?page=0&size=10`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error("Failed to fetch popular posts");
@@ -150,7 +150,7 @@ export default function TopicPage() {
   );
 
   return (
-    <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
+    <div className="bg-white text-black min-h-screen w-full mx-auto px-6 mb-20">
       <div className="max-w-[1200px] mx-auto pt-10 px-4">
         <div className="flex flex-col md:flex-row gap-8 overflow-visible">
           {/* 메인 콘텐츠 */}

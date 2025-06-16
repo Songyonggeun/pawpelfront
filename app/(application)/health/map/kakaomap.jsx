@@ -6,6 +6,10 @@ export default function KakaoMap() {
     const mapRef = useRef(null);
     const [map, setMap] = useState(null);
     const [selectedDistrict, setSelectedDistrict] = useState("전체");
+    const infoWindowRef = useRef(null);
+    const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
+    const [pageGroup, setPageGroup] = useState(1); // 현재 페이지 그룹 (1-10, 11-20, 등)
+    const hospitalsPerPage = 9; // 한 페이지에 표시할 병원 수
 
     const districts = {
         강남구: { lat: 37.5172, lng: 127.0473 },
@@ -602,10 +606,17 @@ export default function KakaoMap() {
     const [selectedMarker, setSelectedMarker] = useState(null);
     const [selectedInfoWindow, setSelectedInfoWindow] = useState(null);
 
-    const filteredHospitals =
-        selectedDistrict === "전체"
-            ? hospitals
-            : hospitals.filter((h) => h.district === selectedDistrict);
+    const filteredHospitals = hospitals.filter(
+        (h) => selectedDistrict === "전체" || h.district === selectedDistrict
+    );
+
+    const totalPages = Math.ceil(filteredHospitals.length / hospitalsPerPage);
+    const totalPageGroups = Math.ceil(totalPages / 10); // 페이지 그룹의 총 수
+
+    const currentHospitals = filteredHospitals.slice(
+        (currentPage - 1) * hospitalsPerPage,
+        currentPage * hospitalsPerPage
+    );
 
     useEffect(() => {
         const script = document.createElement("script");
@@ -632,7 +643,7 @@ export default function KakaoMap() {
         const markers = [];
         const bounds = new window.kakao.maps.LatLngBounds();
 
-        filteredHospitals.forEach((hospital) => {
+        currentHospitals.forEach((hospital) => {
             const position = new window.kakao.maps.LatLng(
                 hospital.lat,
                 hospital.lng
@@ -646,41 +657,27 @@ export default function KakaoMap() {
             });
 
             const overlayContent = `
-                <div style="
-                    padding: 12px;
-                    font-size: 14px;
-                    line-height: 1.6;
-                    background: white;
-                    border-radius: 8px;
-                    border: 1px solid #d1d5db;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-                    white-space: nowrap;
-                    ">
-                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">
-                    🏥 ${hospital.name}
-                    </div>
+                <div style="padding: 12px; font-size: 14px; background: white; border-radius: 8px;
+                    border: 1px solid #d1d5db; box-shadow: 0 2px 6px rgba(0,0,0,0.2); white-space: nowrap;">
+                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">🏥 ${hospital.name}</div>
                     <div>📍 ${hospital.addr}</div>
                     <div>📞 <a href="tel:${hospital.tel}" style="color:#2563eb; text-decoration:none;">${hospital.tel}</a></div>
-                </div>
-                `;
+                </div>`;
 
-                const overlay = new window.kakao.maps.CustomOverlay({
+            const overlay = new window.kakao.maps.CustomOverlay({
                 content: overlayContent,
                 position,
                 yAnchor: 1,
                 zIndex: 3,
-                });
+            });
 
-                window.kakao.maps.event.addListener(marker, "click", () => {
-                // 기존 오버레이가 있다면 제거
-                if (selectedInfoWindow) selectedInfoWindow.setMap(null);
-
+            window.kakao.maps.event.addListener(marker, "click", () => {
+                if (infoWindowRef.current) infoWindowRef.current.setMap(null);
                 overlay.setMap(map);
-                setSelectedInfoWindow(overlay);
-
+                infoWindowRef.current = overlay;
                 map.setCenter(position);
                 map.setLevel(5);
-                });
+            });
 
             markers.push(marker);
         });
@@ -697,13 +694,41 @@ export default function KakaoMap() {
             }
         }
 
+        window.kakao.maps.event.addListener(map, "click", () => {
+            if (infoWindowRef.current) {
+                infoWindowRef.current.setMap(null);
+                infoWindowRef.current = null;
+            }
+        });
+
         return () => {
             markers.forEach((m) => m.setMap(null));
         };
-    }, [map, selectedDistrict]);
+    }, [map, selectedDistrict, currentPage]);
+
+    const handlePageChange = (page) => {
+        if (page < 1 || page > totalPages) return; // 페이지 범위 체크
+        setCurrentPage(page);
+
+        // 페이지 그룹을 새롭게 설정합니다.
+        const newPageGroup = Math.ceil(page / 10);
+        setPageGroup(newPageGroup);
+    };
+
+    const handlePageGroupChange = (direction) => {
+        let newGroup = pageGroup + direction;
+
+        if (newGroup < 1) newGroup = 1;
+        if (newGroup > totalPageGroups) newGroup = totalPageGroups;
+
+        setPageGroup(newGroup);
+
+        // 첫 번째 페이지로 이동
+        setCurrentPage((newGroup - 1) * 10 + 1);
+    };
 
     return (
-        <div className="max-w-[1100px] p-4 mx-auto">
+        <div className="max-w-[1100px] p-4 mx-auto mb-20">
             <h2 className="text-xl font-bold mb-4">서울 24시 동물병원</h2>
 
             {/* 버튼 */}
@@ -741,71 +766,94 @@ export default function KakaoMap() {
 
             {/* 카드 리스트 */}
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {filteredHospitals.map((h, i) => (
-                    <div
-                        key={i}
-                        className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition text-sm"
-                        onClick={() => {
-                            const pos = new window.kakao.maps.LatLng(h.lat, h.lng);
-                            map.setCenter(pos);
-                            map.setLevel(5);
-
-                            // 기존 마커 제거
-                            if (selectedMarker) selectedMarker.setMap(null);
-                            if (selectedInfoWindow) selectedInfoWindow.setMap(null); // InfoWindow에서 overlay로 변경됐으므로 setMap(null)
-
-                            const marker = new window.kakao.maps.Marker({
-                            map,
-                            position: pos,
-                            });
-
-                            const overlayContent = `
-                            <div style="
-                                padding: 14px;
-                                font-size: 14px;
-                                line-height: 1.6;
-                                background: white;
-                                border-radius: 10px;
-                                border: 1px solid #d1d5db;
-                                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                                white-space: nowrap;
-                            ">
-                                <div style="font-size: 16px; font-weight: bold; margin-bottom: 6px;">
-                                🏥 <strong>${h.name}</strong>
-                                </div>
-                                <div>📍 ${h.addr.replace(/\n/g, " ")}</div>
-                                <div>📞 <a href="tel:${h.tel}" style="color:#2563eb; text-decoration:none;">${h.tel}</a></div>
-                            </div>
-                            `;
-
-                            const overlay = new window.kakao.maps.CustomOverlay({
-                            content: overlayContent,
-                            position: pos,
-                            yAnchor: 1,
-                            zIndex: 3,
-                            });
-
-                            overlay.setMap(map);
-
-                            setSelectedMarker(marker);
-                            setSelectedInfoWindow(overlay);
-                        }}
+                {currentHospitals.length === 0 ? (
+                    <div className="col-span-full text-center text-gray-500">
+                        해당 지역에 병원이 없습니다
+                    </div>
+                ) : (
+                    currentHospitals.map((h, i) => (
+                        <div
+                            key={i}
+                            className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition text-sm"
+                            onClick={() => {
+                                const pos = new window.kakao.maps.LatLng(
+                                    h.lat,
+                                    h.lng
+                                );
+                                map.setCenter(pos);
+                                map.setLevel(5);
+                            }}
                         >
-                        <h3 className="font-semibold text-base mb-1">🏥 {h.name}</h3>
-                        <p className="text-gray-700 mb-1">📍 {h.addr}</p>
-                        <p className="text-gray-600">📞 {h.tel}</p>
-                        <a
-                            href={h.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block mt-2 text-blue-500 hover:underline text-xs"
-                        >
-                            카카오맵에서 보기
-                        </a>
+                            <h3 className="font-semibold text-base mb-1">
+                                🏥 {h.name}
+                            </h3>
+                            <p className="text-gray-700 mb-1">📍 {h.addr}</p>
+                            <p className="text-gray-600">📞 {h.tel}</p>
+                            <a
+                                href={h.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block mt-2 text-blue-500 hover:underline text-xs"
+                            >
+                                카카오맵에서 보기
+                            </a>
                         </div>
-
-                ))}
+                    ))
+                )}
             </div>
+
+            {/* 페이징 */}
+            {totalPages > 1 && (
+                <div className="flex justify-center gap-2 mt-6">
+                    {/* "이전" 버튼 */}
+                    {pageGroup > 1 && (
+                        <button
+                            onClick={() => handlePageGroupChange(-1)}
+                            className="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        >
+                            이전
+                        </button>
+                    )}
+
+                    {/* 페이지 번호 */}
+                    {Array.from(
+                        {
+                            length: Math.min(
+                                10,
+                                totalPages - (pageGroup - 1) * 10
+                            ),
+                        },
+                        (_, index) => (
+                            <button
+                                key={index}
+                                onClick={() =>
+                                    handlePageChange(
+                                        (pageGroup - 1) * 10 + index + 1
+                                    )
+                                }
+                                className={`px-3 py-1 rounded ${
+                                    currentPage ===
+                                    (pageGroup - 1) * 10 + index + 1
+                                        ? "bg-blue-500 text-white"
+                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                }`}
+                            >
+                                {(pageGroup - 1) * 10 + index + 1}
+                            </button>
+                        )
+                    )}
+
+                    {/* "다음" 버튼 */}
+                    {pageGroup < totalPageGroups && (
+                        <button
+                            onClick={() => handlePageGroupChange(1)}
+                            className="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        >
+                            다음
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

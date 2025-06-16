@@ -89,7 +89,7 @@ export default function DailyPage() {
         const fetchPopularPosts = async () => {
             try {
                 const response = await fetch(
-                    `${baseUrl}/posts/popular/views?page=0&size=10`,
+                    `${baseUrl}/posts/views/public?page=0&size=10`,
                     { credentials: "include" }
                 );
                 if (!response.ok)
@@ -125,7 +125,7 @@ export default function DailyPage() {
     };
 
     return (
-        <div className="bg-white text-black min-h-screen w-full mx-auto px-6">
+        <div className="bg-white text-black min-h-screen w-full mx-auto px-6 mb-20">
             <div className="max-w-[1200px] mx-auto pt-10 px-4">
                 <div className="flex flex-col md:flex-row gap-8 overflow-visible">
                     <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)]">
