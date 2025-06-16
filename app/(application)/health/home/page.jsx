@@ -127,23 +127,23 @@ export default function HealthHome() {
                     {/* 커스텀 내비게이션 버튼 */}
                     <div
                         className="
-        custom-prev absolute left-[-4] top-1/2 -translate-y-1/2
-        text-3xl font-bold text-gray-400
-        hover:text-gray-700
-        transition duration-300
-        z-10 px-3 cursor-pointer
-    ">
+                            custom-prev absolute left-[-4] top-1/2 -translate-y-1/2
+                            text-3xl font-bold text-gray-400
+                            hover:text-gray-700
+                            transition duration-300
+                            z-10 px-3 cursor-pointer
+                        ">
                         ‹
                     </div>
 
                     <div
                         className="
-        custom-next absolute right-[-4] top-1/2 -translate-y-1/2
-        text-3xl font-bold text-gray-400
-        hover:text-gray-700
-        transition duration-300
-        z-10 px-3 cursor-pointer
-    ">
+                            custom-next absolute right-[-4] top-1/2 -translate-y-1/2
+                            text-3xl font-bold text-gray-400
+                            hover:text-gray-700
+                            transition duration-300
+                            z-10 px-3 cursor-pointer
+                        ">
                         ›
                     </div>
 
@@ -155,7 +155,7 @@ export default function HealthHome() {
                         }}
                         spaceBetween={24}
                         slidesPerView={1}
-                        loop={true} // ✅ 무한 루프 설정
+                        loop={true} // 무한 루프 설정
                         onSlideChange={(swiper) => {
                             const pet = pets[swiper.activeIndex];
                             setCurrentIndex(swiper.activeIndex);
@@ -170,73 +170,168 @@ export default function HealthHome() {
                                 calculateDDay(pet.petAge, pet.lastCheckupDate)
                             );
                         }}>
-                        {pets.map((pet, idx) => (
-                            <SwiperSlide key={idx}>
-                                <div className="bg-white rounded-xl shadow-md p-6 flex justify-between items-center">
-                                    <div className="flex items-center space-x-4">
-                                        <div className="w-16 h-16 bg-gray-200 rounded-full ml-4" />
-                                        <div>
-                                            <div className="font-bold text-lg">
-                                                {pet.petName}
-                                            </div>
-                                            <div className="text-gray-600 text-sm">
-                                                {pet.petType} ·{" "}
-                                                {2025 - pet.petAge}살
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-gray-600 mr-4">
-                                            검진 권장 시기
-                                        </div>
-                                        <div
-                                            className={`inline-block mt-1 px-3 py-1 text-white text-sm rounded-full mr-4 ${getBadgeColor()}`}>
-                                            D{dDay > 0 ? "-" + dDay : "day"}
-                                        </div>
-                                    </div>
-                                </div>
-                            </SwiperSlide>
-                        ))}
+                        {pets.map((pet, idx) => {
+  const recentRecord = (pet.healthRecords || [])
+    .sort((a, b) => new Date(b.checkedAt) - new Date(a.checkedAt))[0];
+
+  return (
+    <SwiperSlide key={idx}>
+      <div className="bg-gray-100 rounded-xl shadow-md p-6 grid grid-cols-3 items-center gap-4">
+        
+        {/* 왼쪽: 이미지 + 기본 정보 */}
+        <div className="flex items-center space-x-4">
+          <img
+            src={
+              pet.thumbnailUrl || pet.imageUrl
+                ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                  ? pet.thumbnailUrl || pet.imageUrl
+                  : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                : pet.petType === '고양이'
+                ? '/images/profile/default_cat.jpeg'
+                : '/images/profile/default_dog.jpeg'
+            }
+            alt={pet.petName}
+            className="w-16 h-16 rounded-full object-cover"
+          />
+          <div>
+            <div className="font-bold text-lg">{pet.petName}</div>
+            <div className="text-gray-600 text-sm">{pet.petType} · {2025 - pet.petAge}살</div>
+          </div>
+        </div>
+
+        {/* 중앙: 최근 건강검진 정보 */}
+        <div className="text-left">
+          {recentRecord ? (
+            <>
+              <p className="text-md font-medium">최근 건강검진</p>
+              <p className="text-sm font-medium">
+                {new Date(recentRecord.checkedAt).toLocaleDateString("ko-KR")}
+              </p>
+              
+              <p className="text-sm text-gray-500">점수: {recentRecord.totalScore}</p>
+              <p className="text-sm text-gray-500">결과: {recentRecord.resultStatus}</p>
+            </>
+          ) : (
+            <p className="text-sm text-gray-400">검진 기록이 없습니다.</p>
+          )}
+        </div>
+
+        {/* 오른쪽: D-Day 뱃지 */}
+        <div className="text-right">
+          <div className="text-gray-600 mr-4">
+            <button>건강체크 하러가기</button></div>
+          {/* <div
+            className={`inline-block mt-1 px-3 py-1 text-white text-sm rounded-full mr-4 ${getBadgeColor()}`}
+          >
+            D{dDay > 0 ? '-' + dDay : 'day'}
+          </div> */}
+        </div>
+      </div>
+    </SwiperSlide>
+  );
+})}
+
                     </Swiper>
                 </div>
             )}
 
             {/* 기능 아이콘 영역 - 가로 정렬 */}
-            <div className="flex flex-wrap justify-center gap-22 text-center mb-20">
-                <a href="/health/check/select" className="cursor-pointer w-24">
-                    <div className="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-2xl font-bold">
-                        ✓
+            {/* 중앙 메뉴 */}
+            <div className="flex justify-center my-6">
+                <div className="w-full max-w-[1100px] mx-auto">
+                    <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-4 px-4">
+                        {/* 중앙 아이콘 메뉴 6개 */}
+                        <a
+                            href="/health/guide"
+                            className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
+                            <div
+                                className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-4xl font-bold 
+                        hover:scale-90 hover:shadow-lg hover:text-green-900 transition-all duration-300">
+                                📘
+                            </div>
+                            <div
+                                className="mt-2 text-sm text-gray-800 font-bold 
+                        hover:text-green-900 transition-colors duration-300">
+                                건강체크 가이드
+                            </div>
+                        </a>
+
+                        <a
+                            href="/health/check/select"
+                            className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
+                            <div
+                                className="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-4xl font-bold 
+                        hover:scale-90 hover:shadow-lg hover:text-indigo-900 transition-all duration-300">
+                                ✓
+                            </div>
+                            <div
+                                className="mt-2 text-sm text-gray-800 font-bold 
+                        hover:text-indigo-900 transition-colors duration-300">
+                                건강체크
+                            </div>
+                        </a>
+
+                        <a
+                            href="/health/vaccine/select"
+                            className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
+                            <div
+                                className="w-20 h-20 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-pink-600 text-4xl font-bold 
+                        hover:scale-90 hover:shadow-lg hover:text-pink-900 transition-all duration-300">
+                                💉
+                            </div>
+                            <div
+                                className="mt-2 text-sm text-gray-800 font-bold 
+                        hover:text-pink-900 transition-colors duration-300">
+                                접종체크
+                            </div>
+                        </a>
+
+                        <a
+                            href="/health/map"
+                            className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
+                            <div
+                                className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-4xl font-bold 
+                        hover:scale-90 hover:shadow-lg hover:text-pink-900 transition-all duration-300">
+                                🗺️
+                            </div>
+                            <div
+                                className="mt-2 text-sm text-gray-800 font-bold 
+                        hover:text-pink-900 transition-colors duration-300">
+                                지도
+                            </div>
+                        </a>
+
+                        <a
+                            href="/community/total"
+                            className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
+                            <div
+                                className="w-20 h-20 mx-auto bg-orange-100 rounded-full flex items-center justify-center text-pink-600 text-4xl font-bold 
+                        hover:scale-90 hover:shadow-lg hover:text-pink-900 transition-all duration-300">
+                                💬
+                            </div>
+                            <div
+                                className="mt-2 text-sm text-gray-800 font-bold
+                        hover:text-pink-900 transition-colors duration-300">
+                                커뮤니티
+                            </div>
+                        </a>
+
+                        <a
+                            href="/store"
+                            className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
+                            <div
+                                className="w-20 h-20 mx-auto bg-yellow-100 rounded-full flex items-center justify-center text-orange-500 text-4xl font-bold 
+                        hover:scale-90 hover:shadow-lg hover:text-orange-900 transition-all duration-300">
+                                🛒
+                            </div>
+                            <div
+                                className="mt-2 text-sm text-gray-800 font-bold 
+                        hover:text-orange-900 transition-colors duration-300">
+                                펫 스토어
+                            </div>
+                        </a>
                     </div>
-                    <div className="mt-2 text-sm text-gray-800 font-medium">
-                        건강체크
-                    </div>
-                </a>
-                <a
-                    href="/health/vaccine/select"
-                    className="cursor-pointer w-24">
-                    <div className="w-20 h-20 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-indigo-600 text-2xl font-bold">
-                        💉
-                    </div>
-                    <div className="mt-2 text-sm text-gray-800 font-medium">
-                        접종체크
-                    </div>
-                </a>
-                <a href="/health/guide" className="cursor-pointer w-24">
-                    <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-2xl font-bold">
-                        📘
-                    </div>
-                    <div className="mt-2 text-sm text-gray-800 font-medium">
-                        건강체크 가이드
-                    </div>
-                </a>
-                <a href="/consult" className="cursor-pointer w-24">
-                    <div className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-2xl font-bold">
-                        💬
-                    </div>
-                    <div className="mt-2 text-sm text-gray-800 font-medium">
-                        수의사 상담
-                    </div>
-                </a>
+                </div>
             </div>
 
             {/* 수의사 소개 + 커뮤니티 미리보기 */}
