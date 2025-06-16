@@ -22,6 +22,9 @@
                 <li>
                 <Link href="/admin/report" className="text-gray-700 hover:underline font-medium">신고 내역</Link>
                 </li>
+                <li>
+                <Link href="/admin/review" className="text-gray-700 hover:underline font-medium">리뷰 관리</Link>
+                </li>
             </ul>
             </nav>
         </aside>
