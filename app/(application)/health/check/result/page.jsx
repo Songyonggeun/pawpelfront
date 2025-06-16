@@ -28,6 +28,9 @@ export default function HealthResult() {
     return <p className="text-center py-10 text-gray-500">결과 불러오는 중...</p>;
   }
 
+  // "없어요"가 아닌 항목만 필터링
+  const filteredWarnings = result.warnings?.filter(item => item !== '없어요') || [];
+
   return (
     <div className="mt-10 max-w-sm mx-auto p-6 bg-white shadow-lg rounded-lg border border-gray-200">
       <h2 className="text-xl font-bold text-blue-600 mb-6 text-center">건강검진 결과</h2>
@@ -50,9 +53,9 @@ export default function HealthResult() {
 
         <div>
           <p className="font-semibold mb-1">주의 항목:</p>
-          {result.warnings?.length > 0 ? (
+          {filteredWarnings.length > 0 ? (
             <ul className="list-disc list-inside text-gray-700">
-              {result.warnings.map((item, idx) => (
+              {filteredWarnings.map((item, idx) => (
                 <li key={idx}>{item}</li>
               ))}
             </ul>
