@@ -264,13 +264,13 @@ export default function VetConsultForm() {
                   <tr key={idx}>
                     <td className="border px-2 py-1 align-top">{detail.category}</td>
                     <td className="border px-2 py-1 align-top whitespace-pre-line">
-                      {detail.selectedAnswers?.length > 0
-                        ? detail.selectedAnswers.map((opt) => `• ${opt}`).join('\n')
+                      {detail.selectedOptions?.length > 0
+                        ? detail.selectedOptions.map((opt) => `• ${opt}`).join('\n')
                         : '없음'}
                     </td>
                     <td className="border px-2 py-1 align-top text-center whitespace-pre-line">
-                      {detail.selectedAnswers?.length > 0
-                        ? detail.selectedAnswers
+                      {detail.selectedOptions?.length > 0
+                        ? detail.selectedOptions
                             .map((opt) => `${getDeductionScore(detail.category, opt)}점`)
                             .join('\n')
                         : '0점'}

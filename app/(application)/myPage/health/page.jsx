@@ -220,7 +220,7 @@ export default function PetHealthSection() {
                     <tr className="bg-gray-100">
                       <th className="border px-2 py-1 text-left">항목</th>
                       <th className="border px-2 py-1 text-left">선택한 보기</th>
-                      <th className="border px-2 py-1 text-center">점수</th>
+                      <th className="border px-2 py-1 text-center">감점</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -229,14 +229,14 @@ export default function PetHealthSection() {
                         <td className="border px-2 py-1 align-top">{detail.category}</td>
 
                         <td className="border px-2 py-1 align-top whitespace-pre-line">
-                          {detail.selectedAnswers?.length > 0
-                            ? detail.selectedAnswers.map((opt) => `• ${opt}`).join('\n')
+                          {detail.selectedOptions?.length > 0
+                            ? detail.selectedOptions.map((opt) => `• ${opt}`).join('\n')
                             : '없음'}
                         </td>
 
                         <td className="border px-2 py-1 align-top whitespace-pre-line text-center">
-                          {detail.selectedAnswers?.length > 0
-                            ? detail.selectedAnswers
+                          {detail.selectedOptions?.length > 0
+                            ? detail.selectedOptions
                                 .map((opt) => `${getDeductionScore(detail.category, opt)}점`)
                                 .join('\n')
                             : '0점'}
