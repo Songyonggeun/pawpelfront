@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import PetInputButton from '@/components/(petInputs)/petInput';
 
@@ -11,6 +11,10 @@ export default function MyPage() {
   const [editPet, setEditPet] = useState(null);
   const [postCount, setPostCount] = useState(0);
   const router = useRouter();
+
+  const closeModal = useCallback(() => {
+    setEditPet(null);
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -39,9 +43,17 @@ export default function MyPage() {
     };
 
     fetchUserData();
-  }, []);
+  }, [router]);
 
-  if (!userInfo) {
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') closeModal();
+    };
+    if (editPet) window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [editPet, closeModal]);
+
+  if (loading || !userInfo) {
     return <div className="text-center py-10">로딩 중...</div>;
   }
 
@@ -51,26 +63,22 @@ export default function MyPage() {
 
   return (
     <>
-
-      {/* 본문 영역 */}
       <main className="flex-1 order-1 md:order-2">
-        {/* 사용자 프로필 */}
+        {/* 프로필 영역 */}
         <div className="w-full flex flex-col items-center mb-6 relative group">
-          {/* 이미지 영역 */}
           {userInfo.imageUrl ? (
             <div className="relative">
-            <img
+              <img
                 src={
-                (userInfo.thumbnailUrl || userInfo.imageUrl)?.startsWith("/images/profile/")
-                  ? `${userInfo.thumbnailUrl || userInfo.imageUrl}?t=${Date.now()}`
-                  : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
-                      userInfo.thumbnailUrl || userInfo.imageUrl
-                    }?t=${Date.now()}`
-              }
-              alt="User Profile"
-              className="w-20 h-20 rounded-full object-cover"
-            />
-              {/* 삭제 버튼 */}
+                  (userInfo.thumbnailUrl || userInfo.imageUrl)?.startsWith("/images/profile/")
+                    ? `${userInfo.thumbnailUrl || userInfo.imageUrl}?t=${Date.now()}`
+                    : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${
+                        userInfo.thumbnailUrl || userInfo.imageUrl
+                      }?t=${Date.now()}`
+                }
+                alt="User Profile"
+                className="w-20 h-20 rounded-full object-cover"
+              />
               <button
                 onClick={async () => {
                   try {
@@ -106,10 +114,7 @@ export default function MyPage() {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   const formData = new FormData();
-                  formData.append(
-                    'data',
-                    new Blob([JSON.stringify({})], { type: 'application/json' })
-                  );
+                  formData.append('data', new Blob([JSON.stringify({})], { type: 'application/json' }));
                   formData.append('image', file);
 
                   try {
@@ -120,13 +125,6 @@ export default function MyPage() {
                     });
                     if (res.ok) {
                       location.reload();
-                      // const updated = await res.json();
-                      // const timestamp = Date.now();
-                      // setUserInfo((prev) => ({
-                      //   ...prev,
-                      //   imageUrl: updated.imageUrl ? `${updated.imageUrl}?t=${timestamp}` : null,
-                      //   thumbnailUrl: updated.thumbnailUrl ? `${updated.thumbnailUrl}?t=${timestamp}` : null,
-                      // }));
                     }
                   } catch (err) {
                     console.error('이미지 업로드 실패:', err);
@@ -135,20 +133,11 @@ export default function MyPage() {
               />
             </label>
           )}
-
           <div className="text-center font-semibold mt-2">{userInfo.socialName}</div>
         </div>
 
-        {/* 사용자 데이터 */}
+        {/* 사용자 데이터 요약 */}
         <div className="bg-gray-100 p-6 rounded-xl grid grid-cols-2 text-center gap-4 shadow-sm mb-10">
-          {/* <div>
-            <div className="text-sm text-gray-500">이메일</div>
-            <div className="text-lg font-bold">{userInfo.email}</div>
-          </div>
-          <div>
-            <div className="text-sm text-gray-500">전화번호</div>
-            <div className="text-lg font-bold">{userInfo.phoneNumber}</div>
-          </div> */}
           <div onClick={() => router.push('/myPage/health')} className="cursor-pointer">
             <div className="text-sm text-gray-500">건강 체크 수</div>
             <div className="text-lg font-bold">{totalHealthCheckCount}</div>
@@ -157,7 +146,6 @@ export default function MyPage() {
             <div className="text-sm text-gray-500">작성 글 수</div>
             <div className="text-lg font-bold">{postCount}</div>
           </div>
-
         </div>
 
         {/* 반려동물 목록 */}
@@ -168,51 +156,68 @@ export default function MyPage() {
           </div>
 
           <div className="flex gap-4 flex-wrap">
-          {pets.map((pet, index) => {
-            const species = pet.petType?.toLowerCase() || '';
-            const isCat = species.includes('cat') || species.includes('고양이');
-            const defaultImage = isCat ? '/images/profile/default_cat.jpeg' : '/images/profile/default_dog.jpeg';
-            const isDefaultImage = !pet.imageUrl;
+            {pets.map((pet, index) => {
+              const species = pet.petType?.toLowerCase() || '';
+              const isCat = species.includes('cat') || species.includes('고양이');
+              const defaultImage = isCat ? '/images/profile/default_cat.jpeg' : '/images/profile/default_dog.jpeg';
+              const isDefaultImage = !pet.imageUrl;
 
-            return (
-              <div
-                key={pet.id ?? `${pet.petName}-${index}`}
-                onClick={() => setEditPet(pet)}
-                className="w-32 h-40 border border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white shadow-sm cursor-pointer hover:bg-gray-100"
-              >
-                <div className="w-24 h-24 rounded-full overflow-hidden bg-white flex items-center justify-center">
-                  <img
-                    src={
-                      pet.thumbnailUrl || pet.imageUrl
-                        ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
-                            ? pet.thumbnailUrl || pet.imageUrl
-                            : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
-                        : defaultImage
-                    }
-                    alt={pet.petName}
-                    className={`w-full h-full ${
-                      isDefaultImage
-                        ? isCat
-                          ? 'object-contain p-[10px] filter grayscale brightness-110 opacity-60'
-                          : 'object-contain p-1 filter grayscale brightness-110 opacity-60'
-                        : 'object-cover'
-                    }`}
-                  />
+              return (
+                <div
+                  key={pet.id ?? `${pet.petName}-${index}`}
+                  onClick={() => setEditPet(pet)}
+                  className="w-32 h-40 border border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white shadow-sm cursor-pointer hover:bg-gray-100"
+                >
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-white flex items-center justify-center">
+                    <img
+                      src={
+                        pet.thumbnailUrl || pet.imageUrl
+                          ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                              ? pet.thumbnailUrl || pet.imageUrl
+                              : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                          : defaultImage
+                      }
+                      alt={pet.petName}
+                      className={`w-full h-full ${
+                        isDefaultImage
+                          ? isCat
+                            ? 'object-contain p-[10px] filter grayscale brightness-110 opacity-60'
+                            : 'object-contain p-1 filter grayscale brightness-110 opacity-60'
+                          : 'object-cover'
+                      }`}
+                    />
+                  </div>
+                  <div className="text-sm font-medium mt-2">{pet.petName}</div>
                 </div>
-                <div className="text-sm font-medium mt-2">{pet.petName}</div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
         </section>
 
         {/* 수정 모달 */}
         {editPet && (
-          <PetInputButton
-            isEdit={true}
-            pet={editPet}
-            onClose={() => setEditPet(null)}
-          />
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
+            onClick={closeModal}
+          >
+            <div
+              className="relative bg-white rounded-lg p-4 shadow-lg max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <PetInputButton
+                isEdit={true}
+                pet={editPet}
+                onClose={closeModal}
+              />
+              <button
+                onClick={closeModal}
+                className="absolute top-2 right-2 text-red-500 hover:text-red-500 text-xl"
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+          </div>
         )}
       </main>
     </>
