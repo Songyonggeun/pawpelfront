@@ -8,6 +8,7 @@ export default function PetStorePage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("전체");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const categories = ["전체", "영양제", "사료", "간식", "용품"];
 
@@ -38,28 +39,50 @@ export default function PetStorePage() {
     fetchProducts();
   }, []);
 
-  const filteredProducts = selectedCategory === "전체"
-    ? products
-    : products.filter((product) => product.category === selectedCategory);
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory =
+      selectedCategory === "전체" || product.category === selectedCategory;
+
+    const lowerSearch = searchTerm.toLowerCase();
+
+    const matchesSearch =
+      product.name.toLowerCase().includes(lowerSearch) || // 상품명
+      product.brand.toLowerCase().includes(lowerSearch) || // 브랜드명
+      (Array.isArray(product.tags) &&
+        product.tags.some((tag) =>
+          tag.toLowerCase().includes(lowerSearch)
+        )); // 태그
+
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="p-4 md:p-8 max-w-[1100px] mx-auto">
       <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">전체 상품</h1>
 
       {/* 카테고리 탭 */}
-      <div className="flex gap-3 mb-6 overflow-x-auto">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-full text-sm font-medium 
-              ${selectedCategory === cat 
-                ? "bg-blue-100 text-blue-600" 
-                : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-600"}`}
-          >
-            {cat}
-          </button>
-        ))}
+      <div className="flex gap-3 mb-6 items-center flex-wrap justify-between">
+        <div className="flex gap-2 overflow-x-auto">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-full text-sm font-medium 
+                ${selectedCategory === cat 
+                  ? "bg-blue-100 text-blue-600" 
+                  : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-600"}`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="상품명 검색"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border border-gray-300 rounded-md px-3 py-1 text-sm w-[200px]"
+        />
       </div>
 
       {/* 상품 목록 */}
