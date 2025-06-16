@@ -8,7 +8,33 @@ export default function PetHealthSection() {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [detailModalRecord, setDetailModalRecord] = useState(null);
   const router = useRouter();
+  const cleanCategory = (raw) => raw.replace(/^\d+\.\s*/, '').trim();
+
+  const DEDUCTION_SCORES = {
+    '심장': ["심장박동이 불규칙해요", "숨이 가빠요", "기절한 적이 있어요", "쉽게 지쳐요", "없어요"],
+    '위/장': ["구토를 자주 해요", "설사를 자주 해요", "밥을 잘 안 먹거나 식욕이 줄었어요", "변 상태가 자주 물처럼 묽어요", "없어요"],
+    '피부/귀': ["피부에서 냄새가 나요", "귀에서 분비물이 나와요", "피부가 빨개요", "가려워서 자주 긁어요", "없어요"],
+    '신장/방광': ["소변을 자주 봐요", "소변 냄새가 강해요", "소변을 볼 때 힘들어하거나 자주 실수해요", "소변 색이 평소보다 진하거나 붉어요", "없어요"],
+    '면역력/호흡기': ["기침을 자주 해요", "콧물이 나고 코를 자주 문질러요", "열이 있어요", "숨이 차서 헐떡거려요", "없어요"],
+    '치아': ["입에서 냄새가 나요", "딱딱한 사료를 잘 못 씹어요", "이가 흔들리거나 빠졌어요", "잇몸이 붓고 피가 나요", "없어요"],
+    '뼈/관절': ["다리를 절뚝거려요", "계단을 오르기 힘들어해요", "일어나기 힘들어해요", "산책을 싫어해요", "없어요"],
+    '눈': ["눈꼽이 많이 껴요", "눈이 빨개요", "빛에 민감하게 반응해요", "눈이 뿌옇게 보여요", "없어요"],
+    '행동': ["기운이 없어요", "짖는 횟수가 줄었어요", "숨는 일이 많아졌어요", "혼자 있으려고 해요", "없어요"],
+    '체중 및 비만도': ["최근 강아지의 체중이 눈에 띄게 늘었거나 줄었어요", "허리 라인이 잘 안 보이거나 만져지지 않아요", "배를 만졌을 때 갈비뼈가 잘 느껴지지 않아요", "예전보다 덜 움직이고, 활동량이 줄었거나 쉽게 지쳐해요", "없어요"]
+  };
+
+  const getDeductionScore = (category, option) => {
+    const cleanCat = category.replace(/^\d+\.\s*/, '').trim();
+    const cleanOpt = option.trim();
+
+    const list = DEDUCTION_SCORES[cleanCat] || [];
+    const index = list.indexOf(cleanOpt);
+
+    if (cleanOpt === '없어요') return 0;
+    return index >= 0 ? 4 - index : 0;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,7 +121,12 @@ export default function PetHealthSection() {
                         <table className="w-full text-xs table-auto border-collapse">
                           <thead>
                             <tr className="bg-gray-50 border-b border-gray-200">
-                              <th className="px-3 py-2 text-center whitespace-nowrap">검진일자</th><th className="px-3 py-2 text-center whitespace-nowrap">점수</th><th className="px-3 py-2 text-center whitespace-nowrap">결과</th><th className="px-3 py-2 text-center whitespace-nowrap">주의 항목</th><th className="px-3 py-2 text-center whitespace-nowrap">삭제</th>
+                              <th className="px-3 py-2 text-center whitespace-nowrap">검진일자</th>
+                              <th className="px-3 py-2 text-center whitespace-nowrap">점수</th>
+                              <th className="px-3 py-2 text-center whitespace-nowrap">결과</th>
+                              <th className="px-3 py-2 text-center whitespace-nowrap">주의 항목</th>
+                              <th className="px-3 py-2 text-center whitespace-nowrap">상세보기</th>
+                              <th className="px-3 py-2 text-center whitespace-nowrap">삭제</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -112,6 +143,17 @@ export default function PetHealthSection() {
                                 </td>
                                 <td className="text-center whitespace-normal break-words">
                                   {record.warnings?.join(', ') || '없음'}
+                                </td>
+                                <td className="text-center whitespace-nowrap">
+                                  <button
+                                    onClick={() => {
+                                      console.log("선택된 기록:", record); // ✅ 여기에 details가 들어 있는지 확인
+                                      setDetailModalRecord(record);
+                                    }}
+                                    className="text-blue-500 hover:underline"
+                                  >
+                                    상세보기
+                                  </button>
                                 </td>
                                 <td className="text-center text-red-500 cursor-pointer hover:underline whitespace-nowrap"
                                     onClick={async () => {
@@ -157,6 +199,57 @@ export default function PetHealthSection() {
                 <div className="mt-4 text-right">
                   <button
                     onClick={() => setSelectedRecord(null)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                  >
+                    닫기
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {detailModalRecord && (
+            <div className="fixed inset-0 flex justify-center items-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <h3 className="text-lg font-bold mb-4">건강검진 상세 결과</h3>
+                <p className="mb-2"><strong>검진일:</strong> {formatDate(detailModalRecord.checkedAt)}</p>
+                <p className="mb-4"><strong>총점:</strong> {detailModalRecord.totalScore}점 / <strong>결과:</strong> {detailModalRecord.resultStatus}</p>
+
+                <table className="w-full table-auto text-sm border border-gray-300 [&_*]:border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border px-2 py-1 text-left">항목</th>
+                      <th className="border px-2 py-1 text-left">선택한 보기</th>
+                      <th className="border px-2 py-1 text-center">점수</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detailModalRecord.details?.map((detail, idx) => (
+                      <tr key={idx}>
+                        <td className="border px-2 py-1 align-top">{detail.category}</td>
+
+                        <td className="border px-2 py-1 align-top whitespace-pre-line">
+                          {detail.selectedAnswers?.length > 0
+                            ? detail.selectedAnswers.map((opt) => `• ${opt}`).join('\n')
+                            : '없음'}
+                        </td>
+
+                        <td className="border px-2 py-1 align-top whitespace-pre-line text-center">
+                          {detail.selectedAnswers?.length > 0
+                            ? detail.selectedAnswers
+                                .map((opt) => `${getDeductionScore(detail.category, opt)}점`)
+                                .join('\n')
+                            : '0점'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+
+                </table>
+
+                <div className="mt-4 text-right">
+                  <button
+                    onClick={() => setDetailModalRecord(null)}
                     className="px-4 py-2 bg-blue-500 text-white rounded"
                   >
                     닫기
