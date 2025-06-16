@@ -145,37 +145,41 @@ const router = useRouter();
     const [selectedTarget, setSelectedTarget] = useState("");
 
     const handleMove = () => {
-      if (!selectedTarget) {
-        alert("이동할 게시판을 선택해주세요.");
-        return;
-      }
+  if (!selectedTarget) {
+    alert("이동할 게시판을 선택해주세요.");
+    return;
+  }
 
-      const confirmText =
-        selectedTarget === "total"
-          ? "전체글로 이동하시겠습니까?"
-          : "건강토픽으로 이동하시겠습니까?";
+  const confirmTextMap = {
+    total: "전체글로 이동하시겠습니까?",
+    topic: "건강토픽으로 이동하시겠습니까?",
+    best: "BEST 게시판으로 이동하시겠습니까?",
+    qa: "질문과 답변 게시판으로 이동하시겠습니까?",
+    daily: "건강일상 게시판으로 이동하시겠습니까?",
+  };
 
-      if (!window.confirm(confirmText)) return;
+  const confirmText = confirmTextMap[selectedTarget] || "게시글을 이동하시겠습니까?";
 
-        fetch(
-        `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/move/${postId}`,
-        {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ target: selectedTarget }),
-        }
-        ).then((res) => {
-        if (res.ok) {
-            alert("게시글이 이동되었습니다.");
-            setIsDropdownOpen(false);
-            setSelectedTarget("");
-        } else {
-            alert("이동에 실패했습니다.");
-        }
-        });
-    };
+  if (!window.confirm(confirmText)) return;
 
+  fetch(
+    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/move/${postId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ target: selectedTarget }),
+    }
+  ).then((res) => {
+    if (res.ok) {
+      alert("게시글이 이동되었습니다.");
+      setIsDropdownOpen(false);
+      setSelectedTarget("");
+    } else {
+      alert("이동에 실패했습니다.");
+    }
+  });
+};
     return (
         <div className="inline-block relative">
         <button
@@ -194,6 +198,10 @@ const router = useRouter();
               <option value="">선택</option>
               <option value="total">전체글</option>
               <option value="topic">건강토픽</option>
+              <option value="best">best</option>
+              <option value="qa">질문과답</option>
+              <option value="daily">건강일상</option>
+              
             </select>
             <div className="flex justify-end space-x-2">
               <button
