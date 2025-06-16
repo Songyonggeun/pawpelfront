@@ -1,22 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
-// 작성 시간 포맷팅 함수
-const formatDateTimeToMinute = (dateString) => {
-  if (!dateString) return "";
 
-  const [datePart, timePart] = dateString.split(" ");
-  if (!datePart || !timePart) return dateString;
-
-  const [yy, mm, dd] = datePart.split("/");
-  const [hour, minute] = timePart.split(":");
-
-  if (!yy || !mm || !dd || !hour || !minute) return dateString;
-
-  const yearFull = parseInt(yy, 10) < 50 ? "20" + yy : "19" + yy;
-
-  return `${yearFull}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")} ${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
-};
 
 export default function ReviewTable() {
   const [reviews, setReviews] = useState([]);
@@ -126,32 +111,32 @@ export default function ReviewTable() {
         <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">{message}</div>
       )}
 
-      <table className="w-full table-auto border-collapse border border-gray-300 text-sm">
-        <thead className="bg-gray-300 border-b border-gray-200">
+      <table className="w-full border-collapse border text-sm">
+        <thead className="bg-gray-100">
           <tr>
-            <th className="border border-gray-300 px-3 py-2 whitespace-nowrap">상품명</th>
-            <th className="border border-gray-300 px-3 py-2 whitespace-nowrap">작성자 ID</th>
-            <th className="border border-gray-300 px-3 py-2 whitespace-nowrap">작성자 닉네임</th>
-            <th className="border border-gray-300 px-3 py-2 whitespace-nowrap">작성일</th>
-            <th className="border border-gray-300 px-3 py-2 whitespace-nowrap">공개 여부</th>
-            <th className="border border-gray-300 px-3 py-2 whitespace-nowrap">평점</th>
-            <th className="border border-gray-300 px-3 py-2 whitespace-nowrap">액션</th>
+            <th className="border px-4 py-2">상품명</th>
+            <th className="border px-4 py-2">작성자 ID</th>
+            <th className="border px-4 py-2">작성자 닉네임</th>
+            <th className="border px-4 py-2">작성일</th>
+            <th className="border px-4 py-2">공개 여부</th>
+            <th className="border px-4 py-2">평점</th>
+            <th className="border px-4 py-2">액션</th>
           </tr>
         </thead>
         <tbody>
-          {currentReviews.map((review, idx) => (
+          {currentReviews.map((review) => (
             <React.Fragment key={review.id}>
-              <tr className={`hover:bg-gray-50 ${idx % 2 === 1 ? "bg-gray-100" : ""}`}>
-                <td className="border border-gray-300 px-3 py-2 whitespace-nowrap">{review.productName ?? "상품 없음"}</td>
-                <td className="border border-gray-300 px-3 py-2 whitespace-nowrap">{review.userId}</td>
-                <td className="border border-gray-300 px-3 py-2 whitespace-nowrap">{review.nickname}</td>
-                <td className="border border-gray-300 px-3 py-2 whitespace-nowrap">{formatDateTimeToMinute(review.createdAt)}</td>
-                <td className="border border-gray-300 px-3 py-2 whitespace-nowrap text-center">
+              <tr className="hover:bg-gray-50">
+                <td className="border px-4 py-2">{review.productName ?? "상품 없음"}</td>
+                <td className="border px-4 py-2">{review.userId}</td>
+                <td className="border px-4 py-2">{review.nickname}</td>
+                <td className="border px-4 py-2">{review.createdAt}</td>
+                <td className="border px-4 py-2 text-center">
                   {editingReviewId === review.id ? (
                     <select
                       value={editVisibility}
                       onChange={(e) => setEditVisibility(e.target.value)}
-                      className="border border-gray-300 rounded px-2 py-1"
+                      className="border rounded px-2 py-1"
                     >
                       <option value="공개">공개</option>
                       <option value="비공개">비공개</option>
@@ -166,8 +151,8 @@ export default function ReviewTable() {
                     </span>
                   )}
                 </td>
-                <td className="border border-gray-300 px-3 py-2 whitespace-nowrap text-center">{review.rating}</td>
-                <td className="border border-gray-300 px-3 py-2 whitespace-nowrap text-center space-x-2">
+                <td className="border px-4 py-2 text-center">{review.rating}</td>
+                <td className="border px-4 py-2 space-x-2 text-center">
                   {editingReviewId === review.id ? (
                     <>
                       <button
@@ -209,9 +194,9 @@ export default function ReviewTable() {
               </tr>
               {expandedRows[review.id] && (
                 <tr>
-                  <td colSpan="7" className="border border-gray-300 px-3 py-2 bg-gray-50 text-sm text-gray-800 whitespace-pre-wrap">
+                  <td colSpan="7" className="border px-4 py-2 bg-gray-50 text-sm text-gray-800">
                     <strong>리뷰 본문:</strong>
-                    <div className="mt-1">{review.content}</div>
+                    <div className="mt-1 whitespace-pre-wrap">{review.content}</div>
                   </td>
                 </tr>
               )}
@@ -226,7 +211,7 @@ export default function ReviewTable() {
           <button
             key={i + 1}
             onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 border border-gray-300 rounded ${
+            className={`px-3 py-1 border rounded ${
               currentPage === i + 1
                 ? "bg-blue-500 text-white"
                 : "bg-white hover:bg-gray-100"
