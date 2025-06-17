@@ -194,9 +194,7 @@ fetch(
               className="border px-2 py-1 text-sm mb-2 w-32"
             >
               <option value="">선택</option>
-              <option value="total">전체글</option>
               <option value="topic">건강토픽</option>
-              <option value="best">best</option>
               <option value="qa">질문과답</option>
               <option value="daily">건강일상</option>
               

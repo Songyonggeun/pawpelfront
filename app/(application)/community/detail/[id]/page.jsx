@@ -32,6 +32,12 @@ export default function PostDetailPage() {
 
     const profileMenuRef = useRef(null);
 
+    const categoryNameMap = {
+        topic: "토픽",
+        qa: "Q&A",
+        daily: "일상",
+    };
+
     //페이지네이션
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 20;
@@ -161,19 +167,19 @@ export default function PostDetailPage() {
 
     /* ---------- 로그인 사용자 ---------- */
     useEffect(() => {
-    (async () => {
-        try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
-            credentials: "include",
-        });
-        if (!res.ok) throw new Error("유저 정보 불러오기 실패");
+        (async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
+                    credentials: "include",
+                });
+                if (!res.ok) throw new Error("유저 정보 불러오기 실패");
 
-        const user = await res.json();
-        setCurrentUser(user); // user.name, user.socialName, user.id 등 포함
-        } catch {
-        setCurrentUser(null);
-        }
-    })();
+                const user = await res.json();
+                setCurrentUser(user); // user.name, user.socialName, user.id 등 포함
+            } catch {
+                setCurrentUser(null);
+            }
+        })();
     }, []);
 
     /* ---------- 같은 Q&A 서브카테고리 인기글 ---------- */
@@ -323,7 +329,7 @@ export default function PostDetailPage() {
             <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)] min-h-[800px]">
                 {/* 카테고리 경로 */}
                 <div className="text-sm text-blue-500 font-medium mb-1 ml-1 flex items-center">
-                    <span>{post.category}</span>
+                    <span>{categoryNameMap[post.category] || post.category}</span>
                     {post.subCategory && (
                         <>
                             <span className="mx-2 text-gray-400">{">"}</span>
@@ -334,6 +340,7 @@ export default function PostDetailPage() {
                 <h1 className="text-2xl sm:text-2xl font-bold border-b border-gray-300 pb-3 mb-4">
                     {post.title}
                 </h1>
+
 
                 {/* 작성자 + 펫 정보 */}
                 <div className="flex justify-between text-sm text-gray-600 mb-4">
