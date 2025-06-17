@@ -16,7 +16,7 @@ export default function Error({ error, reset }) {
         className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
       >
         다시 시도하기
-      </button>
+      </button> 
     </div>
   );
 }
