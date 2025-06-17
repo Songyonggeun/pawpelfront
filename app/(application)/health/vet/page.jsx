@@ -35,13 +35,13 @@ const DoctorProfile = () => {
       <div style={styles.left}>
         <img
           src="/images/vet-consult.jpg" // 실제 이미지 URL로 교체하세요
-          alt="김닥터 수의사"
+          alt="이익준 수의사"
           style={styles.image}
         />
       </div>
       <div style={styles.right}>
       <h2 style={styles.title}>
-          김닥터{' '}
+          이익준{' '}
           <span style={{ fontWeight: '300', color: 'gray' }}>
             수의사
           </span>

@@ -73,12 +73,12 @@ export default function LifetCommunityUI() {
                             href="/health/guide"
                             className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
                             <div
-                                className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-3xl font-bold 
+                                className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center text-green-600 text-5xl font-bold 
                         hover:scale-90 hover:shadow-lg hover:text-green-900 transition-all duration-300">
                                 📘
                             </div>
                             <div
-                                className="mt-2 text-sm text-gray-800 font-medium 
+                                className="mt-2 text-sm text-gray-800 font-bold 
                         hover:text-green-900 transition-colors duration-300">
                                 건강체크 가이드
                             </div>
@@ -88,12 +88,12 @@ export default function LifetCommunityUI() {
                             href="/health/check/select"
                             className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
                             <div
-                                className="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-3xl font-bold 
+                                className="w-20 h-20 mx-auto bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-5xl font-bold 
                         hover:scale-90 hover:shadow-lg hover:text-indigo-900 transition-all duration-300">
                                 ✓
                             </div>
                             <div
-                                className="mt-2 text-sm text-gray-800 font-medium 
+                                className="mt-2 text-sm text-gray-800 font-bold 
                         hover:text-indigo-900 transition-colors duration-300">
                                 건강체크
                             </div>
@@ -103,12 +103,12 @@ export default function LifetCommunityUI() {
                             href="/health/vaccine/select"
                             className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
                             <div
-                                className="w-20 h-20 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold 
+                                className="w-20 h-20 mx-auto bg-purple-100 rounded-full flex items-center justify-center text-pink-600 text-5xl font-bold 
                         hover:scale-90 hover:shadow-lg hover:text-pink-900 transition-all duration-300">
                                 💉
                             </div>
                             <div
-                                className="mt-2 text-sm text-gray-800 font-medium 
+                                className="mt-2 text-sm text-gray-800 font-bold 
                         hover:text-pink-900 transition-colors duration-300">
                                 접종체크
                             </div>
@@ -118,12 +118,12 @@ export default function LifetCommunityUI() {
                             href="/health/map"
                             className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
                             <div
-                                className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold 
+                                className="w-20 h-20 mx-auto bg-pink-100 rounded-full flex items-center justify-center text-pink-600 text-5xl font-bold 
                         hover:scale-90 hover:shadow-lg hover:text-pink-900 transition-all duration-300">
                                 🗺️
                             </div>
                             <div
-                                className="mt-2 text-sm text-gray-800 font-medium 
+                                className="mt-2 text-sm text-gray-800 font-bold 
                         hover:text-pink-900 transition-colors duration-300">
                                 지도
                             </div>
@@ -133,12 +133,12 @@ export default function LifetCommunityUI() {
                             href="/community/total"
                             className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
                             <div
-                                className="w-20 h-20 mx-auto bg-orange-100 rounded-full flex items-center justify-center text-pink-600 text-3xl font-bold 
+                                className="w-20 h-20 mx-auto bg-orange-100 rounded-full flex items-center justify-center text-pink-600 text-5xl font-bold 
                         hover:scale-90 hover:shadow-lg hover:text-pink-900 transition-all duration-300">
                                 💬
                             </div>
                             <div
-                                className="mt-2 text-sm text-gray-800 font-medium 
+                                className="mt-2 text-sm text-gray-800 font-bold
                         hover:text-pink-900 transition-colors duration-300">
                                 커뮤니티
                             </div>
@@ -148,12 +148,12 @@ export default function LifetCommunityUI() {
                             href="/store"
                             className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
                             <div
-                                className="w-20 h-20 mx-auto bg-yellow-100 rounded-full flex items-center justify-center text-orange-500 text-3xl font-bold 
+                                className="w-20 h-20 mx-auto bg-yellow-100 rounded-full flex items-center justify-center text-orange-500 text-5xl font-bold 
                         hover:scale-90 hover:shadow-lg hover:text-orange-900 transition-all duration-300">
                                 🛒
                             </div>
                             <div
-                                className="mt-2 text-sm text-gray-800 font-medium 
+                                className="mt-2 text-sm text-gray-800 font-bold 
                         hover:text-orange-900 transition-colors duration-300">
                                 펫 스토어
                             </div>

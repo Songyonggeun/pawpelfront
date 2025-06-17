@@ -2,21 +2,22 @@
 import React, { useEffect, useState } from "react";
 
 // 작성 시간 포맷팅 함수
-const formatDateTimeToMinute = (dateString) => {
-  if (!dateString) return "";
+// 작성 시간 포맷팅 함수 (ISO 문자열 -> "yy-MM-dd HH:mm")
+const formatDateTimeToMinute = (isoString) => {
+  if (!isoString) return "";
 
-  const [datePart, timePart] = dateString.split(" ");
-  if (!datePart || !timePart) return dateString;
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return isoString;
 
-  const [yy, mm, dd] = datePart.split("/");
-  const [hour, minute] = timePart.split(":");
+  const yy = String(date.getFullYear()).slice(2); // '25'
+  const mm = String(date.getMonth() + 1).padStart(2, "0"); // month: 0-indexed
+  const dd = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0"); // 24시간제
+  const min = String(date.getMinutes()).padStart(2, "0");
 
-  if (!yy || !mm || !dd || !hour || !minute) return dateString;
-
-  const yearFull = parseInt(yy, 10) < 50 ? "20" + yy : "19" + yy;
-
-  return `${yearFull}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")} ${hour.padStart(2, "0")}:${minute.padStart(2, "0")}`;
+  return `${yy}-${mm}-${dd} ${hh}:${min}`;
 };
+
 
 export default function ReviewTable() {
   const [reviews, setReviews] = useState([]);

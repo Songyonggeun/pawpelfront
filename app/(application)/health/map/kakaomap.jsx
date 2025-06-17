@@ -618,6 +618,8 @@ export default function KakaoMap() {
         currentPage * hospitalsPerPage
     );
 
+    const markerMapRef = useRef(new Map()); // 병원 ID => { marker, overlay }
+
     useEffect(() => {
         const script = document.createElement("script");
         script.src =
@@ -642,6 +644,7 @@ export default function KakaoMap() {
 
         const markers = [];
         const bounds = new window.kakao.maps.LatLngBounds();
+        markerMapRef.current.clear(); // 새 마커 세트 초기화
 
         currentHospitals.forEach((hospital) => {
             const position = new window.kakao.maps.LatLng(
@@ -679,6 +682,15 @@ export default function KakaoMap() {
                 map.setLevel(5);
             });
 
+            markerMapRef.current.set(
+                hospital.id || `${hospital.name}_${hospital.addr}`,
+                {
+                    marker,
+                    overlay,
+                    position,
+                }
+            );
+
             markers.push(marker);
         });
 
@@ -707,23 +719,16 @@ export default function KakaoMap() {
     }, [map, selectedDistrict, currentPage]);
 
     const handlePageChange = (page) => {
-        if (page < 1 || page > totalPages) return; // 페이지 범위 체크
+        if (page < 1 || page > totalPages) return;
         setCurrentPage(page);
-
-        // 페이지 그룹을 새롭게 설정합니다.
-        const newPageGroup = Math.ceil(page / 10);
-        setPageGroup(newPageGroup);
+        setPageGroup(Math.ceil(page / 10));
     };
 
     const handlePageGroupChange = (direction) => {
         let newGroup = pageGroup + direction;
-
         if (newGroup < 1) newGroup = 1;
         if (newGroup > totalPageGroups) newGroup = totalPageGroups;
-
         setPageGroup(newGroup);
-
-        // 첫 번째 페이지로 이동
         setCurrentPage((newGroup - 1) * 10 + 1);
     };
 
@@ -773,14 +778,18 @@ export default function KakaoMap() {
                 ) : (
                     currentHospitals.map((h, i) => (
                         <div
-                            key={i}
+                            key={h.id || `${h.name}_${i}`}
                             className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer hover:bg-gray-100 transition text-sm"
                             onClick={() => {
-                                const pos = new window.kakao.maps.LatLng(
-                                    h.lat,
-                                    h.lng
-                                );
-                                map.setCenter(pos);
+                                const key = h.id || `${h.name}_${h.addr}`;
+                                const data = markerMapRef.current.get(key);
+                                if (!data) return;
+
+                                if (infoWindowRef.current)
+                                    infoWindowRef.current.setMap(null);
+                                data.overlay.setMap(map);
+                                infoWindowRef.current = data.overlay;
+                                map.setCenter(data.position);
                                 map.setLevel(5);
                             }}
                         >
@@ -802,10 +811,15 @@ export default function KakaoMap() {
                 )}
             </div>
 
+            {currentPage === totalPages && (
+                <div className="mt-6 text-center text-gray-500 text-sm">
+                    추후 업데이트 될 예정입니다
+                </div>
+            )}
+
             {/* 페이징 */}
             {totalPages > 1 && (
                 <div className="flex justify-center gap-2 mt-6">
-                    {/* "이전" 버튼 */}
                     {pageGroup > 1 && (
                         <button
                             onClick={() => handlePageGroupChange(-1)}
@@ -815,7 +829,6 @@ export default function KakaoMap() {
                         </button>
                     )}
 
-                    {/* 페이지 번호 */}
                     {Array.from(
                         {
                             length: Math.min(
@@ -843,7 +856,6 @@ export default function KakaoMap() {
                         )
                     )}
 
-                    {/* "다음" 버튼 */}
                     {pageGroup < totalPageGroups && (
                         <button
                             onClick={() => handlePageGroupChange(1)}

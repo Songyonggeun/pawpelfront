@@ -165,14 +165,15 @@ export default function PostDetailPage() {
         (async () => {
             try {
                 const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/auth/me`,
+                    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`,
                     {
                         credentials: "include",
                     }
                 );
-                if (!res.ok) throw new Error();
+                if (!res.ok) throw new Error("유저 정보 불러오기 실패");
+
                 const user = await res.json();
-                setCurrentUser(user); // id, nickname 등 포함
+                setCurrentUser(user); // user.name, user.socialName, user.id 등 포함
             } catch {
                 setCurrentUser(null);
             }
@@ -630,7 +631,7 @@ export default function PostDetailPage() {
                         >
                             목록으로
                         </button>
-                        {currentUser?.nickname?.trim().toLowerCase() ===
+                        {currentUser?.name?.trim().toLowerCase() ===
                             post.authorName?.trim().toLowerCase() && (
                             <>
                                 <button
