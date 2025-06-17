@@ -37,6 +37,19 @@ export default function SignUpUnified() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
 
+// ESC 키 감지 추가
+useEffect(() => {
+  const handleEsc = (e) => {
+    if (e.key === "Escape") {
+      setShowTermsModal(false);
+      setShowPrivacyModal(false);
+    }
+  };
+  window.addEventListener("keydown", handleEsc);
+  return () => window.removeEventListener("keydown", handleEsc);
+}, []);
+
+
   useEffect(() => {
     if (confirmPassword && password !== confirmPassword) {
       setPasswordError("비밀번호가 일치하지 않습니다.");
@@ -44,6 +57,7 @@ export default function SignUpUnified() {
       setPasswordError("");
     }
   }, [password, confirmPassword]);
+
 
   useEffect(() => {
     const domain =
@@ -220,9 +234,16 @@ export default function SignUpUnified() {
 
       {/* 이용약관 모달 */}
       {showTermsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30">
-          <div className="bg-white p-6 rounded-lg w-11/12 max-w-lg">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
+          onClick={() => setShowTermsModal(false)} // 배경 클릭 시 닫힘
+        >
+          <div
+            className="bg-white p-6 rounded-lg w-11/12 max-w-lg"
+            onClick={(e) => e.stopPropagation()} // 모달 내부 클릭은 닫힘 방지
+          >
             <h2 className="text-xl font-semibold mb-4">이용약관</h2>
+
             <p className="text-sm mb-4" style={{ whiteSpace: 'pre-wrap', maxHeight: '60vh', overflowY: 'auto' }}>
               {`제1조 (목적)
 본 약관은 pawpel(이하 "회사")이 제공하는 애완동물 커뮤니티, 건강관리 서비스 및 스토어 서비스(이하 "서비스")의 이용조건 및 절차에 관한 사항과 이용자의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.
@@ -281,8 +302,14 @@ export default function SignUpUnified() {
 
       {/* 개인정보처리방침 모달 */}
       {showPrivacyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30">
-          <div className="bg-white p-6 rounded-lg w-11/12 max-w-lg">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
+          onClick={() => setShowPrivacyModal(false)} // 배경 클릭 시 닫힘
+        >
+          <div
+            className="bg-white p-6 rounded-lg w-11/12 max-w-lg"
+            onClick={(e) => e.stopPropagation()} // 모달 내부 클릭은 닫힘 방지
+          >
             <h2 className="text-xl font-semibold mb-4">개인정보 처리방침</h2>
             <p className="text-sm mb-4" style={{ whiteSpace: 'pre-wrap', maxHeight: '60vh', overflowY: 'auto' }}>
               {`개인정보 처리방침
