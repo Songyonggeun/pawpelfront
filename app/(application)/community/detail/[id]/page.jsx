@@ -386,7 +386,7 @@ export default function PostDetailPage() {
                                     프로필 보기
                                 </Link>
 
-                                <button
+                                {/* <button
                                     onClick={
                                         currentUser
                                             ? async () => {
@@ -423,7 +423,7 @@ export default function PostDetailPage() {
                                         }`}
                                 >
                                     {blockedUserIds.includes(post.authorId) ? "차단해제하기" : "차단하기"}
-                                </button>
+                                </button> */}
 
                                 <button
                                     onClick={currentUser ? () => setShowReportModal(true) : undefined}
