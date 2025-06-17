@@ -10,6 +10,7 @@ export default function MyPageLayout({ children }) {
     { title: '백신접종 기록', href: '/myPage/vaccine' },
     { title: '상담 글', href: '/myPage/consult' },
     { title: '작성 글', href: '/myPage/posts' },
+    { title: '포인트', href: '/myPage/point' },
   ];
 
   return (

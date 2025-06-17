@@ -69,6 +69,7 @@ export default function LifetCommunityUI() {
                 <div className="w-full max-w-[1100px] mx-auto">
                     <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-4 px-4">
                         {/* 중앙 아이콘 메뉴 6개 */}
+
                         <a
                             href="/health/guide"
                             className="cursor-pointer text-center min-w-[80px] transform transition-transform duration-300 hover:-translate-y-1">
