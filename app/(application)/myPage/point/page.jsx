@@ -12,9 +12,9 @@ export default function MissionAttendancePage() {
   const missionList = [
     { key: 'WALK', label: '🐕 산책하기' },
     { key: 'WATER', label: '💧 물 마시기' },
-    { key: 'BRUSH', label: '🪥 양치하기' },
-    { key: 'SNACK', label: '🍖 간식 주기' },
-    { key: 'HEALTH_CHECK', label: '🩺 건강 체크' },
+    { key: 'FOOD', label: '🍖 제시간에 밥 먹기' },
+    { key: 'TOOTH', label: '🪥 양치하기' },
+    { key: 'PLAY', label: '🩺 놀이시간 갖기' },
   ];
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function MissionAttendancePage() {
     if (!user) return;
 
     if (selectedMissions.length === 0) {
-    alert('✅ 미션을 1개 이상 선택해주세요!');
+    alert('미션을 1개 이상 선택해주세요!');
     return;
   }
 
@@ -107,15 +107,15 @@ export default function MissionAttendancePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {missionList.map((m) => (
                 <label
-                    key={m.key}
-                    className={`flex items-center justify-start px-4 py-3 rounded-md shadow-sm border cursor-pointer transition 
-                        ${selectedMissions.includes(m.key)
-                            ? 'bg-green-100 border-green-400 text-green-800 font-semibold'
-                            : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'}`}
-                        onClick={() => handleMissionCheck(m.key)}
-                    >
-                    <span className="text-base">{m.label}</span>
-                    </label>
+                className={`flex items-center justify-start px-4 py-3 rounded-md shadow-sm border cursor-pointer transition 
+                ${selectedMissions.includes(m.key)
+                ? 'bg-green-100 border-green-400 text-green-800 font-semibold'
+                : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+                onClick={() => handleMissionCheck(m.key)}
+            >
+            <span className="text-base">{m.label}</span>
+            </label>
+
                 ))}
         </div>
 
