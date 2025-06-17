@@ -221,7 +221,7 @@ const handleSubmit = async (e) => {
 
       {/* 이용약관 모달 */}
       {showTermsModal && (
-        <div className="fixed inset-0 flex justify-center items-center z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30">
           <div className="bg-white p-6 rounded-lg w-11/12 max-w-lg">
             <h2 className="text-xl font-semibold mb-4">이용약관</h2>
             <p className="text-sm mb-4">
@@ -239,7 +239,7 @@ const handleSubmit = async (e) => {
 
       {/* 개인정보처리방침 모달 */}
       {showPrivacyModal && (
-        <div className="fixed inset-0 flex justify-center items-center z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30">
           <div className="bg-white p-6 rounded-lg w-11/12 max-w-lg">
             <h2 className="text-xl font-semibold mb-4">개인정보 처리방침</h2>
             <p className="text-sm mb-4">
