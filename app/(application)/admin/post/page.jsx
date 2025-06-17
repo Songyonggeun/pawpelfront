@@ -162,15 +162,13 @@ const router = useRouter();
 
   if (!window.confirm(confirmText)) return;
 
-  fetch(
-    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/move/${postId}`,
-    {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ target: selectedTarget }),
-    }
-  ).then((res) => {
+fetch(
+  `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/move/${postId}?category=${selectedTarget}`,
+  {
+    method: "PATCH",
+    credentials: "include",
+  }
+).then((res) => {
     if (res.ok) {
       alert("게시글이 이동되었습니다.");
       setIsDropdownOpen(false);
@@ -196,9 +194,7 @@ const router = useRouter();
               className="border px-2 py-1 text-sm mb-2 w-32"
             >
               <option value="">선택</option>
-              <option value="total">전체글</option>
               <option value="topic">건강토픽</option>
-              <option value="best">best</option>
               <option value="qa">질문과답</option>
               <option value="daily">건강일상</option>
               

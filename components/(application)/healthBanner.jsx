@@ -30,98 +30,113 @@ export default function HealthBanner({ isLoggedIn }) {
     return () => window.removeEventListener('resize', checkWidth);
   }, []);
 
-useEffect(() => {
-  if (!isLoggedIn) return;
-  if (fetchedOnce.current) return;
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    if (fetchedOnce.current) return;
 
-  fetchedOnce.current = true;
+    fetchedOnce.current = true;
 
-  const fetchUserPets = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
-        credentials: 'include',
-      });
-      const data = await res.json();
-      const pets = data.pets || [];
-      setPetsExist(pets.length > 0);
-
-      const healthList = [];
-      const vaccineList = [];
-
-      for (const pet of pets) {
-        // 건강체크
-        const records = pet.healthRecords || [];
-        if (records.length > 0) {
-          const latest = records
-            .slice()
-            .sort((a, b) => new Date(b.checkedAt) - new Date(a.checkedAt))[0];
-          healthList.push({
-            type: 'health',
-            petName: pet.petName,
-            score: latest.totalScore,
-            status: latest.resultStatus,
-          });
-        }
-
-        // 백신기록
-        const vaccineRes = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/history?petId=${pet.id}`, {
+    const fetchUserPets = async () => {
+      
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/info`, {
           credentials: 'include',
         });
-        const vaccineRecords = vaccineRes.ok ? await vaccineRes.json() : [];
+        const data = await res.json();
+        const pets = data.pets || [];
+        setPetsExist(pets.length > 0);
 
-        const validRecords = vaccineRecords.filter(r =>
-          !isNaN(new Date(r.vaccinatedAt).getTime())
-        );
+        const healthList = [];
+        const vaccineList = [];
 
-        if (validRecords.length > 0) {
-          const latest = validRecords.reduce((acc, curr) =>
-            new Date(curr.vaccinatedAt) > new Date(acc.vaccinatedAt) ? curr : acc
-          );
-
-          const simplifyVaccineName = (fullName) => {
-            for (let name of VACCINE_SEQUENCE) {
-              if (fullName.startsWith(name)) return name;
-            }
-            return '백신';
-          };
-
-          const currentName = simplifyVaccineName(latest.vaccineName);
-          const currentIndex = VACCINE_SEQUENCE.indexOf(currentName);
-          let nextVaccineName = currentName;
-
-          if (currentIndex >= 0 && currentIndex < VACCINE_SEQUENCE.length - 1) {
-            nextVaccineName = VACCINE_SEQUENCE[currentIndex + 1];
-          } else if (currentName === '종합백신') {
-            nextVaccineName = '종합백신';
+        for (const pet of pets) {
+          // ✅ 건강 기록
+          const records = pet.healthRecords || [];
+          if (records.length > 0) {
+            const latest = records
+              .slice()
+              .sort((a, b) => new Date(b.checkedAt) - new Date(a.checkedAt))[0];
+              
+            healthList.push({
+              type: 'health',
+              petName: pet.petName,
+              score: latest.totalScore,
+              status: latest.resultStatus,
+            });
           }
 
-          const vaccinationDate = new Date(latest.vaccinatedAt);
-          const intervalDays = currentName === '종합백신' ? 365 : 21;
-          const nextDate = new Date(vaccinationDate);
-          nextDate.setDate(nextDate.getDate() + intervalDays);
-
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const dday = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
-
-          vaccineList.push({
-            type: 'vaccine',
-            petName: pet.petName,
-            vaccineName: nextVaccineName,
-            dday,
+          // ✅ 백신 기록
+          const vaccineRes = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/vaccine/history?petId=${pet.id}`, {
+            credentials: 'include',
           });
+          const vaccineRecords = vaccineRes.ok ? await vaccineRes.json() : [];
+
+          const validRecords = vaccineRecords.filter(r =>
+            !isNaN(new Date(r.vaccinatedAt).getTime())
+          );
+
+          if (validRecords.length > 0) {
+            const latest = validRecords.reduce((acc, curr) =>
+              new Date(curr.vaccinatedAt) > new Date(acc.vaccinatedAt) ? curr : acc
+            );
+
+            const simplifyVaccineName = (fullName) => {
+              for (let name of VACCINE_SEQUENCE) {
+                if (fullName.startsWith(name)) return name;
+              }
+              return '백신';
+            };
+
+            const currentName = simplifyVaccineName(latest.vaccineName);
+            const currentIndex = VACCINE_SEQUENCE.indexOf(currentName);
+            let nextVaccineName = currentName;
+
+            if (currentIndex >= 0 && currentIndex < VACCINE_SEQUENCE.length - 1) {
+              nextVaccineName = VACCINE_SEQUENCE[currentIndex + 1];
+            } else if (currentName === '종합백신') {
+              nextVaccineName = '종합백신';
+            }
+
+            const vaccinationDate = new Date(latest.vaccinatedAt);
+
+            const nextDateFromRecord = latest.nextVaccinationDate
+              ? new Date(latest.nextVaccinationDate)
+              : null;
+
+            if (nextDateFromRecord) nextDateFromRecord.setHours(0, 0, 0, 0);
+
+            const calculatedDate = new Date(vaccinationDate);
+            calculatedDate.setHours(0, 0, 0, 0);
+            calculatedDate.setDate(calculatedDate.getDate() + (currentName === '종합백신' ? 365 : 21));
+
+            const nextDate = nextDateFromRecord && !isNaN(nextDateFromRecord.getTime())
+              ? nextDateFromRecord
+              : calculatedDate;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const dday = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+
+            vaccineList.push({
+              type: 'vaccine',
+              petName: pet.petName,
+              vaccineName: nextVaccineName,
+              dday,
+            });
+          }
         }
+
+        setHealthResults(healthList);
+        setVaccineResults(vaccineList);
+        
+      } catch (err) {
+        console.error('건강 및 접종 데이터 로딩 실패', err);
       }
+    };
 
-      setHealthResults(healthList);
-      setVaccineResults(vaccineList);
-    } catch (err) {
-      console.error('건강 및 접종 데이터 로딩 실패', err);
-    }
-  };
-
-  fetchUserPets();
-}, [isLoggedIn]);
+    fetchUserPets();
+  }, [isLoggedIn]);
 
 
   useEffect(() => {

@@ -278,7 +278,7 @@ export default function CommentShow({ postId, currentUser }) {
                             </Link>
 
                             {/* 차단하기 버튼 */}
-                            {currentUser ? (
+                            {/* {currentUser ? (
                                 <button
                                     onClick={async () => {
                                         const isBlocked = blockedUserIds.includes(comment.userId);
@@ -306,7 +306,7 @@ export default function CommentShow({ postId, currentUser }) {
                                 </button>
                             ) : (
                                 <span className="block text-gray-400 cursor-default">차단하기</span>
-                            )}
+                            )} */}
 
                             {/* 신고하기 버튼 */}
                             {currentUser ? (

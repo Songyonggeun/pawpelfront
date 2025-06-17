@@ -4,26 +4,26 @@
     return (
         <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
         {/* 사이드바 */}
-        <aside className="w-full lg:w-64 bg-gray-100 p-4">
+        <aside className="w-full lg:w-45 bg-gray-100 p-8">
             <nav>
-            <ul className="flex lg:flex-col gap-4 justify-center lg:justify-start">
+            <ul className="text-center flex lg:flex-col gap-4 justify-center lg:justify-start">
                 <li>    
-                <Link href="/admin/user" className="text-gray-700 hover:underline font-medium">회원 관리</Link>         
+                <Link href="/admin/user" className="text-xl text-gray-700 hover:underline font-medium">회원 관리</Link>         
                 </li>
                 <li>
-                <Link href="/admin/post" className="text-gray-700 hover:underline font-medium">게시글 관리</Link>
+                <Link href="/admin/post" className="text-xl text-gray-700 hover:underline font-medium">게시글 관리</Link>
                 </li>
                 <li>
-                <Link href="/admin/store" className="text-gray-700 hover:underline font-medium">스토어 관리</Link>
+                <Link href="/admin/store" className="text-xl text-gray-700 hover:underline font-medium">스토어 관리</Link>
                 </li>
                 <li>
-                <Link href="/admin/order" className="text-gray-700 hover:underline font-medium">주문 관리</Link>
+                <Link href="/admin/order" className="text-xl text-gray-700 hover:underline font-medium">주문 관리</Link>
                 </li>
                 <li>
-                <Link href="/admin/report" className="text-gray-700 hover:underline font-medium">신고 내역</Link>
+                <Link href="/admin/report" className="text-xl text-gray-700 hover:underline font-medium">신고 내역</Link>
                 </li>
                 <li>
-                <Link href="/admin/review" className="text-gray-700 hover:underline font-medium">리뷰 관리</Link>
+                <Link href="/admin/review" className="text-xl text-gray-700 hover:underline font-medium">리뷰 관리</Link>
                 </li>
             </ul>
             </nav>

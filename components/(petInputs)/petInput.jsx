@@ -23,24 +23,28 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
     weight: "",
   });
 
-  useEffect(() => {
-    if (isEdit && pet) {
-      setSelectedPetType(pet.petType);
-      setSelectedGender(pet.petGender);
-      setFormData({
-        petName: pet.petName || "",
-        petBreed: pet.petBreed || "",
-        petAge: pet.petAge || "",
-        weight: pet.weight || "",
-      });
-      if (pet.thumbnailUrl || pet.imageUrl) {
-        setImagePreview(
-          `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${pet.thumbnailUrl || pet.imageUrl}`
-        );
-      }
-      setIsModalOpen(true);
+useEffect(() => {
+  if (isEdit && pet) {
+    setSelectedPetType(pet.petType);
+    setSelectedGender(pet.petGender);
+    setFormData({
+      petName: pet.petName || "",
+      petBreed: pet.petBreed || "",
+      petAge: pet.petAge || "",
+      weight: pet.weight || "",
+    });
+
+    const baseImagePath = pet.thumbnailUrl || pet.imageUrl;
+    if (baseImagePath) {
+      const fullUrl = baseImagePath.startsWith("/images/profile/")
+        ? baseImagePath
+        : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${baseImagePath}`;
+      setImagePreview(fullUrl);
     }
-  }, [isEdit, pet]);
+
+    setIsModalOpen(true);
+  }
+}, [isEdit, pet]);
 
   // ESC 키로 닫기
   useEffect(() => {
@@ -151,6 +155,23 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
     }
   };
 
+  const species = pet?.petType?.toLowerCase() || '';
+  const isCat = species.includes('cat') || species.includes('고양이');
+  const defaultImage = isCat
+    ? '/images/profile/default_cat.jpeg'
+    : '/images/profile/default_dog.jpeg';
+
+  const imageSrc =
+    isImageDeleted
+      ? defaultImage
+      : imagePreview
+      ? imagePreview
+      : pet?.thumbnailUrl || pet?.imageUrl
+      ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+        ? pet.thumbnailUrl || pet.imageUrl
+        : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+      : defaultImage;
+
   return (
     <>
       {!isEdit && (
@@ -249,15 +270,9 @@ const PetInputButton = ({ isEdit = false, pet = null, onClose = () => {} }) => {
                       htmlFor="petImage"
                       className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 overflow-hidden"
                     >
-                      {imagePreview ? (
+                      {imageSrc ? (
                         <img
-                          src={
-                          pet.thumbnailUrl || pet.imageUrl
-                              ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
-                              ? pet.thumbnailUrl || pet.imageUrl
-                              : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
-                              : defaultImage
-                      } 
+                          src={imageSrc}
                           alt="미리보기"
                           className="w-full h-full object-cover rounded-full"
                         />

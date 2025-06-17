@@ -444,7 +444,14 @@ export default function OrderListPage() {
               </div>
               <div className="flex justify-between font-bold text-base mt-2">
                 <span>총 결제 금액</span>
-                <span>{selectedOrderDetail.totalAmount.toLocaleString()}원</span>
+                <span>
+                  {
+                    (
+                      selectedOrderDetail.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+                      + (selectedOrderDetail.items.reduce((sum, item) => sum + item.price * item.quantity, 0) < 35000 ? 3000 : 0)
+                    ).toLocaleString()
+                  }원
+                </span>
               </div>
             </div>
 

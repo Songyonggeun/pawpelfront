@@ -32,6 +32,12 @@ export default function PostDetailPage() {
 
     const profileMenuRef = useRef(null);
 
+    const categoryNameMap = {
+        topic: "토픽",
+        qa: "Q&A",
+        daily: "일상",
+    };
+
     //페이지네이션
     const [currentPage, setCurrentPage] = useState(0);
     const pageSize = 20;
@@ -328,7 +334,9 @@ export default function PostDetailPage() {
             <main className="flex-1 min-w-0 md:max-w-[calc(100%-320px-2rem)] min-h-[800px]">
                 {/* 카테고리 경로 */}
                 <div className="text-sm text-blue-500 font-medium mb-1 ml-1 flex items-center">
-                    <span>{post.category}</span>
+                    <span>
+                        {categoryNameMap[post.category] || post.category}
+                    </span>
                     {post.subCategory && (
                         <>
                             <span className="mx-2 text-gray-400">{">"}</span>
@@ -396,7 +404,7 @@ export default function PostDetailPage() {
                                     프로필 보기
                                 </Link>
 
-                                <button
+                                {/* <button
                                     onClick={
                                         currentUser
                                             ? async () => {
@@ -466,10 +474,8 @@ export default function PostDetailPage() {
                                             : "text-gray-400 cursor-default hover:no-underline"
                                     }`}
                                 >
-                                    {blockedUserIds.includes(post.authorId)
-                                        ? "차단해제하기"
-                                        : "차단하기"}
-                                </button>
+                                    {blockedUserIds.includes(post.authorId) ? "차단해제하기" : "차단하기"}
+                                </button> */}
 
                                 <button
                                     onClick={

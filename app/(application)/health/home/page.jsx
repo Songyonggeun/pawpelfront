@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules"; // ✅ 수정된 부분
+import { Navigation } from "swiper/modules"; // 수정된 부분
 import "swiper/css";
 import "swiper/css/navigation";
+import { useRouter } from "next/navigation";
 
 export default function HealthHome() {
+    const router = useRouter();
     const [pets, setPets] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [dDay, setDDay] = useState(null);
@@ -14,6 +16,7 @@ export default function HealthHome() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [consults, setConsults] = useState([]);
     const [posts, setPosts] = useState([]);
+
 
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/petinfo`, {
@@ -28,14 +31,14 @@ export default function HealthHome() {
                 return res.json();
             })
             .then((data) => {
-                if (!data || data.length === 0 ) return;
+                if (!data || data.length === 0) return;
                 setPets(data);
                 setIsLoggedIn(true);
                 setIsAuthChecked(true);
                 const firstPet = data[0];
-                setDDay(
-                    calculateDDay(firstPet.petAge, firstPet.lastCheckupDate)
-                );
+                // setDDay(
+                //     calculateDDay(firstPet.petAge, firstPet.lastCheckupDate)
+                // );
             });
 
         fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/consult/recent`, {
@@ -85,38 +88,49 @@ export default function HealthHome() {
             });
     }, []);
 
-    const calculateDDay = (age, lastCheckupDate) => {
-        const months = age <= 3 ? 12 : age <= 7 ? 6 : 3;
-        const lastDate = lastCheckupDate
-            ? new Date(lastCheckupDate)
-            : new Date();
-        const nextDate = new Date(lastDate);
-        nextDate.setMonth(nextDate.getMonth() + months);
-        const today = new Date();
-        const diffTime = nextDate.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays;
-    };
+    // const calculateDDay = (age, lastCheckupDate) => {
+    //     const months = age <= 3 ? 12 : age <= 7 ? 6 : 3;
+    //     const lastDate = lastCheckupDate
+    //         ? new Date(lastCheckupDate)
+    //         : new Date();
+    //     const nextDate = new Date(lastDate);
+    //     nextDate.setMonth(nextDate.getMonth() + months);
+    //     const today = new Date();
+    //     const diffTime = nextDate.getTime() - today.getTime();
+    //     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    //     return diffDays;
+    // };
 
-    const getBadgeColor = () => {
-        if (dDay <= 0) return "bg-red-500";
-        if (dDay <= 7) return "bg-yellow-400";
-        return "bg-blue-400";
-    };
+    // 상단에 추가 (컴포넌트 바깥 또는 useCallback으로 정의)
+const getBadgeColor = (status) => {
+    switch (status) {
+    case '양호':
+        return 'bg-green-700';
+    case '경고':
+        return 'bg-orange-600';
+    case '위험':
+        return 'bg-red-700';
+    default:
+        return 'bg-gray-300';
+    }
+};
 
+
+
+    
     const handlePrev = () => {
         const newIndex =
             currentIndex === 0 ? pets.length - 1 : currentIndex - 1;
         setCurrentIndex(newIndex);
         const pet = pets[newIndex];
-        setDDay(calculateDDay(pet.petAge, pet.lastCheckupDate));
+        // setDDay(calculateDDay(pet.petAge, pet.lastCheckupDate));
     };
 
     const handleNext = () => {
         const newIndex = (currentIndex + 1) % pets.length;
         setCurrentIndex(newIndex);
         const pet = pets[newIndex];
-        setDDay(calculateDDay(pet.petAge, pet.lastCheckupDate));
+        // setDDay(calculateDDay(pet.petAge, pet.lastCheckupDate));
     };
 
     return (
@@ -159,76 +173,94 @@ export default function HealthHome() {
                         onSlideChange={(swiper) => {
                             const pet = pets[swiper.activeIndex];
                             setCurrentIndex(swiper.activeIndex);
-                            setDDay(
-                                calculateDDay(pet.petAge, pet.lastCheckupDate)
-                            );
+                            // setDDay(
+                            //     // calculateDDay(pet.petAge, pet.lastCheckupDate)
+                            // );
                         }}
                         onSwiper={(swiper) => {
                             const pet = pets[swiper.activeIndex];
                             setCurrentIndex(swiper.activeIndex);
-                            setDDay(
-                                calculateDDay(pet.petAge, pet.lastCheckupDate)
-                            );
+                            // setDDay(
+                            //     calculateDDay(pet.petAge, pet.lastCheckupDate)
+                            // );
                         }}>
                         {pets.map((pet, idx) => {
-  const recentRecord = (pet.healthRecords || [])
+    const recentRecord = (pet.healthRecords || [])
     .sort((a, b) => new Date(b.checkedAt) - new Date(a.checkedAt))[0];
 
-  return (
+    return (
     <SwiperSlide key={idx}>
-      <div className="bg-gray-100 rounded-xl shadow-md p-6 grid grid-cols-3 items-center gap-4">
+        <div className="bg-gray-100 rounded-2xl shadow-md p-6 grid grid-cols-3 items-center gap-4">
         
         {/* 왼쪽: 이미지 + 기본 정보 */}
         <div className="flex items-center space-x-4">
-          <img
+            <img
             src={
-              pet.thumbnailUrl || pet.imageUrl
+                pet.thumbnailUrl || pet.imageUrl
                 ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
-                  ? pet.thumbnailUrl || pet.imageUrl
-                  : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                    ? pet.thumbnailUrl || pet.imageUrl
+                    : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
                 : pet.petType === '고양이'
                 ? '/images/profile/default_cat.jpeg'
                 : '/images/profile/default_dog.jpeg'
             }
             alt={pet.petName}
             className="w-16 h-16 rounded-full object-cover"
-          />
-          <div>
+            />
+            <div>
             <div className="font-bold text-lg">{pet.petName}</div>
             <div className="text-gray-600 text-sm">{pet.petType} · {2025 - pet.petAge}살</div>
-          </div>
+            </div>
         </div>
 
-        {/* 중앙: 최근 건강검진 정보 */}
-        <div className="text-left">
-          {recentRecord ? (
-            <>
-              <p className="text-md font-medium">최근 건강검진</p>
-              <p className="text-sm font-medium">
-                {new Date(recentRecord.checkedAt).toLocaleDateString("ko-KR")}
-              </p>
-              
-              <p className="text-sm text-gray-500">점수: {recentRecord.totalScore}</p>
-              <p className="text-sm text-gray-500">결과: {recentRecord.resultStatus}</p>
-            </>
-          ) : (
-            <p className="text-sm text-gray-400">검진 기록이 없습니다.</p>
-          )}
-        </div>
-
-        {/* 오른쪽: D-Day 뱃지 */}
-        <div className="text-right">
-          <div className="text-gray-600 mr-4">
-            <button>건강체크 하러가기</button></div>
-          {/* <div
-            className={`inline-block mt-1 px-3 py-1 text-white text-sm rounded-full mr-4 ${getBadgeColor()}`}
+        {/* 중앙 */}
+  <div className="text-left">
+    {recentRecord ? (
+      <>
+        <p className="text-md font-extrabold">최근 건강검진</p>
+        <p className="text-sm font-medium">
+            {new Date(recentRecord.checkedAt).toLocaleDateString("ko-KR")}
+        </p>
+        <div className="font-medium text-sm whitespace-nowrap truncate">
+            {recentRecord.totalScore}점:{" "}
+            <span
+            className={`text-sm text-white rounded-full px-2 py-1 inline-block
+                ${
+                recentRecord.resultStatus === "양호"
+                    ? "bg-green-700"
+                    : recentRecord.resultStatus === "경고"
+                    ? "bg-orange-600"
+                    : recentRecord.resultStatus === "위험"
+                    ? "bg-red-700"
+                    : "bg-gray-300"
+                }
+            `}
           >
-            D{dDay > 0 ? '-' + dDay : 'day'}
-          </div> */}
+            {recentRecord.resultStatus}
+          </span>
         </div>
-      </div>
+      </>
+    ) : (
+      <p className="text-sm text-gray-400">검진 기록이 없습니다.</p>
+    )}
+  </div>
+
+
+        {/* 오른쪽: D-Day 뱃지 + 버튼 */}
+<div className="text-right flex flex-col items-end justify-center h-full">
+    <button
+    className="bg-blue-500 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-full shadow transition duration-200"
+    onClick={() => {
+        router.push("/health/check/select");
+    }}
+    >
+    건강체크 하러가기
+    </button>
+</div>
+
+        </div>
     </SwiperSlide>
-  );
+    );
 })}
 
                     </Swiper>

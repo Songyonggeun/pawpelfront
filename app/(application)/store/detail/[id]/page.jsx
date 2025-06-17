@@ -251,6 +251,31 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
+
+
+      {/* 장바구니 모달 */}
+      {showCartModal && (
+        <div className="fixed inset-0 bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-md text-center space-y-4 max-w-sm w-full">
+            <p className="text-lg font-semibold">🛒 장바구니에 담았습니다!</p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => router.push('/store')}
+                className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm"
+              >
+                계속 쇼핑하기
+              </button>
+              <button
+                onClick={() => router.push('/store/cart')}
+                className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded text-sm"
+              >
+                장바구니 가기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }
