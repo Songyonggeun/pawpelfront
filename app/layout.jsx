@@ -3,6 +3,7 @@
 import HeaderComponent from "@/components/(application)/header.server";
 import FooterComponent from "@/components/(application)/footer"
 import AnimalSidePanel from "@/components/(Inputs)/AnimalPanel"
+import { Suspense } from 'react';
 
 import { metadata as meta } from "@/setting/meta";
 import './globals.css';
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
       </head>
       
       <body className="min-h-[100dvh] flex flex-col">
+      <Suspense>
         <HeaderComponent />
 
        
@@ -61,6 +63,7 @@ export default function RootLayout({ children }) {
         </div>
 
         <FooterComponent />
+        </Suspense>
       </body>
     </html>
   );
