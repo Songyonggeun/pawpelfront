@@ -8,10 +8,15 @@ import ProductReview from '@/components/(application)/ProductReview';
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [showCartModal, setShowCartModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // ⭐ 별점/리뷰 상태 추가
+  const [rating, setRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
 
   const checkLogin = async () => {
     try {
@@ -21,6 +26,29 @@ export default function ProductDetailPage() {
       return res.ok;
     } catch (err) {
       return false;
+    }
+  };
+
+  // ⭐ 별점/리뷰 불러오기
+  const fetchRatingInfo = async (productId) => {
+    try {
+      const [ratingRes, summaryRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/reviews/product/${productId}/rating`, {
+          credentials: 'include',
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/reviews/product/${productId}/rating-summary`, {
+          credentials: 'include',
+        }),
+      ]);
+
+      const avgRating = await ratingRes.json();
+      const summary = await summaryRes.json();
+      console.log('📦 리뷰 요약 응답:', summary); 
+
+      setRating(avgRating || 0);
+      setReviewCount(summary.reviewCount || 0);
+    } catch (err) {
+      console.error('❗ 별점 정보 불러오기 실패:', err);
     }
   };
 
@@ -36,6 +64,7 @@ export default function ProductDetailPage() {
         try {
           const json = JSON.parse(text);
           setProduct(json);
+          fetchRatingInfo(json.id); // ✅ 별점 불러오기
         } catch (err) {
           console.error('❗ JSON 파싱 실패. 응답 내용:', text);
         }
@@ -59,9 +88,7 @@ export default function ProductDetailPage() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart/add`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           ...product,
@@ -88,9 +115,7 @@ export default function ProductDetailPage() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products/cart/add`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           ...product,
@@ -129,7 +154,7 @@ export default function ProductDetailPage() {
 
       {/* 상품 상세 */}
       <div className="max-w-[1100px] mx-auto p-8 flex flex-col lg:flex-row">
-        {/* 이미지 및 상품 정보 */}
+        {/* 이미지 */}
         <div className="w-full lg:w-1/2 flex justify-center">
           <div className="border border-gray-200 rounded-lg p-4">
             <img
@@ -149,14 +174,17 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* 상품 정보 */}
+        {/* 정보 */}
         <div className="w-full lg:w-1/2 space-y-4 pl-4">
           <p className="text-sm text-gray-500">{product.brand}</p>
           <h1 className="text-3xl font-bold">{product.name}</h1>
+
+          {/* 별점 영역 */}
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>⭐ {product.rating || 0}</span>
-            <span>({product.reviews || 0})</span>
+            <span>⭐ {rating.toFixed(1)}</span>
+            <span>({reviewCount})</span>
           </div>
+
           <div className="text-sm text-gray-400">
             <span>{product.discount}%</span>
             <span className="ml-2 line-through">{product.originalPrice.toLocaleString()}원</span>
@@ -164,6 +192,8 @@ export default function ProductDetailPage() {
           <p className="text-2xl font-bold">{product.price.toLocaleString()}원</p>
           <div className="text-sm text-gray-700">배송비 3,000원 (35,000원 이상 무료배송)</div>
           <hr className="my-4" />
+
+          {/* 수량 선택 */}
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">수량</span>
             <div className="flex items-center border border-gray-300 rounded overflow-hidden">
@@ -183,6 +213,7 @@ export default function ProductDetailPage() {
             </div>
             <p className="text-xs text-gray-500">재고: {product.quantity}개</p>
           </div>
+
           <div className="text-xl font-bold text-right">총 가격: {totalPrice.toLocaleString()}원</div>
           <div className="flex gap-2 pt-4">
             <button onClick={addToCart} className="flex-1 bg-gray-200 hover:bg-gray-300 text-sm py-2 rounded">
