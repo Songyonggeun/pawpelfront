@@ -162,15 +162,13 @@ const router = useRouter();
 
   if (!window.confirm(confirmText)) return;
 
-  fetch(
-    `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/move/${postId}`,
-    {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ target: selectedTarget }),
-    }
-  ).then((res) => {
+fetch(
+  `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/admin/post/move/${postId}?category=${selectedTarget}`,
+  {
+    method: "PATCH",
+    credentials: "include",
+  }
+).then((res) => {
     if (res.ok) {
       alert("게시글이 이동되었습니다.");
       setIsDropdownOpen(false);
