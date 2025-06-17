@@ -6,13 +6,14 @@ export default function ProductReview({ productId }) {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedReviewIds, setExpandedReviewIds] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const reviewsPerPage = 5;
 
     const formatRelativeDate = (dateString) => {
         if (!dateString) return "";
-
         const now = new Date();
         const past = new Date(dateString);
-        const diff = now - past; // ms 단위
+        const diff = now - past;
 
         const minute = 60 * 1000;
         const hour = 60 * minute;
@@ -26,7 +27,6 @@ export default function ProductReview({ productId }) {
         if (diff < month) return `${Math.floor(diff / week)}주 전`;
         return `${Math.floor(diff / month)}개월 전`;
     };
-
 
     useEffect(() => {
         const fetchReviews = async () => {
@@ -53,6 +53,16 @@ export default function ProductReview({ productId }) {
         );
     };
 
+    const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+    const indexOfLastReview = currentPage * reviewsPerPage;
+    const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
+    const currentReviews = reviews.slice(indexOfFirstReview, indexOfLastReview);
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber < 1 || pageNumber > totalPages) return;
+        setCurrentPage(pageNumber);
+    };
+
     if (loading) {
         return <div className="p-6">리뷰를 불러오는 중...</div>;
     }
@@ -76,8 +86,9 @@ export default function ProductReview({ productId }) {
 
                     {/* 리뷰 목록 */}
                     <div className="divide-y divide-gray-200">
-                        {reviews.map((review, idx) => {
+                        {currentReviews.map((review, idx) => {
                             const isExpanded = expandedReviewIds.includes(review.id);
+                            const reviewNumber = indexOfFirstReview + idx + 1;
 
                             return (
                                 <div
@@ -85,13 +96,12 @@ export default function ProductReview({ productId }) {
                                     className="grid grid-cols-12 gap-x-2 px-0 py-4 text-sm items-start rounded-md hover:bg-blue-50 cursor-pointer transition-shadow"
                                     onClick={() => toggleExpand(review.id)}
                                 >
-                                    <div className="col-span-1 text-center text-gray-500 px-2">{idx + 1}</div>
+                                    <div className="col-span-1 text-center text-gray-500 px-2">{reviewNumber}</div>
                                     <div className="col-span-2 text-center font-medium text-gray-700 pr-8">
                                         {review.nickname}
                                     </div>
                                     <div
-                                        className={`col-span-5 text-left text-gray-600 whitespace-pre-wrap pl-1 pr-3 ${isExpanded ? '' : 'line-clamp-3'
-                                            }`}
+                                        className={`col-span-5 text-left text-gray-600 whitespace-pre-wrap pl-1 pr-3 ${isExpanded ? '' : 'line-clamp-3'}`}
                                     >
                                         {review.content}
                                     </div>
@@ -115,6 +125,47 @@ export default function ProductReview({ productId }) {
                                 </div>
                             );
                         })}
+                    </div>
+
+                    {/* 페이지네이션 */}
+                    <div className="flex justify-center mt-6 gap-1 flex-wrap text-sm">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className={`px-3 py-1 rounded border font-medium ${
+                                currentPage === 1
+                                    ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                            }`}
+                        >
+                            &lt;
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                            <button
+                                key={pageNum}
+                                onClick={() => handlePageChange(pageNum)}
+                                className={`px-3 py-1 rounded border font-medium ${
+                                    pageNum === currentPage
+                                        ? 'bg-blue-500 text-white border-blue-500'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                }`}
+                            >
+                                {pageNum}
+                            </button>
+                        ))}
+
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className={`px-3 py-1 rounded border font-medium ${
+                                currentPage === totalPages
+                                    ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                            }`}
+                        >
+                            &gt;
+                        </button>
                     </div>
                 </>
             )}
