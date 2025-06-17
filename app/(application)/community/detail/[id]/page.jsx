@@ -620,6 +620,9 @@ export default function PostDetailPage() {
                 {/* 연관 Q&A 게시글 */}
                 {relatedPopularPosts.length > 0 && (
                     <div className="w-full rounded-md overflow-hidden mt-10">
+                        <h3 className="text-lg font-bold mb-4 text-gray-800">
+                            연관 게시글 목록
+                        </h3>
                         {/* 헤더 */}
                         <div className="grid grid-cols-12 text-sm font-semibold bg-gray-100 px-4 py-2 text-center text-gray-700">
                             <div className="col-span-1">번호</div>
