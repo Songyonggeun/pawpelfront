@@ -5,9 +5,10 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules"; // 수정된 부분
 import "swiper/css";
 import "swiper/css/navigation";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 export default function HealthHome() {
+    const router = useRouter();
     const [pets, setPets] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [dDay, setDDay] = useState(null);
@@ -15,7 +16,8 @@ export default function HealthHome() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [consults, setConsults] = useState([]);
     const [posts, setPosts] = useState([]);
-    const router = useRouter();
+
+
 
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/petinfo`, {
@@ -30,7 +32,7 @@ export default function HealthHome() {
                 return res.json();
             })
             .then((data) => {
-                if (!data || data.length === 0 ) return;
+                if (!data || data.length === 0) return;
                 setPets(data);
                 setIsLoggedIn(true);
                 setIsAuthChecked(true);
@@ -184,83 +186,69 @@ const getBadgeColor = (status) => {
                             // );
                         }}>
                         {pets.map((pet, idx) => {
-    const recentRecord = (pet.healthRecords || [])
-    .sort((a, b) => new Date(b.checkedAt) - new Date(a.checkedAt))[0];
+                            const recentRecord = (pet.healthRecords || [])
+                                .sort((a, b) => new Date(b.checkedAt) - new Date(a.checkedAt))[0];
 
-    return (
-    <SwiperSlide key={idx}>
-        <div className="bg-gray-100 rounded-2xl shadow-md p-6 grid grid-cols-3 items-center gap-4">
-        
-        {/* 왼쪽: 이미지 + 기본 정보 */}
-        <div className="flex items-center space-x-4">
-            <img
-            src={
-                pet.thumbnailUrl || pet.imageUrl
-                ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
-                    ? pet.thumbnailUrl || pet.imageUrl
-                    : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
-                : pet.petType === '고양이'
-                ? '/images/profile/default_cat.jpeg'
-                : '/images/profile/default_dog.jpeg'
-            }
-            alt={pet.petName}
-            className="w-16 h-16 rounded-full object-cover"
-            />
-            <div>
-            <div className="font-bold text-lg">{pet.petName}</div>
-            <div className="text-gray-600 text-sm">{pet.petType} · {2025 - pet.petAge}살</div>
-            </div>
-        </div>
+                            return (
+                                <SwiperSlide key={idx}>
+                                    <div className="bg-gray-100 rounded-xl shadow-md p-6 grid grid-cols-3 items-center gap-4">
 
-        {/* 중앙 */}
-  <div className="text-left">
-    {recentRecord ? (
-      <>
-        <p className="text-md font-extrabold">최근 건강검진</p>
-        <p className="text-sm font-medium">
-            {new Date(recentRecord.checkedAt).toLocaleDateString("ko-KR")}
-        </p>
-        <div className="font-medium text-sm whitespace-nowrap truncate">
-            {recentRecord.totalScore}점:{" "}
-            <span
-            className={`text-sm text-white rounded-full px-2 py-1 inline-block
-                ${
-                recentRecord.resultStatus === "양호"
-                    ? "bg-green-700"
-                    : recentRecord.resultStatus === "경고"
-                    ? "bg-orange-600"
-                    : recentRecord.resultStatus === "위험"
-                    ? "bg-red-700"
-                    : "bg-gray-300"
-                }
-            `}
-          >
-            {recentRecord.resultStatus}
-          </span>
-        </div>
-      </>
-    ) : (
-      <p className="text-sm text-gray-400">검진 기록이 없습니다.</p>
-    )}
-  </div>
+                                        {/* 왼쪽: 이미지 + 기본 정보 */}
+                                        <div className="flex items-center space-x-4">
+                                            <img
+                                                src={
+                                                    pet.thumbnailUrl || pet.imageUrl
+                                                        ? (pet.thumbnailUrl || pet.imageUrl).startsWith("/images/profile/")
+                                                            ? pet.thumbnailUrl || pet.imageUrl
+                                                            : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${pet.thumbnailUrl || pet.imageUrl}`
+                                                        : pet.petType === "고양이"
+                                                            ? "/images/profile/default_cat.jpeg"
+                                                            : "/images/profile/default_dog.jpeg"
+                                                }
+                                                alt={pet.petName}
+                                                className="w-16 h-16 rounded-full object-cover"
+                                            />
+                                            <div>
+                                                <div className="font-bold text-lg">{pet.petName}</div>
+                                                <div className="text-gray-600 text-sm">
+                                                    {pet.petType === "dog"
+                                                        ? "강아지"
+                                                        : pet.petType === "cat"
+                                                            ? "고양이"
+                                                            : pet.petType} · {2025 - pet.petAge}살
+                                                </div>
+                                            </div>
+                                        </div>
 
+                                        {/* 중앙: 최근 건강검진 정보 */}
+                                        <div className="text-left">
+                                            {recentRecord ? (
+                                                <>
+                                                    <p className="text-md font-medium">최근 건강검진</p>
+                                                    <p className="text-sm font-medium">
+                                                        {new Date(recentRecord.checkedAt).toLocaleDateString("ko-KR")}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500">점수: {recentRecord.totalScore}</p>
+                                                    <p className="text-sm text-gray-500">결과: {recentRecord.resultStatus}</p>
+                                                </>
+                                            ) : (
+                                                <p className="text-sm text-gray-400">검진 기록이 없습니다.</p>
+                                            )}
+                                        </div>
 
-        {/* 오른쪽: D-Day 뱃지 + 버튼 */}
-<div className="text-right flex flex-col items-end justify-center h-full">
-    <button
-    className="bg-blue-500 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-full shadow transition duration-200"
-    onClick={() => {
-        router.push("/health/check/select");
-    }}
-    >
-    건강체크 하러가기
-    </button>
-</div>
+                                        {/* 오른쪽: D-Day 뱃지 */}
+                                        <div className="text-right">
+                                            <div className="text-gray-600 mr-4">
+                                                <button onClick={() => router.push("/health/check/select")}>
+                                                    건강체크 하러가기
+                                                </button>
+                                            </div>
+                                        </div>
 
-        </div>
-    </SwiperSlide>
-    );
-})}
+                                    </div>
+                                </SwiperSlide>
+                            );
+                        })}
 
                     </Swiper>
                 </div>

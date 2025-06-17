@@ -90,7 +90,7 @@ export default function EditPage() {
       setCustomEmailDomain('');
     }
   };
-
+  
   const handleUpdate = async (e) => {
     e.preventDefault();
 
@@ -116,12 +116,16 @@ export default function EditPage() {
       return;
     }
 
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(updatedFields)], { type: 'application/json' }));
+    // 이미지 업로드를 하려면 아래 코드 추가 (없으면 생략 가능)
+    // formData.append('image', file); // <== input type="file"에서 선택한 파일 객체가 필요
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/user/update`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(updatedFields),
+        body: formData,
       });
 
       if (res.ok) {
@@ -135,7 +139,7 @@ export default function EditPage() {
       alert('서버 오류');
     }
   };
-  
+
   const handleWithdraw = async () => {
     const confirmed = confirm('정말 탈퇴하시겠습니까? 탈퇴 후에는 계정 정보가 삭제됩니다.');
     if (!confirmed) return;

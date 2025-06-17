@@ -10,6 +10,9 @@ export default function PetStorePage() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [searchTerm, setSearchTerm] = useState("");
 
+  // 별점/리뷰 정보를 상품ID 별로 저장
+  const [productRatings, setProductRatings] = useState({});
+
   const categories = ["전체", "영양제", "사료", "간식", "용품"];
 
   useEffect(() => {
@@ -18,18 +21,14 @@ export default function PetStorePage() {
         const response = await fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/products`);
         const data = await response.json();
 
-        console.log("✅ 서버 응답:", data);
-
         if (Array.isArray(data)) {
           setProducts(data);
         } else if (Array.isArray(data.products)) {
           setProducts(data.products);
         } else {
-          console.warn("❗ 예기치 않은 데이터 구조:", data);
           setProducts([]);
         }
       } catch (error) {
-        console.error("❌ 상품 목록 불러오기 실패:", error);
         setProducts([]);
       } finally {
         setLoading(false);
@@ -39,6 +38,41 @@ export default function PetStorePage() {
     fetchProducts();
   }, []);
 
+  // 상품 목록이 바뀔 때마다 별점/리뷰 정보를 다시 가져오기
+  useEffect(() => {
+    if (products.length === 0) return;
+
+    const fetchRatingsForProducts = async () => {
+      const ratingsMap = {};
+      await Promise.all(
+        products.map(async (product) => {
+          try {
+            const [ratingRes, summaryRes] = await Promise.all([
+              fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/reviews/product/${product.id}/rating`, {
+                credentials: "include",
+              }),
+              fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/store/reviews/product/${product.id}/rating-summary`, {
+                credentials: "include",
+              }),
+            ]);
+            const avgRating = await ratingRes.json();
+            const summary = await summaryRes.json();
+            ratingsMap[product.id] = {
+              rating: avgRating || 0,
+              reviews: summary.reviewCount || 0,
+            };
+          } catch (err) {
+            ratingsMap[product.id] = { rating: 0, reviews: 0 };
+          }
+        })
+      );
+
+      setProductRatings(ratingsMap);
+    };
+
+    fetchRatingsForProducts();
+  }, [products]);
+
   const filteredProducts = products.filter((product) => {
     const matchesCategory =
       selectedCategory === "전체" || product.category === selectedCategory;
@@ -46,12 +80,12 @@ export default function PetStorePage() {
     const lowerSearch = searchTerm.toLowerCase();
 
     const matchesSearch =
-      product.name.toLowerCase().includes(lowerSearch) || // 상품명
-      product.brand.toLowerCase().includes(lowerSearch) || // 브랜드명
+      product.name.toLowerCase().includes(lowerSearch) ||
+      product.brand.toLowerCase().includes(lowerSearch) ||
       (Array.isArray(product.tags) &&
         product.tags.some((tag) =>
           tag.toLowerCase().includes(lowerSearch)
-        )); // 태그
+        ));
 
     return matchesCategory && matchesSearch;
   });
@@ -68,8 +102,8 @@ export default function PetStorePage() {
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-4 py-2 rounded-full text-sm font-medium 
-                ${selectedCategory === cat 
-                  ? "bg-blue-100 text-blue-600" 
+                ${selectedCategory === cat
+                  ? "bg-blue-100 text-blue-600"
                   : "bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-600"}`}
             >
               {cat}
@@ -96,18 +130,17 @@ export default function PetStorePage() {
                 <Link href={`/store/detail/${product.id}`}>
                   <img
                     src={
-                      product.image?.startsWith('/images/')
+                      product.image?.startsWith("/images/")
                         ? product.image
                         : `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}${product.image}`
                     }
                     alt={product.name}
                     className="w-full h-48 object-cover cursor-pointer"
                     onError={(e) => {
-                      e.currentTarget.src = '/images/product/default-product.png';
+                      e.currentTarget.src = "/images/product/default-product.png";
                     }}
                   />
                 </Link>
-                {/* <span className="absolute top-2 right-2 text-gray-400 text-xl">♡</span> */}
               </div>
               <CardContent className="p-4">
                 <div className="text-sm text-gray-500">{product.brand}</div>
@@ -116,11 +149,13 @@ export default function PetStorePage() {
                     {product.name}
                   </div>
                 </Link>
+
+                {/* 별점/리뷰 표시 */}
                 <div className="text-xs text-yellow-500 mt-1">
-                  ⭐
-                  <span>{product.rating}</span>
-                  <span className="text-xs text-gray-500"> ({product.reviews})</span>
+                  ⭐ {productRatings[product.id]?.rating?.toFixed(1) ?? "0.0"}
+                  <span className="text-xs text-gray-500"> ({productRatings[product.id]?.reviews ?? 0})</span>
                 </div>
+
                 <div className="mt-1">
                   <span className="text-blue-600 font-bold mr-2">{product.discount}%</span>
                   <span className="text-lg font-bold text-gray-900">{product.price.toLocaleString()}원</span>
