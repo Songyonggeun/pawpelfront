@@ -9,24 +9,27 @@ export default function ProductReview({ productId }) {
     const [currentPage, setCurrentPage] = useState(1);
     const reviewsPerPage = 5;
 
-    const formatRelativeDate = (dateString) => {
-        if (!dateString) return "";
-        const now = new Date();
-        const past = new Date(dateString);
-        const diff = now - past;
+ const formatRelativeDate = (dateString) => {
+    if (!dateString) return "";
+    const now = new Date();
+    const past = new Date(dateString);
+    const diff = now - past;
 
-        const minute = 60 * 1000;
-        const hour = 60 * minute;
-        const day = 24 * hour;
-        const week = 7 * day;
-        const month = 30 * day;
+    const minute = 60 * 1000;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+    const week = 7 * day;
+    const month = 30 * day;
 
-        if (diff < day) return "오늘";
-        if (diff < 2 * day) return "1일 전";
-        if (diff < week) return `${Math.floor(diff / day)}일 전`;
-        if (diff < month) return `${Math.floor(diff / week)}주 전`;
-        return `${Math.floor(diff / month)}개월 전`;
-    };
+    if (diff < minute) return "방금 전";
+    if (diff < hour) return `${Math.floor(diff / minute)}분 전`;
+    if (diff < day) return `${Math.floor(diff / hour)}시간 전`;
+    if (diff < 2 * day) return "어제";
+    if (diff < week) return `${Math.floor(diff / day)}일 전`;
+    if (diff < month) return `${Math.floor(diff / week)}주 전`;
+    return `${Math.floor(diff / month)}개월 전`;
+};
+
 
     useEffect(() => {
         const fetchReviews = async () => {
