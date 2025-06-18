@@ -209,7 +209,9 @@ const getBadgeColor = (status) => {
             />
             <div>
             <div className="font-bold text-lg">{pet.petName}</div>
-            <div className="text-gray-600 text-sm">{pet.petType} · {2025 - pet.petAge}살</div>
+           <div className="text-gray-600 text-sm">
+  {pet.petType === "dog" ? "강아지" : pet.petType === "cat" ? "고양이" : pet.petType} · {2025 - pet.petAge}살
+</div>
             </div>
         </div>
 
