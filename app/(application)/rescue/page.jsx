@@ -33,14 +33,16 @@ export default function AnimalPage() {
         setLoading(false);
       });
   }, []);
-
+  
   useEffect(() => {
     const fetchImageUrls = async () => {
       const urlMap = {};
-      for (const animal of animals) {
+      const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+      for (const [i, animal] of animals.entries()) {
         const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2;
         if (!rawUrl) {
-          urlMap[animal.desertionNo] = ""; // 이미지가 아예 없을 경우
+          urlMap[animal.desertionNo] = "";
           continue;
         }
 
@@ -49,19 +51,24 @@ export default function AnimalPage() {
         try {
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image/download?url=${encodeURIComponent(rawUrl)}`,
-            {
-              credentials: "include",
-            }
+            { credentials: "include" }
           );
+
+          if (!res.ok) throw new Error("응답 실패");
+
           const data = await res.json();
           const imageUrl = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${data.thumbnailUrl}`;
-          console.log("✅ 이미지 최종 URL:", imageUrl);
           urlMap[animal.desertionNo] = imageUrl;
+          console.log("✅ 이미지 최종 URL:", imageUrl);
         } catch (e) {
           console.error("❌ 이미지 다운로드 실패:", e.message);
-          urlMap[animal.desertionNo] = ""; // 실패 시도 빈 문자열
+          urlMap[animal.desertionNo] = "";
         }
+
+        // 💡 서버 과부하 방지: 100ms 간격
+        await delay(100);
       }
+
       setImageUrls(urlMap);
     };
 

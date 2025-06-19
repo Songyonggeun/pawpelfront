@@ -10,12 +10,6 @@ export default function AnimalDetailPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [isImageLoading, setIsImageLoading] = useState(true);
 
-  const getImageUrl = (animal) => {
-    const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2 || "";
-    if (!rawUrl) return "/images/no-image.png";
-    return `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image?url=${encodeURIComponent(rawUrl)}`;
-  };
-
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -32,11 +26,14 @@ export default function AnimalDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    const rawUrl = animal?.popfile || animal?.popfile1 || animal?.popfile2;
+    if (!animal) return;
+    const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2;
     if (!rawUrl) {
       setIsImageLoading(false);
       return;
     }
+
+    if (imageUrl) return; // ✅ 이미지가 이미 설정되어 있으면 재요청 방지
 
     setIsImageLoading(true);
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image/download?url=${encodeURIComponent(rawUrl)}`)
@@ -45,7 +42,7 @@ export default function AnimalDetailPage() {
         setImageUrl(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${data.imageUrl}`);
       })
       .catch(() => {
-        setImageUrl(""); // 실패 시도 비움
+        setImageUrl("");
       })
       .finally(() => {
         setIsImageLoading(false);
