@@ -10,6 +10,17 @@ export default function AnimalPage() {
   const [imageUrls, setImageUrls] = useState({});
   const itemsPerPage = 8;
 
+  const totalPages = Math.ceil(animals.length / itemsPerPage);
+
+  const currentItems = animals.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/all`)
+  .then((res) => res.json())
+  .then((data) => console.log("총 동물 수:", data.animals.length));
+
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/all`)
       .then(async (res) => {
@@ -33,55 +44,67 @@ export default function AnimalPage() {
         setLoading(false);
       });
   }, []);
-  
+
+
   useEffect(() => {
+    if (animals.length === 0) return;
+
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+    const isImageAccessible = async (url, retry = 3, delayMs = 300) => {
+      for (let i = 0; i < retry; i++) {
+        try {
+          const res = await fetch(url, { method: "HEAD" });
+          if (res.ok) return true;
+        } catch {}
+        await delay(delayMs);
+      }
+      return false;
+    };
+
     const fetchImageUrls = async () => {
-      const urlMap = {};
-      const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
-      for (const [i, animal] of animals.entries()) {
+      const downloadImage = async (animal) => {
         const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2;
-        if (!rawUrl) {
-          urlMap[animal.desertionNo] = "";
-          continue;
-        }
-
-        console.log("📡 다운로드 시도:", rawUrl);
+        if (!rawUrl) return { [animal.desertionNo]: "" };
 
         try {
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image/download?url=${encodeURIComponent(rawUrl)}`,
             { credentials: "include" }
           );
-
           if (!res.ok) throw new Error("응답 실패");
 
           const data = await res.json();
           const imageUrl = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${data.thumbnailUrl}`;
-          urlMap[animal.desertionNo] = imageUrl;
-          console.log("✅ 이미지 최종 URL:", imageUrl);
+
+          const ok = await isImageAccessible(imageUrl, 3, 300);
+          if (!ok) {
+            console.warn("⚠️ 이미지 접근 최종 실패:", imageUrl);
+            return { [animal.desertionNo]: "" };
+          }
+
+          return { [animal.desertionNo]: imageUrl };
         } catch (e) {
-          console.error("❌ 이미지 다운로드 실패:", e.message);
-          urlMap[animal.desertionNo] = "";
+          return { [animal.desertionNo]: "" };
         }
+      };
 
-        // 💡 서버 과부하 방지: 100ms 간격
-        await delay(100);
+      // ✅ animals 전체를 8개씩 쪼개서 순차 병렬 다운로드
+      const batchSize = 8;
+      const delayMs = 500;
+
+      for (let i = 0; i < animals.length; i += batchSize) {
+        const batch = animals.slice(i, i + batchSize);
+        const results = await Promise.all(batch.map(downloadImage));
+        const batchMap = Object.assign({}, ...results);
+        setImageUrls((prev) => ({ ...prev, ...batchMap }));
+        await delay(delayMs);
       }
-
-      setImageUrls(urlMap);
     };
 
-    if (animals.length > 0) {
-      fetchImageUrls();
-    }
+    fetchImageUrls();
   }, [animals]);
 
-  const totalPages = Math.ceil(animals.length / itemsPerPage);
-  const currentItems = animals.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-8">
@@ -90,7 +113,7 @@ export default function AnimalPage() {
 
         <div className="flex justify-between items-center">
           <p className="text-sm text-gray-500">
-            최근 7일 이내 구조된 동물만 표시됩니다.
+            최근 7일 이내 구조된 동물만 표시됩니다. (최대 50마리)
           </p>
           <a
             href="https://www.animal.go.kr/front/awtis/public/publicList.do?menuNo=1000000055#moveUrl"
