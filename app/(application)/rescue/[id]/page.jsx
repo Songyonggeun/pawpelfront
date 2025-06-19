@@ -7,6 +7,8 @@ export default function AnimalDetailPage() {
   const { id } = useParams();
   const [animal, setAnimal] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [imageUrl, setImageUrl] = useState("");
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   const getImageUrl = (animal) => {
     const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2 || "";
@@ -28,6 +30,27 @@ export default function AnimalDetailPage() {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    const rawUrl = animal?.popfile || animal?.popfile1 || animal?.popfile2;
+    if (!rawUrl) {
+      setIsImageLoading(false);
+      return;
+    }
+
+    setIsImageLoading(true);
+    fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image/download?url=${encodeURIComponent(rawUrl)}`)
+      .then(res => res.json())
+      .then(data => {
+        setImageUrl(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${data.imageUrl}`);
+      })
+      .catch(() => {
+        setImageUrl(""); // 실패 시도 비움
+      })
+      .finally(() => {
+        setIsImageLoading(false);
+      });
+  }, [animal]);
 
   if (loading) {
     return (
@@ -51,12 +74,24 @@ export default function AnimalDetailPage() {
   return (
     <div className="max-w-[900px] mx-auto px-4 py-10 space-y-10 animate-fadein">
       {/* 이미지 */}
-      <img
-        src={getImageUrl(animal)}
-        alt="동물 이미지"
-        className="w-full h-full object-cover"
-        loading="lazy"
-      />
+      <div className="flex justify-center items-center w-full h-[400px]">
+        {isImageLoading ? (
+          <div className="w-full h-[400px] flex items-center justify-center text-gray-400 text-sm">
+            Loading...
+          </div>
+        ) : !imageUrl ? (
+          <div className="w-full h-[400px] flex items-center justify-center text-gray-400 text-sm">
+            이미지 없음
+          </div>
+        ) : (
+          <img
+            src={imageUrl}
+            alt="동물 이미지"
+            className="w-[400px] h-[400px] object-cover"
+            loading="lazy"
+          />
+        )}
+      </div>
 
       {/* 동물 정보 */}
       <AnimalInfoTable animal={animal} sex={sex} neuter={neuter} />
@@ -64,6 +99,7 @@ export default function AnimalDetailPage() {
       <AnimalCareTable animal={animal} />
     </div>
   );
+
 }
 function AnimalInfoTable({ animal, sex, neuter }) {
   return (

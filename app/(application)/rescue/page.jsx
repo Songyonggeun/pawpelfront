@@ -7,14 +7,8 @@ export default function AnimalPage() {
   const [animals, setAnimals] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [imageUrls, setImageUrls] = useState({});
   const itemsPerPage = 8;
-
-  const getImageUrl = (animal) => {
-    const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2 || "";
-    if (!rawUrl) return "/images/no-image.png";
-
-    return `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image?url=${encodeURIComponent(rawUrl)}`;
-  };
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/all`)
@@ -39,6 +33,42 @@ export default function AnimalPage() {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    const fetchImageUrls = async () => {
+      const urlMap = {};
+      for (const animal of animals) {
+        const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2;
+        if (!rawUrl) {
+          urlMap[animal.desertionNo] = ""; // 이미지가 아예 없을 경우
+          continue;
+        }
+
+        console.log("📡 다운로드 시도:", rawUrl);
+
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image/download?url=${encodeURIComponent(rawUrl)}`,
+            {
+              credentials: "include",
+            }
+          );
+          const data = await res.json();
+          const imageUrl = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${data.thumbnailUrl}`;
+          console.log("✅ 이미지 최종 URL:", imageUrl);
+          urlMap[animal.desertionNo] = imageUrl;
+        } catch (e) {
+          console.error("❌ 이미지 다운로드 실패:", e.message);
+          urlMap[animal.desertionNo] = ""; // 실패 시도 빈 문자열
+        }
+      }
+      setImageUrls(urlMap);
+    };
+
+    if (animals.length > 0) {
+      fetchImageUrls();
+    }
+  }, [animals]);
 
   const totalPages = Math.ceil(animals.length / itemsPerPage);
   const currentItems = animals.slice(
@@ -80,11 +110,24 @@ export default function AnimalPage() {
                 href={`/rescue/${animal.desertionNo}`}
                 className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-lg transition"
               >
-                <img
-                  src={getImageUrl(animal)}
-                  alt="동물"
-                  className="w-full h-[220px] object-cover"
-                />
+              {
+                imageUrls[animal.desertionNo] === undefined ? (
+                  <div className="w-full h-[220px] bg-gray-100 flex items-center justify-center text-sm text-gray-400">
+                    Loading...
+                  </div>
+                ) : !imageUrls[animal.desertionNo] ? (
+                  <div className="w-full h-[220px] bg-gray-100 flex items-center justify-center text-sm text-gray-400">
+                    이미지 없음
+                  </div>
+                ) : (
+                  <img
+                    src={imageUrls[animal.desertionNo]}
+                    alt="동물 이미지"
+                    className="w-full h-[220px] object-cover"
+                    loading="lazy"
+                  />
+                )
+              }
                 <div className="p-4 flex flex-col flex-grow text-sm text-gray-700">
                   <div className="space-y-1 text-sm text-gray-700 pl-1">
                     <div className="flex">

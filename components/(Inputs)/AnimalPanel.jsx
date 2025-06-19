@@ -11,12 +11,7 @@ export default function AnimalPanel() {
 
   const [animals, setAnimals] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const getImageUrl = (animal) => {
-    const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2 || "";
-    if (!rawUrl) return "/images/no-image.png";
-    return `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image?url=${encodeURIComponent(rawUrl)}`;
-  };
+  const [imageUrls, setImageUrls] = useState({});
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal`)
@@ -33,7 +28,29 @@ export default function AnimalPanel() {
         }
       })
       .then((data) => {
-        setAnimals(data.animals || []);
+        const fetched = data.animals || [];
+        setAnimals(fetched);
+
+        // ✅ 이미지 저장 요청 후 URL 세팅
+        const loadImages = async () => {
+          const urlMap = {};
+          for (const animal of fetched) {
+            const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2;
+            if (!rawUrl) continue;
+            try {
+              const res = await fetch(
+                `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image/download?url=${encodeURIComponent(rawUrl)}`
+              );
+              const result = await res.json();
+              urlMap[animal.desertionNo] = `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/uploads${result.thumbnailUrl}`;
+            } catch {
+              urlMap[animal.desertionNo] = "/images/no-image.png";
+            }
+          }
+          setImageUrls(urlMap);
+        };
+
+        loadImages();
       })
       .catch((err) => {
         console.error("API 호출 오류:", err.message);
@@ -49,6 +66,7 @@ export default function AnimalPanel() {
     if (dogs[i]) interleaved.push(dogs[i]);
     if (cats[i]) interleaved.push(cats[i]);
   }
+
 return (
   <div>
     <div className="flex justify-between items-center mb-4">
@@ -79,11 +97,18 @@ return (
               href={`/rescue/${animal.desertionNo}`}
               className="bg-white rounded-lg p-2 shadow-sm hover:shadow-md transition duration-200"
             >
-              <img
-                src={getImageUrl(animal)}
-                alt="동물"
-                className="w-full h-[130px] object-cover rounded mb-1"
-              />
+                {imageUrls[animal.desertionNo] ? (
+                  <img
+                    src={imageUrls[animal.desertionNo]}
+                    alt="동물"
+                    className="w-full h-[130px] object-cover rounded mb-1"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-[130px] bg-gray-100 flex items-center justify-center text-sm text-gray-400 mb-1">
+                    Loading...
+                  </div>
+                )}
               <div className="text-center text-sm font-medium">
                 {animal.kindNm || animal.kindCd}
               </div>
