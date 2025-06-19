@@ -12,6 +12,12 @@ export default function AnimalPanel() {
   const [animals, setAnimals] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const getImageUrl = (animal) => {
+    const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2 || "";
+    if (!rawUrl) return "/images/no-image.png";
+    return `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image?url=${encodeURIComponent(rawUrl)}`;
+  };
+
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal`)
       .then(async (res) => {
@@ -74,7 +80,7 @@ return (
               className="bg-white rounded-lg p-2 shadow-sm hover:shadow-md transition duration-200"
             >
               <img
-                src={animal.popfile || animal.popfile1 || animal.popfile2}
+                src={getImageUrl(animal)}
                 alt="동물"
                 className="w-full h-[130px] object-cover rounded mb-1"
               />

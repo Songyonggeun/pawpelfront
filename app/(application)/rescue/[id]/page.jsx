@@ -8,6 +8,12 @@ export default function AnimalDetailPage() {
   const [animal, setAnimal] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const getImageUrl = (animal) => {
+    const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2 || "";
+    if (!rawUrl) return "/images/no-image.png";
+    return `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image?url=${encodeURIComponent(rawUrl)}`;
+  };
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -45,14 +51,12 @@ export default function AnimalDetailPage() {
   return (
     <div className="max-w-[900px] mx-auto px-4 py-10 space-y-10 animate-fadein">
       {/* 이미지 */}
-<div className="w-[500px] h-[400px] overflow-hidden rounded-lg shadow mx-auto">
-  <img
-    src={animal.popfile1 || animal.popfile2}
-    alt="동물 이미지"
-    className="w-full h-full object-cover"
-    loading="lazy"
-  />
-</div>
+      <img
+        src={getImageUrl(animal)}
+        alt="동물 이미지"
+        className="w-full h-full object-cover"
+        loading="lazy"
+      />
 
       {/* 동물 정보 */}
       <AnimalInfoTable animal={animal} sex={sex} neuter={neuter} />

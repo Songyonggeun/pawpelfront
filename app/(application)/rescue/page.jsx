@@ -9,6 +9,13 @@ export default function AnimalPage() {
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 8;
 
+  const getImageUrl = (animal) => {
+    const rawUrl = animal.popfile || animal.popfile1 || animal.popfile2 || "";
+    if (!rawUrl) return "/images/no-image.png";
+
+    return `${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/image?url=${encodeURIComponent(rawUrl)}`;
+  };
+
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_SPRING_SERVER_URL}/animal/all`)
       .then(async (res) => {
@@ -74,7 +81,7 @@ export default function AnimalPage() {
                 className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col h-full hover:shadow-lg transition"
               >
                 <img
-                  src={animal.popfile || animal.popfile1 || animal.popfile2}
+                  src={getImageUrl(animal)}
                   alt="동물"
                   className="w-full h-[220px] object-cover"
                 />
